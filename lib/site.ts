@@ -26,6 +26,7 @@ export type Program = {
   description: string;
   features: string[];
   emoji: string;
+  image: string;
 };
 
 export const programs: Program[] = [
@@ -37,6 +38,7 @@ export const programs: Program[] = [
       "매일의 감사를 기록하며 나의 성장 과정을 데이터로 관리합니다. 작은 기록이 모여 큰 변화를 만듭니다.",
     features: ["매일 감사 기록", "성장 그래프", "회고 리마인더", "데이터 백업"],
     emoji: "🙏",
+    image: "/image/gamsa.png",
   },
   {
     slug: "clipminer",
@@ -46,6 +48,7 @@ export const programs: Program[] = [
       "긴 영상 속에서 의미 있는 순간을 자동으로 찾아내고 클립으로 추출합니다.",
     features: ["자동 하이라이트 추출", "자막 인식", "클립 내보내기", "배치 처리"],
     emoji: "⛏️",
+    image: "/image/clipminer.png",
   },
   {
     slug: "shortsfactory",
@@ -55,6 +58,7 @@ export const programs: Program[] = [
       "아이디어 하나로 여러 개의 숏폼을 자동 생성하는 콘텐츠 제작 자동화 시스템입니다.",
     features: ["대본 자동 생성", "영상 합성", "자동 자막", "예약 업로드"],
     emoji: "🎬",
+    image: "/image/shots.png",
   },
   {
     slug: "ebook",
@@ -64,6 +68,7 @@ export const programs: Program[] = [
       "글감만 있으면 기획, 편집, 표지, 포맷팅까지 전자책 출간 전 과정을 돕습니다.",
     features: ["원고 정리", "표지 생성", "포맷 변환", "출간 체크리스트"],
     emoji: "📚",
+    image: "/image/ebook.png",
   },
 ];
 
