@@ -7,9 +7,7 @@ export default function HomePage() {
   return (
     <>
       {/* ---------------- Hero ---------------- */}
-      <section className="container-page relative pt-20 pb-24 md:pt-28 md:pb-32">
-        <p className="eyebrow mb-6 text-center">COZYBUILDER</p>
-
+      <section className="container-page relative pt-10 pb-24 md:pt-14 md:pb-32">
         <h1 className="heading-gradient text-center text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
           Build.
           <br />

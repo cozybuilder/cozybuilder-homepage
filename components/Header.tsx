@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { User } from "@supabase/supabase-js";
@@ -57,10 +58,18 @@ export default function Header() {
       <nav className="container-page flex h-16 items-center justify-between">
         <Link
           href="/"
-          className="text-sm font-semibold tracking-[0.18em] text-foreground"
+          aria-label={siteConfig.name}
+          className="flex items-center"
           onClick={() => setOpen(false)}
         >
-          {siteConfig.name}
+          <Image
+            src="/logo.png"
+            alt={siteConfig.name}
+            width={32}
+            height={32}
+            priority
+            className="h-8 w-8"
+          />
         </Link>
 
         {/* Desktop nav */}
