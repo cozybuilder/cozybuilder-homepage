@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { programs, snsChannels } from "@/lib/site";
 import { ImagePlaceholder } from "@/components/ui";
 import HeroVideo from "@/components/HeroVideo";
@@ -54,7 +55,15 @@ export default function HomePage() {
               href={`/programs/${p.slug}`}
               className="card card-hover"
             >
-              <div className="mb-4 text-3xl">{p.emoji}</div>
+              <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-xl">
+                <Image
+                  src={p.image}
+                  alt={p.name}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                />
+              </div>
               <h3 className="text-base font-semibold">{p.name}</h3>
               <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>
             </Link>
