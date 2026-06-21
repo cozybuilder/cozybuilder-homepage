@@ -1,0 +1,126 @@
+@import "tailwindcss";
+
+/* ============================================================
+   CozyBuilder Design System
+   Apple Vision Pro x Linear x Stripe — dark, spacious, cinematic
+   ============================================================ */
+
+:root {
+  /* Core surfaces */
+  --background: #050507;
+  --surface: #0c0d11;
+  --surface-2: #14151b;
+  --border: #23242c;
+  --border-strong: #34353f;
+
+  /* Text */
+  --foreground: #f5f6f8;
+  --muted: #a1a3ad;
+  --muted-2: #6c6e7a;
+
+  /* Accent — cool violet/blue glow */
+  --accent: #7c8cff;
+  --accent-2: #b08cff;
+  --accent-glow: rgba(124, 140, 255, 0.35);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-muted-2: var(--muted-2);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  border-color: var(--border);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Ambient background glow used across pages */
+.bg-aurora {
+  position: relative;
+}
+.bg-aurora::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(60% 50% at 50% -10%, rgba(124, 140, 255, 0.18), transparent 70%),
+    radial-gradient(40% 40% at 85% 10%, rgba(176, 140, 255, 0.12), transparent 70%);
+  pointer-events: none;
+}
+
+/* ---------- Reusable component classes ---------- */
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-6xl px-6 md:px-8;
+  }
+
+  .card {
+    @apply rounded-2xl border border-[--border] bg-[--surface] p-6 transition-all duration-300;
+    background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent);
+  }
+  .card-hover {
+    @apply hover:border-[--border-strong] hover:-translate-y-1;
+  }
+  .card-hover:hover {
+    box-shadow: 0 20px 60px -20px var(--accent-glow);
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-all duration-200;
+  }
+  .btn-primary {
+    @apply bg-foreground text-background hover:opacity-90;
+  }
+  .btn-accent {
+    color: #fff;
+    background-image: linear-gradient(120deg, var(--accent), var(--accent-2));
+  }
+  .btn-accent:hover {
+    box-shadow: 0 12px 40px -8px var(--accent-glow);
+  }
+  .btn-ghost {
+    @apply border border-[--border-strong] text-foreground hover:bg-[--surface-2];
+  }
+
+  .eyebrow {
+    @apply text-xs font-medium uppercase tracking-[0.2em] text-[--muted-2];
+  }
+
+  .heading-gradient {
+    background: linear-gradient(180deg, #ffffff 30%, #9fa2b2 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-[--border] bg-[--surface-2] px-4 py-3 text-sm text-foreground placeholder:text-[--muted-2] outline-none transition-colors focus:border-[--accent];
+  }
+
+  .label {
+    @apply mb-2 block text-sm font-medium text-[--muted];
+  }
+}
