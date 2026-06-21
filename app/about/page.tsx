@@ -41,26 +41,12 @@ export default function AboutPage() {
       {/* ---------------- Section 1 : About Me ---------------- */}
       <PageHeader eyebrow="About" title="About Me" />
 
-      <section className="mx-auto mt-12 max-w-2xl space-y-8 text-lg leading-relaxed text-[--muted]">
-        <div className="space-y-3">
-          <p>46세.</p>
-          <p>
-            프로그래머 8년, 건설 일 13년을 그만두고
-            <br />
-            AI와 함께 다시 시작했습니다.
-          </p>
-          <p className="text-foreground">이곳은 그 기록입니다.</p>
-        </div>
-
-        <hr className="border-[--border]" />
-
-        <div className="space-y-3">
-          <p>저는 단순히 하나의 직업을 가진 사람이 아닙니다.</p>
-          <p>
-            아이디어를 현실로 만들고, 작은 제품들을 하나씩 쌓아가며, AI 시대의
-            1인 기업을 만들어가고 있습니다.
-          </p>
-        </div>
+      <section className="mx-auto mt-12 max-w-2xl space-y-3 text-lg leading-relaxed text-[--muted]">
+        <p>저는 단순히 하나의 직업을 가진 사람이 아닙니다.</p>
+        <p>
+          아이디어를 현실로 만들고, 작은 제품들을 하나씩 쌓아가며, AI 시대의 1인
+          기업을 만들어가고 있습니다.
+        </p>
       </section>
 
       {/* ---------------- Section 2 : What I Build ---------------- */}
