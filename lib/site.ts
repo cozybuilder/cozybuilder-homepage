@@ -5,7 +5,7 @@ export const siteConfig = {
   name: "COZYBUILDER",
   tagline: "The AI Business Base",
   email: "equs0223@gmail.com",
-  contactEmail: "contact@cozybuilder.co.kr",
+  contactEmail: "cozybuilder.studio@gmail.com",
   foundedYear: 2026,
 };
 
