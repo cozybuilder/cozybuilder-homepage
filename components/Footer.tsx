@@ -26,10 +26,35 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-12 flex flex-col gap-2 border-t border-[--border] pt-8 text-sm text-[--muted-2]">
+        <div className="mt-12 flex flex-col gap-3 border-t border-[--border] pt-8 text-sm text-[--muted-2]">
+          {/* 정책 링크 */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-foreground"
+            >
+              개인정보처리방침
+            </Link>
+            <span aria-hidden>·</span>
+            <Link
+              href="/terms"
+              className="transition-colors hover:text-foreground"
+            >
+              이용약관
+            </Link>
+            <span aria-hidden>·</span>
+            <Link
+              href="/contact"
+              className="transition-colors hover:text-foreground"
+            >
+              문의
+            </Link>
+          </div>
+
           <p>Built with ❤️ &nbsp;·&nbsp; Cozy • Cobi • Clo</p>
           <p>
-            {siteConfig.tagline} &nbsp;·&nbsp; Founded in {siteConfig.foundedYear}
+            © {siteConfig.foundedYear} CozyBuilder. All rights reserved. &nbsp;·&nbsp;{" "}
+            {siteConfig.tagline}
           </p>
         </div>
       </div>
