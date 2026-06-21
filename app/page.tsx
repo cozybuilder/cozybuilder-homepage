@@ -19,22 +19,13 @@ export default function HomePage() {
         </h1>
 
         <div className="mx-auto mt-10 max-w-xl space-y-4 text-center text-lg leading-relaxed text-[--muted]">
-          <p>46세.</p>
+          <p>40대.</p>
           <p>
-            프로그래머 8년, 건설 일 13년을 그만두고
+            프로그래머 8년, 건축업 13년을 그만두고
             <br />
             AI와 함께 다시 시작했습니다.
           </p>
           <p className="text-foreground">이곳은 그 기록입니다.</p>
-        </div>
-
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-          <Link href="/programs" className="btn btn-accent">
-            프로그램 둘러보기
-          </Link>
-          <Link href="/about" className="btn btn-ghost">
-            소개 보기
-          </Link>
         </div>
 
         {/* Cinematic Hero video */}
