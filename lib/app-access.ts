@@ -1,4 +1,6 @@
 import "server-only";
+import { redirect } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { getApp } from "@/lib/apps";
 
@@ -78,4 +80,21 @@ export async function canAccessApp(
         ? "expired"
         : "inactive";
   return { allowed: false, reason: blocked, subscription: sub };
+}
+
+/**
+ * 앱 페이지 공통 가드 — 로그인 + 구독 권한을 매 요청 검증.
+ * 미로그인 → /login, 권한 없음 → /subscribe 로 redirect.
+ * 통과 시 인증된 user 를 반환한다. (앱 라우트들이 동일 진입 규칙을 공유)
+ */
+export async function requireAppAccess(appKey: string): Promise<User> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect(`/login?next=/apps/${appKey}`);
+
+  const access = await canAccessApp(user.id, appKey);
+  if (!access.allowed) redirect(`/subscribe?app=${appKey}`);
+  return user;
 }
