@@ -1,12 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  programs,
-  snsChannels,
-  websiteServices,
-  bookItems,
-  type Program,
-} from "@/lib/site";
+import { programs, snsChannels, type Program } from "@/lib/site";
 import HeroVideo from "@/components/HeroVideo";
 
 function HomeProgramCard({ p }: { p: Program }) {
@@ -106,27 +100,9 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* 홈페이지 제작 (텍스트) */}
+        {/* 분류 제목만 유지 (상품 카드는 /product 에서 노출) */}
         <h3 className="text-lg font-semibold tracking-tight">홈페이지 제작</h3>
-        <ul className="mt-4 space-y-1.5 text-[--muted]">
-          {websiteServices.map((s) => (
-            <li key={s} className="flex items-center gap-2">
-              <span className="text-[--accent]">·</span>
-              {s}
-            </li>
-          ))}
-        </ul>
-
-        {/* 전자책 (텍스트) */}
-        <h3 className="mt-12 text-lg font-semibold tracking-tight">전자책</h3>
-        <ul className="mt-4 space-y-1.5 text-[--muted]">
-          {bookItems.map((b) => (
-            <li key={b} className="flex items-center gap-2">
-              <span className="text-[--accent]">·</span>
-              {b}
-            </li>
-          ))}
-        </ul>
+        <h3 className="mt-8 text-lg font-semibold tracking-tight">전자책</h3>
       </section>
 
       {/* ---------------- Marketing ---------------- */}
