@@ -120,35 +120,41 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* SNS (텍스트) */}
+        {/* SNS (외부 링크 — 상세페이지 없음) */}
         <h3 className="text-lg font-semibold tracking-tight">SNS</h3>
         <ul className="mt-4 space-y-1.5 text-[--muted]">
           {snsChannels
             .filter((c) => ["youtube", "instagram"].includes(c.slug))
             .map((c) => (
               <li key={c.slug}>
-                <Link
-                  href={`/sns/${c.slug}`}
-                  className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-                >
-                  <span className="text-[--accent]">·</span>
-                  {c.name}
-                </Link>
+                {c.externalUrl ? (
+                  <a
+                    href={c.externalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+                  >
+                    <span className="text-[--accent]">·</span>
+                    {c.name}
+                  </a>
+                ) : (
+                  <span className="inline-flex items-center gap-2">
+                    <span className="text-[--accent]">·</span>
+                    {c.name}
+                  </span>
+                )}
               </li>
             ))}
         </ul>
 
-        {/* Blog (텍스트) */}
+        {/* Blog (외부 링크 — 상세페이지 없음) */}
         <h3 className="mt-12 text-lg font-semibold tracking-tight">Blog</h3>
         <ul className="mt-4 space-y-1.5 text-[--muted]">
           <li>
-            <Link
-              href="/sns/blog"
-              className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-            >
+            <span className="inline-flex items-center gap-2">
               <span className="text-[--accent]">·</span>
               CozyBuilder Lab
-            </Link>
+            </span>
           </li>
         </ul>
       </section>

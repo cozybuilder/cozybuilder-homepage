@@ -149,10 +149,10 @@ export type SnsChannel = {
 };
 
 export const snsChannels: SnsChannel[] = [
-  { slug: "blog", name: "Blog", summary: "기록과 생각을 글로 남깁니다", emoji: "✍️" },
-  { slug: "youtube", name: "YouTube", summary: "영상으로 여정을 공유합니다", emoji: "▶️" },
-  { slug: "instagram", name: "Instagram", summary: "순간을 이미지로 담습니다", emoji: "📸" },
-  { slug: "threads", name: "Threads", summary: "짧은 생각을 나눕니다", emoji: "🧵" },
+  { slug: "blog", name: "Blog", summary: "기록과 생각을 글로 남깁니다", emoji: "✍️", externalUrl: "" },
+  { slug: "youtube", name: "YouTube", summary: "영상으로 여정을 공유합니다", emoji: "▶️", externalUrl: "" },
+  { slug: "instagram", name: "Instagram", summary: "순간을 이미지로 담습니다", emoji: "📸", externalUrl: "" },
+  { slug: "threads", name: "Threads", summary: "짧은 생각을 나눕니다", emoji: "🧵", externalUrl: "" },
 ];
 
 export const team = [
