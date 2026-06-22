@@ -41,11 +41,12 @@ export async function startBetaSubscription(formData: FormData) {
     )
     .select();
 
-  console.log("[startBetaSubscription]", {
+  console.log("[startBetaSubscription] called", {
     appKey,
     userId: user.id,
     error: error?.message,
     rows: data?.length ?? 0,
+    data,
   });
 
   if (error) failTo(appKey, `구독 시작 실패: ${error.message}`);
@@ -54,6 +55,7 @@ export async function startBetaSubscription(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
+  revalidatePath(`/apps/${appKey}`);
   redirect(`/apps/${appKey}`);
 }
 
@@ -74,11 +76,22 @@ export async function cancelBetaSubscription(formData: FormData) {
     .eq("app_key", appKey)
     .select();
 
-  console.log("[cancelBetaSubscription]", {
+  // 같은 액션 안에서 update 후 즉시 재조회하여 실제 반영 확인
+  const { data: after } = await supabase
+    .from("user_app_subscriptions")
+    .select("status,plan,updated_at,user_id")
+    .eq("user_id", user.id)
+    .eq("app_key", appKey)
+    .maybeSingle();
+
+  console.log("[cancelBetaSubscription] called", {
     appKey,
     userId: user.id,
     error: error?.message,
     rows: data?.length ?? 0,
+    afterStatus: after?.status,
+    afterUpdatedAt: after?.updated_at,
+    afterUserId: after?.user_id,
   });
 
   if (error) failTo(appKey, `구독 취소 실패: ${error.message}`);
@@ -87,5 +100,6 @@ export async function cancelBetaSubscription(formData: FormData) {
   }
 
   revalidatePath("/dashboard");
+  revalidatePath(`/apps/${appKey}`);
   redirect(`/subscribe?app=${appKey}`);
 }

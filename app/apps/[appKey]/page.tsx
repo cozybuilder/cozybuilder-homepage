@@ -53,6 +53,8 @@ export default async function AppPage({
     allowed: access.allowed,
     reason: access.reason,
     status: access.subscription?.status ?? null,
+    updatedAt: access.subscription?.current_period_end ?? null,
+    subUserId: access.subscription?.user_id ?? null,
   });
   if (!access.allowed) redirect(`/subscribe?app=${appKey}`);
 
