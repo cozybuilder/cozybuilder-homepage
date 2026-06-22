@@ -1,7 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { programs, snsChannels } from "@/lib/site";
-import { ImagePlaceholder } from "@/components/ui";
+import {
+  programs,
+  snsChannels,
+  websiteServices,
+  bookItems,
+} from "@/lib/site";
 import HeroVideo from "@/components/HeroVideo";
 
 export default function HomePage() {
@@ -33,12 +37,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ---------------- Products Preview ---------------- */}
+      {/* ---------------- Product ---------------- */}
       <section className="container-page py-16">
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <p className="eyebrow mb-3">Products</p>
-            <h2 className="text-3xl font-semibold tracking-tight">프로그램</h2>
+            <p className="eyebrow mb-3">Product</p>
+            <h2 className="text-3xl font-semibold tracking-tight">제품</h2>
           </div>
           <Link
             href="/programs"
@@ -48,7 +52,9 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Programs (카드) */}
+        <h3 className="text-lg font-semibold tracking-tight">Programs</h3>
+        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {programs.map((p) => (
             <Link
               key={p.slug}
@@ -69,29 +75,78 @@ export default function HomePage() {
             </Link>
           ))}
         </div>
+
+        {/* Website Development (텍스트) */}
+        <h3 className="mt-12 text-lg font-semibold tracking-tight">
+          Website Development
+        </h3>
+        <ul className="mt-4 space-y-1.5 text-[--muted]">
+          {websiteServices.map((s) => (
+            <li key={s} className="flex items-center gap-2">
+              <span className="text-[--accent]">·</span>
+              {s}
+            </li>
+          ))}
+        </ul>
+
+        {/* Books (텍스트) */}
+        <h3 className="mt-12 text-lg font-semibold tracking-tight">Books</h3>
+        <ul className="mt-4 space-y-1.5 text-[--muted]">
+          {bookItems.map((b) => (
+            <li key={b} className="flex items-center gap-2">
+              <span className="text-[--accent]">·</span>
+              {b}
+            </li>
+          ))}
+        </ul>
       </section>
 
-      {/* ---------------- Latest Content ---------------- */}
+      {/* ---------------- Marketing ---------------- */}
       <section className="container-page py-16">
-        <div className="mb-10">
-          <p className="eyebrow mb-3">Latest Content</p>
-          <h2 className="text-3xl font-semibold tracking-tight">최근 콘텐츠</h2>
+        <div className="mb-10 flex items-end justify-between">
+          <div>
+            <p className="eyebrow mb-3">Marketing</p>
+            <h2 className="text-3xl font-semibold tracking-tight">마케팅</h2>
+          </div>
+          <Link
+            href="/sns"
+            className="text-sm text-[--muted] transition-colors hover:text-foreground"
+          >
+            More →
+          </Link>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        {/* SNS (텍스트) */}
+        <h3 className="text-lg font-semibold tracking-tight">SNS</h3>
+        <ul className="mt-4 space-y-1.5 text-[--muted]">
           {snsChannels
-            .filter((c) => ["blog", "youtube", "instagram"].includes(c.slug))
+            .filter((c) => ["youtube", "instagram"].includes(c.slug))
             .map((c) => (
-              <Link key={c.slug} href={`/sns/${c.slug}`} className="card card-hover">
-                <ImagePlaceholder ratio="aspect-video" />
-                <div className="mt-4 flex items-center gap-2">
-                  <span className="text-xl">{c.emoji}</span>
-                  <h3 className="text-base font-semibold">{c.name}</h3>
-                </div>
-                <p className="mt-2 text-sm text-[--muted]">{c.summary}</p>
-              </Link>
+              <li key={c.slug}>
+                <Link
+                  href={`/sns/${c.slug}`}
+                  className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+                >
+                  <span className="text-[--accent]">·</span>
+                  {c.name}
+                </Link>
+              </li>
             ))}
-        </div>
+        </ul>
+
+        {/* Blog (텍스트) */}
+        <h3 className="mt-12 text-lg font-semibold tracking-tight">Blog</h3>
+        <ul className="mt-4 space-y-1.5 text-[--muted]">
+          <li>
+            <Link
+              href="/sns/blog"
+              className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+            >
+              <span className="text-[--accent]">·</span>
+              CozyBuilder Lab
+            </Link>
+          </li>
+        </ul>
       </section>
     </>
   );

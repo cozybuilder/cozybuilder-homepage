@@ -17,13 +17,16 @@ export const siteConfig = {
 export type NavItem = { label: string; href: string };
 
 export const mainNav: NavItem[] = [
-  { label: "메인홈", href: "/" },
-  { label: "소개", href: "/about" },
-  { label: "프로그램", href: "/programs" },
-  { label: "SNS", href: "/sns" },
-  { label: "전체 링크", href: "/links" },
-  { label: "문의", href: "/contact" },
+  { label: "Home", href: "/" },
+  { label: "About", href: "/about" },
+  { label: "Product", href: "/programs" },
+  { label: "Marketing", href: "/sns" },
+  { label: "Contact", href: "/contact" },
 ];
+
+// Product 하위 분류 (초기 텍스트 항목)
+export const websiteServices = ["홈페이지 제작", "랜딩페이지 제작", "웹서비스 제작"];
+export const bookItems = ["전자책", "출판 프로젝트", "개발 기록"];
 
 export type ProgramType = "web" | "mobile";
 
