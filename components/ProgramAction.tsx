@@ -99,7 +99,7 @@ export default function ProgramAction({
 
   // subscribed
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap justify-center gap-4">
       {appUrl ? (
         <a href={appUrl} className="btn btn-accent min-w-[140px]">
           실행하기

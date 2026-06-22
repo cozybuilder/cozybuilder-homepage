@@ -56,21 +56,21 @@ export default async function ProgramDetailPage({
 
       {/* 1. 대표 이미지 + 액션 (본문 폭에 맞춤) */}
       <section className="mx-auto mt-8 max-w-3xl">
-        <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl border border-[--border] bg-[--surface-2]">
+        <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-[--border] bg-black">
           <Image
             src={program.image}
             alt={program.name}
             fill
             priority
-            className="object-contain"
+            className="object-cover"
             sizes="(max-width: 768px) 100vw, 768px"
           />
         </div>
 
-        {/* 액션: 대표 이미지 바로 아래 (web=구독/실행 / mobile=스토어) */}
-        <div className="mt-6">
+        {/* 액션: 대표 이미지 바로 아래, 중앙 정렬 (web=구독/실행 / mobile=스토어) */}
+        <div className="mt-6 flex justify-center">
           {program.type === "mobile" ? (
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap justify-center gap-4">
               <StoreButton label="Google Play" url={program.playStoreUrl} />
               <StoreButton label="App Store" url={program.appStoreUrl} />
             </div>
