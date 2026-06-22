@@ -21,9 +21,6 @@ function ProgramCard({ p }: { p: Program }) {
       </div>
       <h3 className="text-lg font-semibold">{p.name}</h3>
       <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>
-      <span className="mt-4 inline-block text-sm text-[--accent]">
-        자세히 보기 →
-      </span>
     </Link>
   );
 }
