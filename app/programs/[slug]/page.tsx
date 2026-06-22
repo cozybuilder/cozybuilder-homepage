@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProgram } from "@/lib/content";
-import { BackLink, ImagePlaceholder, Placeholder } from "@/components/ui";
+import { ImagePlaceholder, Placeholder } from "@/components/ui";
+import BackButton from "@/components/BackButton";
 import ProgramAction from "@/components/ProgramAction";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
 
@@ -49,7 +50,7 @@ export default async function ProgramDetailPage({
 
   return (
     <div className="container-page py-12">
-      <BackLink href="/programs">프로그램 목록</BackLink>
+      <BackButton href="/programs" label="프로그램 목록" />
 
       {/* 1. 대표 이미지 + 액션 (본문 폭에 맞춤) */}
       <section className="mx-auto mt-8 max-w-3xl">

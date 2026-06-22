@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import ProgramAdminForm, {
   type ProgramInitial,
 } from "@/components/admin/ProgramAdminForm";
-import AdminBackButton from "@/components/admin/AdminBackButton";
+import BackButton from "@/components/BackButton";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function ProgramFormPage({
@@ -40,7 +40,7 @@ export default async function ProgramFormPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <AdminBackButton href="/admin/programs" label="Programs 목록" />
+      <BackButton href="/admin/programs" label="Programs 목록" />
       <h1 className="mt-5 mb-8 text-2xl font-semibold tracking-tight">
         {isNew ? "새 프로그램" : "프로그램 수정"}
       </h1>

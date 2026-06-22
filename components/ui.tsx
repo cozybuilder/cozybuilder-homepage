@@ -1,6 +1,3 @@
-import Link from "next/link";
-import type { ReactNode } from "react";
-
 /** Standard page intro block used across inner pages. */
 export function PageHeader({
   eyebrow,
@@ -21,18 +18,6 @@ export function PageHeader({
         <p className="mt-5 text-lg text-[--muted]">{description}</p>
       )}
     </div>
-  );
-}
-
-/** Small "← back" link for detail pages. */
-export function BackLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="inline-flex items-center gap-1.5 text-sm text-[--muted] transition-colors hover:text-foreground"
-    >
-      <span aria-hidden>←</span> {children}
-    </Link>
   );
 }
 

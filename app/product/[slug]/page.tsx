@@ -3,7 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/content";
-import { BackLink, ImagePlaceholder } from "@/components/ui";
+import { ImagePlaceholder } from "@/components/ui";
+import BackButton from "@/components/BackButton";
 
 export async function generateMetadata({
   params,
@@ -28,7 +29,7 @@ export default async function ProductDetailPage({
 
   return (
     <div className="container-page py-12">
-      <BackLink href="/product">Product</BackLink>
+      <BackButton href="/product" label="Product" />
 
       {/* 1. 메인 이미지 + 액션 */}
       <section className="mx-auto mt-8 max-w-3xl">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { PageHeader, Placeholder, BackLink } from "@/components/ui";
+import { PageHeader, Placeholder } from "@/components/ui";
+import BackButton from "@/components/BackButton";
 
 export const metadata: Metadata = { title: "Contents" };
 
@@ -7,7 +8,7 @@ export default function ContentsPage() {
   return (
     <div className="container-page py-20">
       <div className="mb-10">
-        <BackLink href="/about">소개</BackLink>
+        <BackButton href="/about" label="소개" />
       </div>
       <PageHeader
         eyebrow="Contents"
