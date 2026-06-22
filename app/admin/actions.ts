@@ -1,0 +1,144 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin";
+
+function lines(v: FormDataEntryValue | null): string[] {
+  return String(v ?? "")
+    .split("\n")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+function updatesFrom(v: FormDataEntryValue | null): { date: string; text: string }[] {
+  return lines(v)
+    .map((line) => {
+      const idx = line.indexOf("|");
+      if (idx === -1) return { date: "", text: line.trim() };
+      return { date: line.slice(0, idx).trim(), text: line.slice(idx + 1).trim() };
+    })
+    .filter((u) => u.text);
+}
+
+function str(v: FormDataEntryValue | null): string {
+  return String(v ?? "").trim();
+}
+
+function revalidatePublic() {
+  revalidatePath("/");
+  revalidatePath("/programs");
+  revalidatePath("/product");
+  revalidatePath("/marketing");
+}
+
+// ── Programs ──
+export async function saveProgram(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  const id = str(formData.get("id"));
+  const payload = {
+    slug: str(formData.get("slug")),
+    type: str(formData.get("type")) === "mobile" ? "mobile" : "web",
+    name: str(formData.get("name")),
+    subtitle: str(formData.get("subtitle")),
+    summary: str(formData.get("summary")),
+    description: str(formData.get("description")),
+    image: str(formData.get("image")),
+    features: lines(formData.get("features")),
+    screenshots: lines(formData.get("screenshots")),
+    updates: updatesFrom(formData.get("updates")),
+    app_url: str(formData.get("app_url")),
+    status: str(formData.get("status")) === "published" ? "published" : "draft",
+    sort_order: Number(str(formData.get("sort_order"))) || 0,
+    updated_at: new Date().toISOString(),
+  };
+  if (id) await supabase.from("programs").update(payload).eq("id", id);
+  else await supabase.from("programs").insert(payload);
+  revalidatePath("/admin/programs");
+  revalidatePublic();
+  redirect("/admin/programs");
+}
+
+export async function deleteProgram(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase.from("programs").delete().eq("id", str(formData.get("id")));
+  revalidatePath("/admin/programs");
+  revalidatePublic();
+  redirect("/admin/programs");
+}
+
+// ── Products ──
+export async function saveProduct(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  const id = str(formData.get("id"));
+  const payload = {
+    slug: str(formData.get("slug")),
+    category: str(formData.get("category")) === "website" ? "website" : "ebook",
+    name: str(formData.get("name")),
+    summary: str(formData.get("summary")),
+    image: str(formData.get("image")),
+    contents: lines(formData.get("contents")),
+    screenshots: lines(formData.get("screenshots")),
+    long_description: str(formData.get("long_description")),
+    price: str(formData.get("price")),
+    cta: str(formData.get("cta")) === "buy" ? "buy" : "contact",
+    cta_label: str(formData.get("cta_label")),
+    cta_url: str(formData.get("cta_url")),
+    status: str(formData.get("status")) === "published" ? "published" : "draft",
+    sort_order: Number(str(formData.get("sort_order"))) || 0,
+    updated_at: new Date().toISOString(),
+  };
+  if (id) await supabase.from("products").update(payload).eq("id", id);
+  else await supabase.from("products").insert(payload);
+  revalidatePath("/admin/product");
+  revalidatePublic();
+  redirect("/admin/product");
+}
+
+export async function deleteProduct(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase.from("products").delete().eq("id", str(formData.get("id")));
+  revalidatePath("/admin/product");
+  revalidatePublic();
+  redirect("/admin/product");
+}
+
+// ── Marketing ──
+export async function saveMarketing(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  const id = str(formData.get("id"));
+  const payload = {
+    slug: str(formData.get("slug")),
+    category: str(formData.get("category")) === "blog" ? "blog" : "sns",
+    name: str(formData.get("name")),
+    description: str(formData.get("description")),
+    image: str(formData.get("image")),
+    external_url: str(formData.get("external_url")),
+    status: str(formData.get("status")) === "published" ? "published" : "draft",
+    sort_order: Number(str(formData.get("sort_order"))) || 0,
+    updated_at: new Date().toISOString(),
+  };
+  if (id) await supabase.from("marketing_channels").update(payload).eq("id", id);
+  else await supabase.from("marketing_channels").insert(payload);
+  revalidatePath("/admin/marketing");
+  revalidatePublic();
+  redirect("/admin/marketing");
+}
+
+export async function deleteMarketing(formData: FormData) {
+  await requireAdmin();
+  const supabase = await createClient();
+  await supabase
+    .from("marketing_channels")
+    .delete()
+    .eq("id", str(formData.get("id")));
+  revalidatePath("/admin/marketing");
+  revalidatePublic();
+  redirect("/admin/marketing");
+}

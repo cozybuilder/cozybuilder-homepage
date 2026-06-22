@@ -1,13 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { programs } from "@/lib/site";
+import { getProgram } from "@/lib/content";
 import { BackLink, ImagePlaceholder, Placeholder } from "@/components/ui";
 import ProgramAction from "@/components/ProgramAction";
-
-export function generateStaticParams() {
-  return programs.map((p) => ({ slug: p.slug }));
-}
 
 export async function generateMetadata({
   params,
@@ -15,7 +11,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const program = programs.find((p) => p.slug === slug);
+  const program = await getProgram(slug);
   return { title: program ? program.name : "프로그램" };
 }
 
@@ -47,7 +43,7 @@ export default async function ProgramDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const program = programs.find((p) => p.slug === slug);
+  const program = await getProgram(slug);
   if (!program) notFound();
 
   return (

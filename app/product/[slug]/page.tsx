@@ -2,12 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { products } from "@/lib/site";
+import { getProduct } from "@/lib/content";
 import { BackLink, ImagePlaceholder } from "@/components/ui";
-
-export function generateStaticParams() {
-  return products.map((p) => ({ slug: p.slug }));
-}
 
 export async function generateMetadata({
   params,
@@ -15,7 +11,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
+  const product = await getProduct(slug);
   return { title: product ? product.name : "Product" };
 }
 
@@ -25,8 +21,10 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = products.find((p) => p.slug === slug);
+  const product = await getProduct(slug);
   if (!product) notFound();
+
+  const ctaHref = product.ctaUrl || "/contact";
 
   return (
     <div className="container-page py-12">
@@ -50,7 +48,7 @@ export default async function ProductDetailPage({
           {product.price && (
             <p className="text-lg font-semibold">{product.price}</p>
           )}
-          <Link href="/contact" className="btn btn-accent min-w-[140px]">
+          <Link href={ctaHref} className="btn btn-accent min-w-[140px]">
             {product.cta === "buy" ? "구매하기" : "문의하기"}
           </Link>
         </div>

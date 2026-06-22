@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { programs, type Program } from "@/lib/site";
+import { type Program } from "@/lib/site";
+import { getPrograms } from "@/lib/content";
 import { PageHeader } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Programs" };
@@ -27,7 +28,8 @@ function ProgramCard({ p }: { p: Program }) {
   );
 }
 
-export default function ProgramsPage() {
+export default async function ProgramsPage() {
+  const programs = await getPrograms();
   const webPrograms = programs.filter((p) => p.type === "web");
   const mobilePrograms = programs.filter((p) => p.type === "mobile");
 

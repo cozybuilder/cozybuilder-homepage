@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { programs, snsChannels, type Program } from "@/lib/site";
+import { type Program } from "@/lib/site";
+import { getPrograms, getMarketing } from "@/lib/content";
 import HeroVideo from "@/components/HeroVideo";
 
 function HomeProgramCard({ p }: { p: Program }) {
@@ -21,7 +22,14 @@ function HomeProgramCard({ p }: { p: Program }) {
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const programs = await getPrograms();
+  const marketing = await getMarketing();
+  const webPrograms = programs.filter((p) => p.type === "web");
+  const mobilePrograms = programs.filter((p) => p.type === "mobile");
+  const sns = marketing.filter((m) => m.category === "sns");
+  const blogs = marketing.filter((m) => m.category === "blog");
+
   return (
     <>
       {/* ---------------- Hero ---------------- */}
@@ -65,23 +73,18 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* 컴퓨터 웹프로그램 / 모바일앱 구분 */}
         <h3 className="text-sm font-medium text-[--muted]">컴퓨터 웹프로그램</h3>
         <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {programs
-            .filter((p) => p.type === "web")
-            .map((p) => (
-              <HomeProgramCard key={p.slug} p={p} />
-            ))}
+          {webPrograms.map((p) => (
+            <HomeProgramCard key={p.slug} p={p} />
+          ))}
         </div>
 
         <h3 className="mt-8 text-sm font-medium text-[--muted]">모바일앱</h3>
         <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {programs
-            .filter((p) => p.type === "mobile")
-            .map((p) => (
-              <HomeProgramCard key={p.slug} p={p} />
-            ))}
+          {mobilePrograms.map((p) => (
+            <HomeProgramCard key={p.slug} p={p} />
+          ))}
         </div>
       </section>
 
@@ -113,7 +116,7 @@ export default function HomePage() {
             <h2 className="text-3xl font-semibold tracking-tight">마케팅</h2>
           </div>
           <Link
-            href="/sns"
+            href="/marketing"
             className="text-sm text-[--muted] transition-colors hover:text-foreground"
           >
             More →
@@ -123,39 +126,51 @@ export default function HomePage() {
         {/* SNS (외부 링크 — 상세페이지 없음) */}
         <h3 className="text-lg font-semibold tracking-tight">SNS</h3>
         <ul className="mt-4 space-y-1.5 text-[--muted]">
-          {snsChannels
-            .filter((c) => ["youtube", "instagram"].includes(c.slug))
-            .map((c) => (
-              <li key={c.slug}>
-                {c.externalUrl ? (
-                  <a
-                    href={c.externalUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-                  >
-                    <span className="text-[--accent]">·</span>
-                    {c.name}
-                  </a>
-                ) : (
-                  <span className="inline-flex items-center gap-2">
-                    <span className="text-[--accent]">·</span>
-                    {c.name}
-                  </span>
-                )}
-              </li>
-            ))}
+          {sns.map((c) => (
+            <li key={c.slug}>
+              {c.externalUrl ? (
+                <a
+                  href={c.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+                >
+                  <span className="text-[--accent]">·</span>
+                  {c.name}
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-[--accent]">·</span>
+                  {c.name}
+                </span>
+              )}
+            </li>
+          ))}
         </ul>
 
         {/* Blog (외부 링크 — 상세페이지 없음) */}
         <h3 className="mt-12 text-lg font-semibold tracking-tight">Blog</h3>
         <ul className="mt-4 space-y-1.5 text-[--muted]">
-          <li>
-            <span className="inline-flex items-center gap-2">
-              <span className="text-[--accent]">·</span>
-              CozyBuilder Lab
-            </span>
-          </li>
+          {blogs.map((b) => (
+            <li key={b.slug}>
+              {b.externalUrl ? (
+                <a
+                  href={b.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+                >
+                  <span className="text-[--accent]">·</span>
+                  {b.name}
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-2">
+                  <span className="text-[--accent]">·</span>
+                  {b.name}
+                </span>
+              )}
+            </li>
+          ))}
         </ul>
       </section>
     </>

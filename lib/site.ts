@@ -21,7 +21,7 @@ export const mainNav: NavItem[] = [
   { label: "About", href: "/about" },
   { label: "Programs", href: "/programs" },
   { label: "Product", href: "/product" },
-  { label: "Marketing", href: "/sns" },
+  { label: "Marketing", href: "/marketing" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -54,6 +54,8 @@ export type Program = {
 // 관리자 등록 시 products 배열에 항목을 추가하면 카드/상세가 자동 생성된다.
 export type ProductCtaType = "buy" | "contact";
 
+export type ProductCategory = "website" | "ebook";
+
 export type Product = {
   slug: string;
   name: string;
@@ -64,6 +66,8 @@ export type Product = {
   longDescription?: string; // 자세한 설명 (긴 텍스트)
   price?: string; // 가격 (텍스트, 예: "₩50,000" / "문의")
   cta: ProductCtaType; // 구매하기(buy) / 문의하기(contact)
+  ctaUrl?: string; // CTA 링크 (없으면 /contact)
+  category?: ProductCategory; // website | ebook
 };
 
 // 등록형: 관리자 페이지에서 채워질 예정. (현재는 검증용 샘플 1개)
@@ -83,6 +87,7 @@ export const products: Product[] = [
       "이 전자책은 코지빌더가 AI와 함께 새로운 일을 시작하며 기록한 과정과 생각을 담은 샘플 상품입니다. 실제 출간 전까지는 예시 데이터로 사용합니다.",
     price: "₩9,900",
     cta: "buy",
+    category: "ebook",
   },
 ];
 
