@@ -29,19 +29,19 @@ export default function StringListField({
             value={v}
             onChange={(e) => update(i, e.target.value)}
             placeholder={placeholder}
-            className="input"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-[--muted] outline-none transition-colors hover:bg-white/10 focus:border-white/25"
           />
           <button
             type="button"
             onClick={() => remove(i)}
-            className="btn btn-ghost px-3"
+            className="shrink-0 rounded-xl border border-white/10 bg-white/[0.08] px-3 text-[--muted] transition-colors hover:bg-red-500/20 hover:text-red-300"
             aria-label="삭제"
           >
             −
           </button>
         </div>
       ))}
-      <button type="button" onClick={add} className="text-sm text-[--accent]">
+      <button type="button" onClick={add} className="text-sm text-[--muted] hover:text-foreground">
         + 추가
       </button>
     </div>

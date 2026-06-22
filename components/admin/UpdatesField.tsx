@@ -38,25 +38,25 @@ export default function UpdatesField({
             value={u.date}
             onChange={(e) => update(i, "date", e.target.value)}
             placeholder="2026-06-22"
-            className="input max-w-[160px]"
+            className="w-full max-w-[160px] rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-[--muted] outline-none transition-colors hover:bg-white/10 focus:border-white/25"
           />
           <input
             value={u.text}
             onChange={(e) => update(i, "text", e.target.value)}
             placeholder="업데이트 내용"
-            className="input"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-[--muted] outline-none transition-colors hover:bg-white/10 focus:border-white/25"
           />
           <button
             type="button"
             onClick={() => remove(i)}
-            className="btn btn-ghost px-3"
+            className="shrink-0 rounded-xl border border-white/10 bg-white/[0.08] px-3 text-[--muted] transition-colors hover:bg-red-500/20 hover:text-red-300"
             aria-label="삭제"
           >
             −
           </button>
         </div>
       ))}
-      <button type="button" onClick={add} className="text-sm text-[--accent]">
+      <button type="button" onClick={add} className="text-sm text-[--muted] hover:text-foreground">
         + 업데이트 추가
       </button>
     </div>
