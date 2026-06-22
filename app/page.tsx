@@ -56,12 +56,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ---------------- Product ---------------- */}
+      {/* ---------------- Programs ---------------- */}
       <section className="container-page py-16">
         <div className="mb-10 flex items-end justify-between">
           <div>
-            <p className="eyebrow mb-3">Product</p>
-            <h2 className="text-3xl font-semibold tracking-tight">제품</h2>
+            <p className="eyebrow mb-3">Programs</p>
+            <h2 className="text-3xl font-semibold tracking-tight">프로그램</h2>
           </div>
           <Link
             href="/programs"
@@ -71,12 +71,8 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* Programs (카드) — 컴퓨터 웹프로그램 / 모바일앱 구분 */}
-        <h3 className="text-lg font-semibold tracking-tight">Programs</h3>
-
-        <h4 className="mt-6 text-sm font-medium text-[--muted]">
-          컴퓨터 웹프로그램
-        </h4>
+        {/* 컴퓨터 웹프로그램 / 모바일앱 구분 */}
+        <h3 className="text-sm font-medium text-[--muted]">컴퓨터 웹프로그램</h3>
         <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {programs
             .filter((p) => p.type === "web")
@@ -85,7 +81,7 @@ export default function HomePage() {
             ))}
         </div>
 
-        <h4 className="mt-8 text-sm font-medium text-[--muted]">모바일앱</h4>
+        <h3 className="mt-8 text-sm font-medium text-[--muted]">모바일앱</h3>
         <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {programs
             .filter((p) => p.type === "mobile")
@@ -93,11 +89,25 @@ export default function HomePage() {
               <HomeProgramCard key={p.slug} p={p} />
             ))}
         </div>
+      </section>
 
-        {/* Website Development (텍스트) */}
-        <h3 className="mt-12 text-lg font-semibold tracking-tight">
-          Website Development
-        </h3>
+      {/* ---------------- Product ---------------- */}
+      <section className="container-page py-16">
+        <div className="mb-10 flex items-end justify-between">
+          <div>
+            <p className="eyebrow mb-3">Product</p>
+            <h2 className="text-3xl font-semibold tracking-tight">제품</h2>
+          </div>
+          <Link
+            href="/product"
+            className="text-sm text-[--muted] transition-colors hover:text-foreground"
+          >
+            More →
+          </Link>
+        </div>
+
+        {/* 홈페이지 제작 (텍스트) */}
+        <h3 className="text-lg font-semibold tracking-tight">홈페이지 제작</h3>
         <ul className="mt-4 space-y-1.5 text-[--muted]">
           {websiteServices.map((s) => (
             <li key={s} className="flex items-center gap-2">
@@ -107,8 +117,8 @@ export default function HomePage() {
           ))}
         </ul>
 
-        {/* Books (텍스트) */}
-        <h3 className="mt-12 text-lg font-semibold tracking-tight">Books</h3>
+        {/* 전자책 (텍스트) */}
+        <h3 className="mt-12 text-lg font-semibold tracking-tight">전자책</h3>
         <ul className="mt-4 space-y-1.5 text-[--muted]">
           {bookItems.map((b) => (
             <li key={b} className="flex items-center gap-2">
