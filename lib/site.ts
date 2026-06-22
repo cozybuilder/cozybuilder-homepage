@@ -7,6 +7,11 @@ export const siteConfig = {
   email: "equs0223@gmail.com",
   contactEmail: "cozybuilder.studio@gmail.com",
   foundedYear: 2026,
+  // 사업자 정보
+  companyName: "코지빌더 연구소 (CozyBuilder Lab)",
+  representative: "서영준",
+  businessNumber: "221-42-01950",
+  commerceReportNumber: "", // 통신판매업신고 (아직 비움)
 };
 
 export type NavItem = { label: string; href: string };

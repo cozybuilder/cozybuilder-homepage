@@ -1,61 +1,55 @@
 import Link from "next/link";
-import { mainNav, siteConfig } from "@/lib/site";
+import { siteConfig } from "@/lib/site";
+
+const policyLinks = [
+  { label: "소개", href: "/about" },
+  { label: "이용약관", href: "/terms" },
+  { label: "개인정보처리방침", href: "/privacy" },
+  { label: "청소년보호정책", href: "/youth-policy" },
+  { label: "제휴문의", href: "/contact" },
+];
 
 export default function Footer() {
   return (
     <footer className="mt-24 border-t border-[--border] bg-[--surface]/40">
       <div className="container-page py-14">
-        <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
-          <div className="max-w-sm">
-            <div className="text-sm font-semibold tracking-[0.18em]">
-              {siteConfig.name}
-            </div>
-            <p className="mt-3 text-sm text-[--muted]">{siteConfig.tagline}</p>
+        {/* 상단: 회사/사업자 정보 */}
+        <div className="text-sm text-[--muted]">
+          <p className="font-semibold text-foreground">{siteConfig.companyName}</p>
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6 sm:gap-y-2">
+            <span>대표이사 : {siteConfig.representative}</span>
+            <span>사업자등록번호 : {siteConfig.businessNumber}</span>
+            <span>통신판매업신고 : {siteConfig.commerceReportNumber}</span>
+            <span>
+              이메일 :{" "}
+              <a
+                href={`mailto:${siteConfig.contactEmail}`}
+                className="transition-colors hover:text-foreground"
+              >
+                {siteConfig.contactEmail}
+              </a>
+            </span>
           </div>
+        </div>
 
-          <nav className="grid grid-cols-2 gap-x-12 gap-y-2 sm:grid-cols-3">
-            {mainNav.map((item) => (
+        {/* 구분선 */}
+        <div className="my-8 border-t border-[--border]" />
+
+        {/* 하단: 좌측 Copyright / 우측 정책 링크 */}
+        <div className="flex flex-col gap-4 text-sm text-[--muted-2] md:flex-row md:items-center md:justify-between">
+          <p>Copyright © CozyBuilder. All Rights Reserved.</p>
+
+          <nav className="flex flex-wrap gap-x-5 gap-y-2">
+            {policyLinks.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="text-sm text-[--muted] transition-colors hover:text-foreground"
+                className="transition-colors hover:text-foreground"
               >
                 {item.label}
               </Link>
             ))}
           </nav>
-        </div>
-
-        <div className="mt-12 flex flex-col gap-3 border-t border-[--border] pt-8 text-sm text-[--muted-2]">
-          {/* 정책 링크 */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-            <Link
-              href="/privacy"
-              className="transition-colors hover:text-foreground"
-            >
-              개인정보처리방침
-            </Link>
-            <span aria-hidden>·</span>
-            <Link
-              href="/terms"
-              className="transition-colors hover:text-foreground"
-            >
-              이용약관
-            </Link>
-            <span aria-hidden>·</span>
-            <Link
-              href="/contact"
-              className="transition-colors hover:text-foreground"
-            >
-              문의
-            </Link>
-          </div>
-
-          <p>Built with ❤️ &nbsp;·&nbsp; Cozy • Cobi • Clo</p>
-          <p>
-            © {siteConfig.foundedYear} CozyBuilder. All rights reserved. &nbsp;·&nbsp;{" "}
-            {siteConfig.tagline}
-          </p>
         </div>
       </div>
     </footer>
