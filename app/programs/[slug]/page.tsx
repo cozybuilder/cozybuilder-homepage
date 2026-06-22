@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProgram } from "@/lib/content";
+import { findAppByProgramSlug } from "@/lib/apps";
 import { ImagePlaceholder, Placeholder } from "@/components/ui";
 import BackButton from "@/components/BackButton";
 import ProgramAction from "@/components/ProgramAction";
@@ -48,6 +50,8 @@ export default async function ProgramDetailPage({
   const program = await getProgram(slug);
   if (!program) notFound();
 
+  const webApp = program.type === "web" ? findAppByProgramSlug(program.slug) : null;
+
   return (
     <div className="container-page py-12">
       <BackButton href="/programs" label="프로그램 목록" />
@@ -73,7 +77,17 @@ export default async function ProgramDetailPage({
               <StoreButton label="App Store" url={program.appStoreUrl} />
             </div>
           ) : (
-            <ProgramAction slug={program.slug} appUrl={program.appUrl} />
+            <div className="flex flex-col items-center gap-3">
+              {webApp && (
+                <Link
+                  href={`/apps/${webApp.key}`}
+                  className="btn btn-accent min-w-[140px]"
+                >
+                  웹에서 사용하기
+                </Link>
+              )}
+              <ProgramAction slug={program.slug} appUrl={program.appUrl} />
+            </div>
           )}
         </div>
       </section>
