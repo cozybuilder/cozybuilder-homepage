@@ -28,8 +28,10 @@ export default function ImageField({
     setErr(null);
     try {
       setUrl(await uploadImage(file, folder));
-    } catch {
-      setErr("업로드 실패 — 고급 옵션에서 URL을 직접 입력하세요.");
+    } catch (e) {
+      console.error("[ImageField] upload error:", e);
+      const msg = e instanceof Error ? e.message : String(e);
+      setErr(`업로드 실패: ${msg} — 고급 옵션에서 URL을 직접 입력할 수도 있습니다.`);
     } finally {
       setBusy(false);
     }

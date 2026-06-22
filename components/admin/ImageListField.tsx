@@ -29,8 +29,10 @@ export default function ImageListField({
       const uploaded: string[] = [];
       for (const f of files) uploaded.push(await uploadImage(f, folder));
       setUrls((prev) => [...prev, ...uploaded]);
-    } catch {
-      setErr("업로드 실패 — 고급 옵션에서 URL을 직접 추가하세요.");
+    } catch (e) {
+      console.error("[ImageListField] upload error:", e);
+      const msg = e instanceof Error ? e.message : String(e);
+      setErr(`업로드 실패: ${msg} — 고급 옵션에서 URL을 직접 추가할 수도 있습니다.`);
     } finally {
       setBusy(false);
     }
