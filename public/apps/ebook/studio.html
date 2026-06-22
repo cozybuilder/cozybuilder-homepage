@@ -58,6 +58,8 @@
       .btn.primary{ background:linear-gradient(160deg,#7c75f5,#5b54e6); color:#fff; border-color:#5048d6; box-shadow:0 2px 8px rgba(91,84,230,.32); }
       .btn.primary:hover{ background:linear-gradient(160deg,#857ef7,#5d56e8); }
       .btn.split{ padding-right:9px; }
+      .btn.ghost{ background:transparent; border-color:transparent; color:var(--muted); box-shadow:none; }
+      .btn.ghost:hover{ background:var(--sunken); color:var(--ink); }
       .btn.ai{ background:var(--accent-soft); color:var(--accent-ink); border-color:#dfe1fb; box-shadow:none; }
       .btn.ai:hover{ background:#e6e8fc; }
       .chip{ padding:6px 10px; font-size:12px; }
@@ -70,10 +72,34 @@
       .pane-scroll{ flex:1; min-height:0; overflow-y:auto; padding:0 12px 14px; }
 
       /* 좌측 NAV */
-      .proj-card{ display:flex; gap:10px; align-items:center; padding:10px; border:1px solid var(--line); border-radius:12px; background:var(--sunken); margin:0 4px 12px; }
+      .proj-card{ display:flex; gap:10px; align-items:center; width:100%; text-align:left; font:inherit; color:inherit; padding:10px; border:1px solid var(--line); border-radius:12px; background:var(--sunken); margin:0 4px 12px; cursor:pointer; transition:border-color .15s ease, background .15s ease, box-shadow .15s ease; }
+      .proj-card:hover{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
       .proj-card .thumb{ width:40px; height:52px; border-radius:6px; background:linear-gradient(160deg,#a9b6e8,#6e7fd6); flex:none; box-shadow:0 1px 3px rgba(0,0,0,.12); }
       .proj-card .nm{ font-size:13px; font-weight:700; line-height:1.3; }
       .proj-card .meta{ font-size:11px; color:var(--muted); margin-top:3px; }
+      .proj-card .pc-hint{ font-size:10.5px; font-weight:700; color:var(--accent-ink); margin-top:5px; }
+      .proj-card.empty{ background:transparent; border-style:dashed; }
+      .proj-card.empty .thumb{ background:var(--line); box-shadow:none; }
+      .proj-card.empty .nm{ color:var(--ink-2); font-weight:700; }
+      /* 책 미지정 시 잠긴 메뉴 */
+      .navitem.disabled{ opacity:.4; cursor:not-allowed; pointer-events:auto; }
+      .toast{ position:fixed; left:50%; bottom:34px; transform:translateX(-50%); z-index:300; background:var(--ink); color:#fff; font-size:13px; font-weight:600; padding:11px 18px; border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,.22); pointer-events:none; opacity:0; transition:opacity .18s ease; }
+      .toast.show{ opacity:1; }
+      /* 책 선택 모달 */
+      .modal-back{ position:fixed; inset:0; z-index:250; background:rgba(20,22,30,.42); display:flex; align-items:center; justify-content:center; padding:24px; }
+      .modal{ position:relative; width:340px; max-width:100%; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:24px; box-shadow:0 18px 48px rgba(0,0,0,.24); }
+      .modal-x{ position:absolute; top:14px; right:14px; width:28px; height:28px; border:0; background:transparent; border-radius:8px; font-size:20px; line-height:1; color:var(--muted); cursor:pointer; }
+      .modal-x:hover{ background:var(--sunken); color:var(--ink); }
+      .modal-h{ font-size:16px; font-weight:700; }
+      .modal-desc{ font-size:13px; color:var(--muted); line-height:1.6; margin:8px 0 18px; }
+      .modal-actions{ display:flex; flex-direction:column; gap:10px; }
+      .btn.block{ width:100%; justify-content:center; }
+      .book-row{ display:flex; gap:10px; align-items:center; width:100%; text-align:left; font:inherit; color:inherit; padding:11px; border:1px solid var(--line); border-radius:12px; background:var(--sunken); cursor:pointer; }
+      .book-row:hover{ border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft); }
+      .book-row .thumb{ width:34px; height:44px; border-radius:6px; background:linear-gradient(160deg,#a9b6e8,#6e7fd6); flex:none; }
+      .book-row .nm{ font-size:13px; font-weight:700; }
+      .book-row .meta{ font-size:11px; color:var(--muted); margin-top:2px; }
+      .modal-note{ font-size:11px; color:var(--faint); line-height:1.6; margin:14px 0 16px; }
       .navlist{ display:flex; flex-direction:column; gap:2px; }
       .navitem{ display:flex; align-items:center; gap:10px; padding:9px 11px; border-radius:var(--r-ctl); color:var(--ink-2); cursor:pointer; font-size:13px; font-weight:600; transition:background .12s; }
       .navitem svg{ width:17px; height:17px; stroke:currentColor; opacity:.8; }
@@ -204,10 +230,58 @@
       .pg-result-t{ font-size:12.5px; font-weight:700; color:var(--ink-2); }
       .pg-pre{ margin:0; background:#171a21; color:#E6E8EE; font-family:'SF Mono',ui-monospace,Consolas,monospace; font-size:12px; line-height:1.65; padding:16px 18px; max-height:46vh; overflow:auto; white-space:pre-wrap; word-break:break-word; }
 
+      /* 원고 불러오기 — 챕터 목록/빈 상태/본문 렌더 */
+      .tree-empty{ font-size:12px; color:var(--faint); padding:12px 10px; line-height:1.6; }
+      #chapter-list .chap{ display:flex; align-items:center; gap:9px; padding:8px 10px 8px 14px; border-radius:var(--r-ctl); cursor:pointer; font-size:12.5px; color:var(--ink-2); }
+      #chapter-list .chap:hover{ background:var(--sunken); }
+      #chapter-list .chap .no{ flex:none; min-width:18px; font-size:11px; font-weight:700; color:var(--faint); font-variant-numeric:tabular-nums; }
+      #chapter-list .chap.on{ background:var(--accent-soft); color:var(--accent-ink); font-weight:600; }
+      #chapter-list .chap.on .no{ color:var(--accent-ink); }
+      .empty-doc{ height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; text-align:center; color:var(--muted); padding:40px; }
+      .empty-doc .ed-ic{ color:var(--faint); }
+      .empty-doc .ed-t{ font-size:16px; font-weight:700; color:var(--ink-2); }
+      .empty-doc .ed-d{ font-size:13px; line-height:1.7; margin:0; }
+      .empty-doc .btn{ margin-top:6px; }
+      .page h4{ font-size:14px; font-weight:700; margin:18px 0 8px; }
+      .page blockquote{ border-left:3px solid var(--line); margin:14px 0; padding:4px 0 4px 14px; color:var(--muted); font-style:italic; }
+      .page hr{ border:0; border-top:1px solid var(--line); margin:20px 0; }
+      .page .doc-block{ border:1px solid var(--line); border-radius:10px; margin:14px 0; overflow:hidden; box-shadow:var(--sh-card); }
+      .page .doc-block-h{ font-size:10.5px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--accent-ink); background:var(--accent-soft); padding:7px 13px; }
+      .page .doc-block-b{ font-size:13px; line-height:1.65; color:var(--ink-2); padding:11px 14px; white-space:pre-wrap; word-break:break-word; }
+      .page .doc-tag{ background:var(--accent-soft); color:var(--accent-ink); border-radius:6px; padding:0 6px; font-size:.92em; }
+      .page .doc-muted{ color:var(--muted); }
+      .estatus.empty .dot{ background:var(--faint); }
+
       .hide{ display:none !important; }
     </style>
   </head>
   <body>
+    <input type="file" id="md-file" accept=".md,.markdown,text/markdown" style="display:none" />
+    <div class="toast" id="toast"></div>
+
+    <!-- 작업할 책 선택 (UI Shell — DB/서버/영구저장 미연결) -->
+    <div class="modal-back hide" id="book-modal">
+      <div class="modal" role="dialog" aria-modal="true" aria-label="작업할 책 선택">
+        <button class="modal-x" id="bm-close" aria-label="닫기" type="button">&times;</button>
+        <div class="modal-h">작업할 책 선택</div>
+        <div id="bm-choice">
+          <p class="modal-desc">새 전자책을 만들거나 이전 작업을 불러오세요.</p>
+          <div class="modal-actions">
+            <button class="btn primary block" id="bm-new" type="button">새 책 만들기</button>
+            <button class="btn block" id="bm-open" type="button">내 책 불러오기</button>
+          </div>
+        </div>
+        <div id="bm-list" class="hide">
+          <p class="modal-desc">불러올 책을 선택하세요.</p>
+          <button class="book-row" id="bm-sample" type="button">
+            <div class="thumb"></div>
+            <div class="pc-text"><div class="nm">나의 첫 번째 전자책</div><div class="meta">마지막 작업: 방금 전</div></div>
+          </button>
+          <div class="modal-note">저장된 책 목록 연결은 다음 단계에서 진행됩니다.</div>
+          <button class="btn ghost" id="bm-back" type="button">← 뒤로</button>
+        </div>
+      </div>
+    </div>
     <div class="studio">
       <!-- ───────── Header ───────── -->
       <header class="topbar">
@@ -216,13 +290,7 @@
         </span>전자책 스튜디오</div>
 
         <div class="tb-group">
-          <button class="btn primary split">+ 새 프로젝트
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-          </button>
-        </div>
-        <div class="tb-sep"></div>
-        <div class="tb-group">
-          <button class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>가져오기</button>
+          <button class="iconbtn" id="btn-import"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M8 11l4 4 4-4"/><path d="M4 19h16"/></svg>가져오기</button>
           <button class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h7"/><path d="M8 14h8"/></svg>저장</button>
           <button class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M4 19h16"/></svg>내보내기</button>
         </div>
@@ -240,9 +308,9 @@
           <button class="iconbtn"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.4-2.3.9a7 7 0 0 0-1.7-1L14.5 2h-5l-.4 2.5a7 7 0 0 0-1.7 1l-2.3-.9-2 3.4 2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.4 2.3-.9a7 7 0 0 0 1.7 1L9.5 22h5l.4-2.5a7 7 0 0 0 1.7-1l2.3.9 2-3.4-2-1.5c.07-.33.1-.66.1-1z"/></svg>설정</button>
         </div>
         <div class="tb-sep"></div>
-        <button class="btn primary">
+        <button class="btn primary" id="btn-save">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11l3 3v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M8 4v5h7"/></svg>
-          프로젝트 저장
+          책 저장
         </button>
       </header>
 
@@ -252,10 +320,14 @@
         <aside class="pane">
           <div class="pane-h"><span class="ttl">워크플로우</span></div>
           <div class="pane-scroll">
-            <div class="proj-card">
+            <button type="button" class="proj-card empty" id="proj-card">
               <div class="thumb"></div>
-              <div><div class="nm">나의 첫 번째 전자책</div><div class="meta">최종 수정: 방금 전</div></div>
-            </div>
+              <div class="pc-text">
+                <div class="nm">책을 선택해주세요</div>
+                <div class="meta">새 책을 만들거나 이전 작업을 불러오세요</div>
+                <div class="pc-hint">클릭해서 시작 →</div>
+              </div>
+            </button>
             <nav class="wf">
               <!-- 원고 만들기 -->
               <div class="wf-group">
@@ -268,25 +340,24 @@
               <div class="wf-group">
                 <div class="wf-head">책 만들기</div>
                 <div class="wf-items">
-                  <div class="navitem sub">프로젝트</div>
-                  <div class="navitem sub on">원고</div>
-                  <div class="navitem sub">이미지</div>
-                  <div class="navitem sub">디자인</div>
+                  <div class="navitem sub" data-lock>원고</div>
+                  <div class="navitem sub" data-lock>이미지</div>
+                  <div class="navitem sub" data-lock>디자인</div>
                   <div class="wf-cap">테마 · 목차 · 레이아웃</div>
-                  <div class="navitem sub">표지</div>
-                  <div class="navitem sub">출판 정보</div>
+                  <div class="navitem sub" data-lock>표지</div>
+                  <div class="navitem sub" data-lock>출판 정보</div>
                 </div>
               </div>
               <!-- 출력하기 -->
               <div class="wf-group">
                 <div class="wf-head">출력하기</div>
                 <div class="wf-items">
-                  <div class="navitem sub">출력 설정</div>
-                  <div class="navitem sub">미리보기</div>
-                  <div class="navitem sub">PDF</div>
-                  <div class="navitem sub">DOCX</div>
-                  <div class="navitem sub">EPUB</div>
-                  <div class="navitem sub">크몽 샘플</div>
+                  <div class="navitem sub" data-lock>출력 설정</div>
+                  <div class="navitem sub" data-lock>미리보기</div>
+                  <div class="navitem sub" data-lock>PDF</div>
+                  <div class="navitem sub" data-lock>DOCX</div>
+                  <div class="navitem sub" data-lock>EPUB</div>
+                  <div class="navitem sub" data-lock>크몽 샘플</div>
                 </div>
               </div>
             </nav>
@@ -316,36 +387,7 @@
             <div class="tree" id="tree">
               <div class="tnode"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6"/></svg></span>표지</div>
               <div class="tnode"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14M5 12h14M5 18h9"/></svg></span>목차</div>
-
-              <div class="tnode tgroup"><span class="ti chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>01. 시작하며</div>
-              <div class="tchildren">
-                <div class="tchild on"><span class="no">1.1</span>들어가며</div>
-                <div class="tchild"><span class="no">1.2</span>이 책의 목적</div>
-                <div class="tchild"><span class="no">1.3</span>이 책의 구성</div>
-              </div>
-
-              <div class="tnode tgroup collapsed"><span class="ti chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>02. 기본 개념</div>
-              <div class="tchildren">
-                <div class="tchild"><span class="no">2.1</span>개념 정의</div>
-                <div class="tchild"><span class="no">2.2</span>핵심 원리</div>
-                <div class="tchild"><span class="no">2.3</span>관련 사례</div>
-              </div>
-
-              <div class="tnode tgroup"><span class="ti chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>03. 실전 활용</div>
-              <div class="tchildren">
-                <div class="tchild"><span class="no">3.1</span>준비하기</div>
-                <div class="tchild"><span class="no">3.2</span>실행 단계</div>
-                <div class="tchild"><span class="no">3.3</span>주의 사항</div>
-              </div>
-
-              <div class="tnode tgroup"><span class="ti chev"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>04. 마무리</div>
-              <div class="tchildren">
-                <div class="tchild"><span class="no">4.1</span>요약</div>
-                <div class="tchild"><span class="no">4.2</span>다음 단계</div>
-              </div>
-
-              <div class="tnode"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v4h4"/></svg></span>참고 자료</div>
-              <div class="tnode"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"/><path d="M8 5v14"/></svg></span>부록</div>
+              <div id="chapter-list"><div class="tree-empty">원고를 불러오면 챕터가 여기에 표시됩니다.</div></div>
             </div>
           </div>
         </aside>
@@ -372,40 +414,22 @@
           </div>
 
           <div class="ecanvas">
-            <article class="page">
-              <h1>1.1 들어가며</h1>
-              <p>이 챕터에서는 이 책의 시작점과 배경을 설명합니다.</p>
-              <p>독자가 이 책을 읽기 전에 알아야 할 핵심 개념을 소개합니다.</p>
-
-              <div class="callout info">
-                <div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>핵심 포인트</div>
-                <ul>
-                  <li>이 책이 다루는 주요 내용</li>
-                  <li>누구를 위한 책인가</li>
-                  <li>어떻게 활용할 수 있는가</li>
-                </ul>
+            <!-- 원고 없음(기본) -->
+            <div class="empty-doc" id="editor-empty">
+              <div class="ed-ic">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v4h4"/><path d="M9 13h6M9 17h4"/></svg>
               </div>
-
-              <h3>핵심 개념 요약</h3>
-              <table class="doc">
-                <thead><tr><th style="width:160px">개념</th><th>설명</th></tr></thead>
-                <tbody>
-                  <tr><td>개념 A</td><td>개념 A에 대한 설명이 들어갑니다.</td></tr>
-                  <tr><td>개념 B</td><td>개념 B에 대한 설명이 들어갑니다.</td></tr>
-                  <tr><td>개념 C</td><td>개념 C에 대한 설명이 들어갑니다.</td></tr>
-                </tbody>
-              </table>
-
-              <div class="callout tip">
-                <div class="ch"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 21h4"/><path d="M12 3a6 6 0 0 0-4 10.5c.6.6 1 1.3 1 2.5h6c0-1.2.4-1.9 1-2.5A6 6 0 0 0 12 3z"/></svg>TIP</div>
-                이 부분은 독자가 꼭 기억해야 할 중요한 팁입니다.
-              </div>
-            </article>
+              <div class="ed-t">아직 원고가 없습니다</div>
+              <p class="ed-d">AI로 만든 Markdown 원고(.md)를 불러오면<br />챕터와 본문이 여기에 표시됩니다.</p>
+              <button class="btn primary" id="md-load-btn">Markdown 불러오기</button>
+            </div>
+            <!-- 원고 불러옴(동적) -->
+            <article class="page hide" id="editor-doc"></article>
           </div>
 
-          <div class="estatus">
-            <span class="md"><span class="dot"></span>Markdown</span>
-            <span class="right">글자 수 1,248 · 단어 수 320 · 읽기 시간 4분</span>
+          <div class="estatus empty">
+            <span class="md"><span class="dot"></span><span id="doc-state">원고 없음</span></span>
+            <span class="right" id="doc-counts">불러온 원고가 없습니다</span>
           </div>
         </section>
 
@@ -656,6 +680,235 @@
         document.querySelectorAll('.check').forEach(function (c) {
           c.addEventListener('click', function () { c.querySelector('.box').style.background = c.querySelector('.box').style.background ? '' : 'var(--accent)'; c.querySelector('.box').style.borderColor = c.querySelector('.box').style.background ? 'var(--accent)' : ''; });
         });
+      })();
+    </script>
+
+    <script>
+      // ── 원고 불러오기(브라우저 로컬 FileReader — 서버/DB/엔진 미사용) ──
+      (function () {
+        var fileInput = document.getElementById('md-file');
+        var editorEmpty = document.getElementById('editor-empty');
+        var editorDoc = document.getElementById('editor-doc');
+        var chapterList = document.getElementById('chapter-list');
+        var estatus = document.querySelector('.estatus');
+        var docState = document.getElementById('doc-state');
+        var docCounts = document.getElementById('doc-counts');
+        var projCard = document.getElementById('proj-card');
+        var toastEl = document.getElementById('toast');
+        var book = null;          // 불러온 원고
+        var currentBook = null;   // 현재 작업 대상 책(프로젝트) — 없으면 원고 불러오기 불가
+
+        var toastTimer = null;
+        function toast(msg) {
+          if (!toastEl) return;
+          toastEl.textContent = msg;
+          toastEl.classList.add('show');
+          if (toastTimer) clearTimeout(toastTimer);
+          toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 2600);
+        }
+
+        var LOCK_MSG = '먼저 새 책을 만들거나 내 책을 불러와주세요.';
+
+        // 현재 책 상태에 따라 좌측 워크플로우 카드 갱신
+        function renderProjCard() {
+          if (!projCard) return;
+          if (currentBook) {
+            projCard.classList.remove('empty');
+            projCard.innerHTML = '<div class="thumb"></div><div class="pc-text"><div class="nm">' + esc(currentBook.name) +
+              '</div><div class="meta">최종 수정: ' + esc(currentBook.modified || '방금 전') + '</div></div>';
+          } else {
+            projCard.classList.add('empty');
+            projCard.innerHTML = '<div class="thumb"></div><div class="pc-text"><div class="nm">책을 선택해주세요</div>' +
+              '<div class="meta">새 책을 만들거나 이전 작업을 불러오세요</div><div class="pc-hint">클릭해서 시작 →</div></div>';
+          }
+        }
+
+        // 책 미지정 시 책 만들기/출력하기 하위 메뉴 잠금([data-lock]만 대상, 프롬프트 생성기 제외)
+        function applyMenuLock() {
+          document.querySelectorAll('.wf .navitem[data-lock]').forEach(function (el) {
+            el.classList.toggle('disabled', !currentBook);
+          });
+        }
+        // 잠긴 메뉴 클릭 차단(캡처 단계에서 뷰 전환 핸들러보다 먼저 가로챔)
+        var wf = document.querySelector('.wf');
+        if (wf) wf.addEventListener('click', function (e) {
+          var item = e.target.closest ? e.target.closest('.navitem') : null;
+          if (item && item.classList.contains('disabled')) {
+            e.stopImmediatePropagation(); e.preventDefault();
+            toast(LOCK_MSG);
+          }
+        }, true);
+
+        // ── 작업할 책 선택 모달 ──
+        var modal = document.getElementById('book-modal');
+        var bmChoice = document.getElementById('bm-choice');
+        var bmList = document.getElementById('bm-list');
+        function openModal() {
+          if (!modal) return;
+          if (bmChoice) bmChoice.classList.remove('hide');
+          if (bmList) bmList.classList.add('hide');
+          modal.classList.remove('hide');
+        }
+        function closeModal() { if (modal) modal.classList.add('hide'); }
+
+        function setCurrentBook(name, toastMsg) {
+          currentBook = { name: name || '나의 첫 번째 전자책', modified: '방금 전' };
+          renderProjCard();
+          applyMenuLock();
+          closeModal();
+          if (toastMsg) toast(toastMsg);
+        }
+
+        if (projCard) projCard.addEventListener('click', openModal);
+        var bmClose = document.getElementById('bm-close');
+        if (bmClose) bmClose.addEventListener('click', closeModal);
+        if (modal) modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+        var bmNew = document.getElementById('bm-new');
+        if (bmNew) bmNew.addEventListener('click', function () { setCurrentBook('나의 첫 번째 전자책', '새 책이 준비되었습니다.'); });
+        var bmOpen = document.getElementById('bm-open');
+        if (bmOpen) bmOpen.addEventListener('click', function () {
+          if (bmChoice) bmChoice.classList.add('hide');
+          if (bmList) bmList.classList.remove('hide');
+        });
+        var bmBack = document.getElementById('bm-back');
+        if (bmBack) bmBack.addEventListener('click', function () {
+          if (bmList) bmList.classList.add('hide');
+          if (bmChoice) bmChoice.classList.remove('hide');
+        });
+        var bmSample = document.getElementById('bm-sample');
+        if (bmSample) bmSample.addEventListener('click', function () { setCurrentBook('나의 첫 번째 전자책', '책을 불러왔습니다.'); });
+
+        // 책 저장(셸 — 영구 저장 없음)
+        var saveBtn = document.getElementById('btn-save');
+        if (saveBtn) saveBtn.addEventListener('click', function () {
+          if (!currentBook) { toast('먼저 저장할 책을 선택해주세요.'); return; }
+          toast('책이 저장되었습니다.');
+        });
+
+        renderProjCard(); // 초기 상태: 현재 책 없음 → "책을 선택해주세요"
+        applyMenuLock();  // 초기 상태: 하위 메뉴 잠금
+
+        function openPicker() {
+          if (!currentBook) { toast(LOCK_MSG); return; }
+          if (fileInput) fileInput.click();
+        }
+        ['btn-import', 'md-load-btn'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.addEventListener('click', openPicker);
+        });
+        if (fileInput) fileInput.addEventListener('change', function () {
+          var f = fileInput.files && fileInput.files[0];
+          if (!f) return;
+          var r = new FileReader();
+          r.onload = function () { loadManuscript(String(r.result || ''), f.name); };
+          r.onerror = function () { docState.textContent = '원고 읽기 실패'; };
+          r.readAsText(f, 'utf-8');
+          fileInput.value = ''; // 같은 파일 재선택 허용
+        });
+
+        function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); }
+        function inline(s) {
+          return esc(s)
+            .replace(/==([^=]+?)==/g, '<strong>$1</strong>')
+            .replace(/\[\[tag:\s*([^\]]+?)\s*\]\]/g, '<span class="doc-tag">$1</span>');
+        }
+
+        function parseManuscript(text) {
+          var lines = text.replace(/\r\n/g, '\n').split('\n');
+          var meta = { title: '', subtitle: '', author: '' };
+          var chapters = []; var cur = null; var pre = []; var inMeta = true;
+          var chRe = /^##\s+Chapter\s+(\d+)\.\s*(.*)$/i;
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i]; var t = line.trim();
+            var m = t.match(chRe);
+            if (m) { cur = { num: m[1], title: (m[2] || '').trim(), body: [] }; chapters.push(cur); inMeta = false; continue; }
+            if (inMeta) {
+              if (t.indexOf('# ') === 0 && t.indexOf('## ') !== 0) { meta.title = t.slice(2).trim(); continue; }
+              var kv = t.match(/^([a-zA-Z_-]+)\s*:\s*(.+)$/);
+              if (kv && kv[1].toLowerCase() === 'subtitle') { meta.subtitle = kv[2].trim(); continue; }
+              if (kv && kv[1].toLowerCase() === 'author') { meta.author = kv[2].trim(); continue; }
+              if (t !== '') pre.push(line);
+              continue;
+            }
+            if (cur) cur.body.push(line);
+          }
+          chapters.forEach(function (c) { c.body = c.body.join('\n').trim(); });
+          return { title: meta.title, subtitle: meta.subtitle, author: meta.author, chapters: chapters, preBody: pre.join('\n').trim() };
+        }
+
+        function countText(body) {
+          var chars = body.replace(/\s/g, '').length;
+          var plain = body.replace(/:::[^\n]*/g, ' ').replace(/[#>*=`|_-]/g, ' ');
+          var words = (plain.match(/\S+/g) || []).length;
+          return { chars: chars, words: words };
+        }
+
+        function renderTable(rows) {
+          var cells = rows.map(function (r) { return r.replace(/^\|/, '').replace(/\|$/, '').split('|').map(function (c) { return c.trim(); }); });
+          var body = cells.filter(function (r) { return !r.every(function (c) { return /^:?-{2,}:?$/.test(c) || c === ''; }); });
+          if (!body.length) return '';
+          var head = body[0], rest = body.slice(1);
+          var h = '<table class="doc"><thead><tr>' + head.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
+          rest.forEach(function (r) { h += '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>'; });
+          return h + '</tbody></table>';
+        }
+
+        // 셸 전용 미니 렌더러(엔진 미사용) — 헤딩/문단/강조/인용/구분선/펜스블록/표
+        function renderBody(body) {
+          if (!body) return '<p class="doc-muted">(내용 없음)</p>';
+          var lines = body.split('\n'); var html = ''; var i = 0;
+          while (i < lines.length) {
+            var t = lines[i].trim();
+            if (t === '') { i++; continue; }
+            var fo = t.match(/^:::\s*([a-zA-Z-]+)/);
+            if (fo) { var inner = []; i++; while (i < lines.length && !/^:::\s*$/.test(lines[i].trim())) { inner.push(lines[i]); i++; } i++;
+              html += '<div class="doc-block"><div class="doc-block-h">' + esc(fo[1]) + '</div><div class="doc-block-b">' + esc(inner.join('\n').trim()) + '</div></div>'; continue; }
+            if (/^\|.*\|$/.test(t)) { var rows = []; while (i < lines.length && /^\|.*\|$/.test(lines[i].trim())) { rows.push(lines[i].trim()); i++; } html += renderTable(rows); continue; }
+            var hd = t.match(/^(#{3,6})\s+(.*)$/);
+            if (hd) { var tag = hd[1].length === 3 ? 'h3' : 'h4'; html += '<' + tag + '>' + inline(hd[2]) + '</' + tag + '>'; i++; continue; }
+            if (/^>\s?/.test(t)) { var q = []; while (i < lines.length && /^>\s?/.test(lines[i].trim())) { q.push(lines[i].trim().replace(/^>\s?/, '')); i++; } html += '<blockquote>' + inline(q.join(' ')) + '</blockquote>'; continue; }
+            if (/^(-{3,}|\*{3,}|_{3,})$/.test(t)) { html += '<hr/>'; i++; continue; }
+            var para = []; while (i < lines.length) { var lt = lines[i].trim(); if (lt === '' || /^:::|^\|.*\||^#{3,6}\s|^>\s?|^(-{3,}|\*{3,}|_{3,})$/.test(lt)) break; para.push(lt); i++; }
+            if (para.length) html += '<p>' + inline(para.join(' ')) + '</p>';
+          }
+          return html;
+        }
+
+        function renderDoc(title, body) {
+          editorDoc.innerHTML = '<h1>' + esc(title) + '</h1>' + renderBody(body);
+          var c = countText(body || '');
+          docCounts.textContent = '글자 수 ' + c.chars.toLocaleString() + ' · 단어 수 ' + c.words.toLocaleString();
+        }
+
+        function renderChapterList() {
+          chapterList.innerHTML = '';
+          if (!book.chapters.length) { chapterList.innerHTML = '<div class="tree-empty">“## Chapter 1. 제목” 형식의 챕터를 찾지 못했습니다.</div>'; return; }
+          book.chapters.forEach(function (c, i) {
+            var el = document.createElement('div');
+            el.className = 'chap'; el.setAttribute('data-i', i);
+            el.innerHTML = '<span class="no">' + esc(c.num) + '</span>' + esc(c.title || '(제목 없음)');
+            el.addEventListener('click', function () { selectChapter(i); });
+            chapterList.appendChild(el);
+          });
+        }
+
+        function selectChapter(i) {
+          var c = book.chapters[i]; if (!c) return;
+          chapterList.querySelectorAll('.chap').forEach(function (x) { x.classList.remove('on'); });
+          var sel = chapterList.querySelector('.chap[data-i="' + i + '"]'); if (sel) sel.classList.add('on');
+          renderDoc('Chapter ' + c.num + '. ' + c.title, c.body);
+        }
+
+        function loadManuscript(text, filename) {
+          book = parseManuscript(text);
+          renderChapterList();
+          if (book.chapters.length) selectChapter(0);
+          else renderDoc(book.title || '(제목 없음)', book.preBody || '');
+          editorEmpty.classList.add('hide');
+          editorDoc.classList.remove('hide');
+          estatus.classList.remove('empty');
+          docState.textContent = '원고 불러옴 · ' + filename;
+        }
       })();
     </script>
   </body>
