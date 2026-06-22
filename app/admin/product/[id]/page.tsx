@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { saveProduct } from "@/app/admin/actions";
+import AdminBackButton from "@/components/admin/AdminBackButton";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function ProductForm({
@@ -23,10 +23,8 @@ export default async function ProductForm({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/admin/product" className="text-sm text-[--muted] hover:text-foreground">
-        ← Product
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+      <AdminBackButton href="/admin/product" label="Product 목록" />
+      <h1 className="mt-5 mb-2 text-2xl font-semibold tracking-tight">
         {isNew ? "새 상품" : "상품 수정"}
       </h1>
 

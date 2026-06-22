@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { saveMarketing } from "@/app/admin/actions";
+import AdminBackButton from "@/components/admin/AdminBackButton";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function MarketingForm({
@@ -24,10 +24,8 @@ export default async function MarketingForm({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/admin/marketing" className="text-sm text-[--muted] hover:text-foreground">
-        ← Marketing
-      </Link>
-      <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+      <AdminBackButton href="/admin/marketing" label="Marketing 목록" />
+      <h1 className="mt-5 mb-2 text-2xl font-semibold tracking-tight">
         {isNew ? "새 채널" : "채널 수정"}
       </h1>
 

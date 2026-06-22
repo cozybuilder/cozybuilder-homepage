@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import ProgramAdminForm, {
   type ProgramInitial,
 } from "@/components/admin/ProgramAdminForm";
+import AdminBackButton from "@/components/admin/AdminBackButton";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function ProgramFormPage({
@@ -40,10 +40,8 @@ export default async function ProgramFormPage({
 
   return (
     <div className="mx-auto max-w-2xl">
-      <Link href="/admin/programs" className="text-sm text-[--muted] hover:text-foreground">
-        ← Programs
-      </Link>
-      <h1 className="mt-4 mb-8 text-2xl font-semibold tracking-tight">
+      <AdminBackButton href="/admin/programs" label="Programs 목록" />
+      <h1 className="mt-5 mb-8 text-2xl font-semibold tracking-tight">
         {isNew ? "새 프로그램" : "프로그램 수정"}
       </h1>
       <ProgramAdminForm initial={initial} />
