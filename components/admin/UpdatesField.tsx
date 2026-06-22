@@ -38,18 +38,18 @@ export default function UpdatesField({
             value={u.date}
             onChange={(e) => update(i, "date", e.target.value)}
             placeholder="2026-06-22"
-            className="w-full max-w-[160px] rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-[--muted] outline-none transition-colors hover:bg-white/10 focus:border-white/25"
+            className="w-full max-w-[160px] rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-white/40 outline-none transition-colors hover:bg-white/10 focus:border-violet-400/40"
           />
           <input
             value={u.text}
             onChange={(e) => update(i, "text", e.target.value)}
             placeholder="업데이트 내용"
-            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-[--muted] outline-none transition-colors hover:bg-white/10 focus:border-white/25"
+            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm text-foreground placeholder:text-white/40 outline-none transition-colors hover:bg-white/10 focus:border-violet-400/40"
           />
           <button
             type="button"
             onClick={() => remove(i)}
-            className="shrink-0 rounded-xl border border-white/10 bg-white/[0.08] px-3 text-[--muted] transition-colors hover:bg-red-500/20 hover:text-red-300"
+            className="shrink-0 rounded-xl border border-white/10 bg-white/[0.08] px-3 text-[--muted] transition-colors hover:border-red-400/30 hover:bg-red-500/20 hover:text-red-200"
             aria-label="삭제"
           >
             −

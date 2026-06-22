@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getProgram } from "@/lib/content";
 import { BackLink, ImagePlaceholder, Placeholder } from "@/components/ui";
 import ProgramAction from "@/components/ProgramAction";
+import ScreenshotGallery from "@/components/ScreenshotGallery";
 
 export async function generateMetadata({
   params,
@@ -102,21 +103,8 @@ export default async function ProgramDetailPage({
       <section className="mx-auto mt-16 max-w-3xl">
         <h2 className="text-2xl font-semibold tracking-tight">스크린샷</h2>
         {program.screenshots && program.screenshots.length > 0 ? (
-          <div className="mt-6 flex snap-x gap-4 overflow-x-auto pb-2">
-            {program.screenshots.map((src, i) => (
-              <div
-                key={i}
-                className="relative aspect-video w-72 shrink-0 snap-start overflow-hidden rounded-xl border border-[--border] bg-[--surface-2]"
-              >
-                <Image
-                  src={src}
-                  alt={`${program.name} 스크린샷 ${i + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="288px"
-                />
-              </div>
-            ))}
+          <div className="mt-6">
+            <ScreenshotGallery images={program.screenshots} alt={program.name} />
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
