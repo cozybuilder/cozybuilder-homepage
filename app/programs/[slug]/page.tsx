@@ -54,17 +54,29 @@ export default async function ProgramDetailPage({
     <div className="container-page py-12">
       <BackLink href="/programs">프로그램 목록</BackLink>
 
-      {/* 1. Hero 이미지 */}
-      <section className="mt-8">
-        <div className="relative aspect-[16/6] w-full overflow-hidden rounded-2xl border border-[--border]">
+      {/* 1. 대표 이미지 + 액션 (본문 폭에 맞춤) */}
+      <section className="mx-auto mt-8 max-w-3xl">
+        <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-[--border]">
           <Image
             src={program.image}
             alt={program.name}
             fill
             priority
             className="object-cover"
-            sizes="(max-width: 1024px) 100vw, 1024px"
+            sizes="(max-width: 768px) 100vw, 768px"
           />
+        </div>
+
+        {/* 액션: 대표 이미지 바로 아래 (web=구독/실행 / mobile=스토어) */}
+        <div className="mt-6">
+          {program.type === "mobile" ? (
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <StoreButton label="Google Play" url={program.playStoreUrl} />
+              <StoreButton label="App Store" url={program.appStoreUrl} />
+            </div>
+          ) : (
+            <ProgramAction slug={program.slug} appUrl={program.appUrl} />
+          )}
         </div>
       </section>
 
@@ -105,18 +117,6 @@ export default async function ProgramDetailPage({
         <div className="mt-6">
           <Placeholder label="업데이트 내역 준비 중" />
         </div>
-      </section>
-
-      {/* 6. 액션: web=구독/실행 / mobile=스토어 */}
-      <section className="mx-auto mt-16 max-w-3xl">
-        {program.type === "mobile" ? (
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <StoreButton label="Google Play" url={program.playStoreUrl} />
-            <StoreButton label="App Store" url={program.appStoreUrl} />
-          </div>
-        ) : (
-          <ProgramAction slug={program.slug} appUrl={program.appUrl} />
-        )}
       </section>
     </div>
   );
