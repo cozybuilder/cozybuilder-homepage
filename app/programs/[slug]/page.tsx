@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { programs } from "@/lib/site";
 import { BackLink, ImagePlaceholder, Placeholder } from "@/components/ui";
+import ProgramAction from "@/components/ProgramAction";
 
 export function generateStaticParams() {
   return programs.map((p) => ({ slug: p.slug }));
@@ -16,6 +17,28 @@ export async function generateMetadata({
   const { slug } = await params;
   const program = programs.find((p) => p.slug === slug);
   return { title: program ? program.name : "프로그램" };
+}
+
+/** 모바일앱 스토어 버튼 (링크 없으면 출시 준비 중). */
+function StoreButton({ label, url }: { label: string; url?: string }) {
+  if (url) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="btn btn-ghost flex-1"
+      >
+        {label}
+      </a>
+    );
+  }
+  return (
+    <span className="btn btn-ghost flex-1 cursor-not-allowed flex-col gap-0 py-3 opacity-60">
+      <span>{label}</span>
+      <span className="text-xs text-[--muted-2]">출시 준비 중</span>
+    </span>
+  );
 }
 
 export default async function ProgramDetailPage({
@@ -33,7 +56,16 @@ export default async function ProgramDetailPage({
 
       {/* 1. Hero 이미지 */}
       <section className="mt-8">
-        <ImagePlaceholder ratio="aspect-[16/6]" label={program.emoji} />
+        <div className="relative aspect-[16/6] w-full overflow-hidden rounded-2xl border border-[--border]">
+          <Image
+            src={program.image}
+            alt={program.name}
+            fill
+            priority
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 1024px"
+          />
+        </div>
       </section>
 
       {/* 2. 프로그램 소개 */}
@@ -75,11 +107,16 @@ export default async function ProgramDetailPage({
         </div>
       </section>
 
-      {/* 6. 실행하기 버튼 → /login */}
-      <section className="mx-auto mt-16 max-w-3xl text-center">
-        <Link href="/login" className="btn btn-accent px-10 py-4 text-base">
-          실행하기
-        </Link>
+      {/* 6. 액션: web=구독/실행 / mobile=스토어 */}
+      <section className="mx-auto mt-16 max-w-3xl">
+        {program.type === "mobile" ? (
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <StoreButton label="Google Play" url={program.playStoreUrl} />
+            <StoreButton label="App Store" url={program.appStoreUrl} />
+          </div>
+        ) : (
+          <ProgramAction slug={program.slug} appUrl={program.appUrl} />
+        )}
       </section>
     </div>
   );

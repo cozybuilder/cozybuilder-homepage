@@ -25,6 +25,8 @@ export const mainNav: NavItem[] = [
   { label: "문의", href: "/contact" },
 ];
 
+export type ProgramType = "web" | "mobile";
+
 export type Program = {
   slug: string;
   name: string;
@@ -33,6 +35,10 @@ export type Program = {
   features: string[];
   emoji: string;
   image: string;
+  type: ProgramType;
+  appUrl?: string; // web 실행 경로 (없으면 Coming Soon)
+  playStoreUrl?: string; // mobile
+  appStoreUrl?: string; // mobile
 };
 
 export const programs: Program[] = [
@@ -45,6 +51,9 @@ export const programs: Program[] = [
     features: ["매일 감사 기록", "성장 그래프", "회고 리마인더", "데이터 백업"],
     emoji: "🙏",
     image: "/image/gamsa.png",
+    type: "mobile",
+    playStoreUrl: "",
+    appStoreUrl: "",
   },
   {
     slug: "clipminer",
@@ -55,6 +64,8 @@ export const programs: Program[] = [
     features: ["자동 하이라이트 추출", "자막 인식", "클립 내보내기", "배치 처리"],
     emoji: "⛏️",
     image: "/image/clipminer.png",
+    type: "web",
+    appUrl: "",
   },
   {
     slug: "shortsfactory",
@@ -65,6 +76,8 @@ export const programs: Program[] = [
     features: ["대본 자동 생성", "영상 합성", "자동 자막", "예약 업로드"],
     emoji: "🎬",
     image: "/image/shots.png",
+    type: "web",
+    appUrl: "",
   },
   {
     slug: "ebook",
@@ -75,6 +88,8 @@ export const programs: Program[] = [
     features: ["원고 정리", "표지 생성", "포맷 변환", "출간 체크리스트"],
     emoji: "📚",
     image: "/image/ebook.png",
+    type: "web",
+    appUrl: "",
   },
 ];
 
