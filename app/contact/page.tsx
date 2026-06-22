@@ -9,19 +9,16 @@ const categories = [
     emoji: "🧩",
     title: "프로그램 문의",
     desc: "프로그램 사용·기능에 대한 문의",
-    subject: "프로그램 문의",
   },
   {
     emoji: "🔐",
     title: "계정/로그인 문의",
     desc: "로그인·계정 관련 문의",
-    subject: "계정/로그인 문의",
   },
   {
     emoji: "🤝",
     title: "협업/제안 문의",
     desc: "협업·프로젝트 제안",
-    subject: "협업/제안 문의",
   },
 ];
 
@@ -35,11 +32,8 @@ export default function ContactPage() {
       />
 
       <div className="mx-auto mt-12 max-w-3xl">
-        {/* 대표 이메일 */}
-        <a
-          href={`mailto:${siteConfig.contactEmail}`}
-          className="card card-hover flex items-center gap-4"
-        >
+        {/* 대표 이메일 (단순 정보 카드) */}
+        <div className="card flex cursor-default items-center gap-4">
           <span className="text-3xl">📧</span>
           <div>
             <h2 className="text-base font-semibold">이메일</h2>
@@ -47,22 +41,16 @@ export default function ContactPage() {
               {siteConfig.contactEmail}
             </p>
           </div>
-        </a>
+        </div>
 
-        {/* 문의 유형 */}
+        {/* 문의 유형 (단순 안내 카드) */}
         <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
           {categories.map((c) => (
-            <a
-              key={c.title}
-              href={`mailto:${siteConfig.contactEmail}?subject=${encodeURIComponent(
-                c.subject
-              )}`}
-              className="card card-hover text-center"
-            >
+            <div key={c.title} className="card cursor-default text-center">
               <div className="mb-3 text-3xl">{c.emoji}</div>
               <h3 className="text-base font-semibold">{c.title}</h3>
               <p className="mt-2 text-sm text-[--muted]">{c.desc}</p>
-            </a>
+            </div>
           ))}
         </div>
 
