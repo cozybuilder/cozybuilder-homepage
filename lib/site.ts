@@ -66,8 +66,25 @@ export type Product = {
   cta: ProductCtaType; // 구매하기(buy) / 문의하기(contact)
 };
 
-// 등록형: 관리자 페이지에서 채워질 예정 (현재는 비어 있음)
-export const products: Product[] = [];
+// 등록형: 관리자 페이지에서 채워질 예정. (현재는 검증용 샘플 1개)
+export const products: Product[] = [
+  {
+    slug: "ai-start-record",
+    name: "AI와 함께 다시 시작한 기록",
+    summary: "46세에 AI와 함께 다시 시작한 과정을 기록한 전자책입니다.",
+    image: "/image/ebook.png",
+    contents: [
+      "AI와 함께 다시 시작한 이유",
+      "1인 기업을 준비하는 과정",
+      "프로그램과 콘텐츠를 만드는 기록",
+      "실패와 시행착오에서 얻은 배움",
+    ],
+    longDescription:
+      "이 전자책은 코지빌더가 AI와 함께 새로운 일을 시작하며 기록한 과정과 생각을 담은 샘플 상품입니다. 실제 출간 전까지는 예시 데이터로 사용합니다.",
+    price: "₩9,900",
+    cta: "buy",
+  },
+];
 
 export const programs: Program[] = [
   {
