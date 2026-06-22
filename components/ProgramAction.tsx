@@ -68,14 +68,16 @@ export default function ProgramAction({
   };
 
   if (status === "loading") {
-    return <div className="btn btn-ghost w-full opacity-60">불러오는 중…</div>;
+    return (
+      <div className="btn btn-ghost min-w-[140px] opacity-60">불러오는 중…</div>
+    );
   }
 
   if (status === "anon") {
     return (
       <Link
         href={`/login?next=/programs/${slug}`}
-        className="btn btn-accent w-full"
+        className="btn btn-accent min-w-[140px]"
       >
         로그인
       </Link>
@@ -88,7 +90,7 @@ export default function ProgramAction({
         type="button"
         onClick={() => setSubscription(true)}
         disabled={busy}
-        className="btn btn-accent w-full disabled:opacity-60"
+        className="btn btn-accent min-w-[140px] disabled:opacity-60"
       >
         {busy ? "처리 중…" : "구독하기"}
       </button>
@@ -97,13 +99,13 @@ export default function ProgramAction({
 
   // subscribed
   return (
-    <div className="flex flex-col gap-3 sm:flex-row">
+    <div className="flex flex-wrap gap-3">
       {appUrl ? (
-        <a href={appUrl} className="btn btn-accent flex-1">
+        <a href={appUrl} className="btn btn-accent min-w-[140px]">
           실행하기
         </a>
       ) : (
-        <span className="btn btn-accent flex-1 cursor-not-allowed opacity-60">
+        <span className="btn btn-accent min-w-[140px] cursor-not-allowed opacity-60">
           실행하기 (Coming Soon)
         </span>
       )}
@@ -111,7 +113,7 @@ export default function ProgramAction({
         type="button"
         onClick={() => setSubscription(false)}
         disabled={busy}
-        className="btn btn-ghost flex-1 disabled:opacity-60"
+        className="btn btn-ghost min-w-[140px] disabled:opacity-60"
       >
         {busy ? "처리 중…" : "구독취소"}
       </button>

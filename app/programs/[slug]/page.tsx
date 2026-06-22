@@ -27,14 +27,14 @@ function StoreButton({ label, url }: { label: string; url?: string }) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="btn btn-ghost flex-1"
+        className="btn btn-ghost min-w-[140px]"
       >
         {label}
       </a>
     );
   }
   return (
-    <span className="btn btn-ghost flex-1 cursor-not-allowed flex-col gap-0 py-3 opacity-60">
+    <span className="btn btn-ghost min-w-[140px] cursor-not-allowed flex-col gap-0 py-3 opacity-60">
       <span>{label}</span>
       <span className="text-xs text-[--muted-2]">출시 준비 중</span>
     </span>
@@ -56,13 +56,13 @@ export default async function ProgramDetailPage({
 
       {/* 1. 대표 이미지 + 액션 (본문 폭에 맞춤) */}
       <section className="mx-auto mt-8 max-w-3xl">
-        <div className="relative aspect-[16/7] w-full overflow-hidden rounded-2xl border border-[--border]">
+        <div className="relative aspect-[3/2] w-full overflow-hidden rounded-2xl border border-[--border] bg-[--surface-2]">
           <Image
             src={program.image}
             alt={program.name}
             fill
             priority
-            className="object-cover"
+            className="object-contain"
             sizes="(max-width: 768px) 100vw, 768px"
           />
         </div>
@@ -70,7 +70,7 @@ export default async function ProgramDetailPage({
         {/* 액션: 대표 이미지 바로 아래 (web=구독/실행 / mobile=스토어) */}
         <div className="mt-6">
           {program.type === "mobile" ? (
-            <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex flex-wrap gap-3">
               <StoreButton label="Google Play" url={program.playStoreUrl} />
               <StoreButton label="App Store" url={program.appStoreUrl} />
             </div>
