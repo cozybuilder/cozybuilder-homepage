@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { FormField, Input, Button } from "@/components/ui";
 
 /**
  * Email/password sign-up via Supabase Auth.
@@ -64,62 +65,46 @@ export default function SignupForm() {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <div>
-        <label className="label" htmlFor="name">
-          이름
-        </label>
-        <input
+      <FormField label="이름" htmlFor="name">
+        <Input
           id="name"
           type="text"
           required
-          className="input"
           placeholder="홍길동"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-      </div>
-      <div>
-        <label className="label" htmlFor="email">
-          이메일
-        </label>
-        <input
+      </FormField>
+      <FormField label="이메일" htmlFor="email">
+        <Input
           id="email"
           type="email"
           required
-          className="input"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-      </div>
-      <div>
-        <label className="label" htmlFor="password">
-          비밀번호
-        </label>
-        <input
+      </FormField>
+      <FormField label="비밀번호" htmlFor="password">
+        <Input
           id="password"
           type="password"
           required
-          className="input"
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-      </div>
-      <div>
-        <label className="label" htmlFor="confirm">
-          비밀번호 확인
-        </label>
-        <input
+      </FormField>
+      <FormField label="비밀번호 확인" htmlFor="confirm">
+        <Input
           id="confirm"
           type="password"
           required
-          className="input"
           placeholder="••••••••"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
         />
-      </div>
+      </FormField>
 
       {error && (
         <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
@@ -127,13 +112,9 @@ export default function SignupForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn btn-accent w-full disabled:opacity-60"
-      >
+      <Button type="submit" disabled={loading} className="w-full disabled:opacity-60">
         {loading ? "가입 중…" : "회원가입"}
-      </button>
+      </Button>
     </form>
   );
 }

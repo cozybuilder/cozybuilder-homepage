@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { FormField, Input, Button } from "@/components/ui";
 
 /**
  * 1차: 비밀번호 재설정 메일 발송까지만 구현.
@@ -46,20 +47,16 @@ export default function ForgotPasswordForm() {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <div>
-        <label className="label" htmlFor="email">
-          이메일
-        </label>
-        <input
+      <FormField label="이메일" htmlFor="email">
+        <Input
           id="email"
           type="email"
           required
-          className="input"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-      </div>
+      </FormField>
 
       {error && (
         <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
@@ -67,13 +64,9 @@ export default function ForgotPasswordForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn btn-accent w-full disabled:opacity-60"
-      >
+      <Button type="submit" disabled={loading} className="w-full disabled:opacity-60">
         {loading ? "보내는 중…" : "재설정 메일 보내기"}
-      </button>
+      </Button>
     </form>
   );
 }

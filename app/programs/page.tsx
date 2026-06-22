@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { type Program } from "@/lib/site";
 import { getPrograms } from "@/lib/content";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Card } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Programs" };
 
 function ProgramCard({ p }: { p: Program }) {
   return (
-    <Link href={`/programs/${p.slug}`} className="card card-hover">
+    <Card href={`/programs/${p.slug}`} hover>
       <div className="relative mb-5 aspect-[16/9] w-full overflow-hidden rounded-xl">
         <Image
           src={p.image}
@@ -21,7 +20,7 @@ function ProgramCard({ p }: { p: Program }) {
       </div>
       <h3 className="text-lg font-semibold">{p.name}</h3>
       <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>
-    </Link>
+    </Card>
   );
 }
 

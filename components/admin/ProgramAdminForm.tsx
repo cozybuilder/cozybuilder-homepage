@@ -6,6 +6,7 @@ import ImageField from "@/components/admin/ImageField";
 import ImageListField from "@/components/admin/ImageListField";
 import StringListField from "@/components/admin/StringListField";
 import UpdatesField from "@/components/admin/UpdatesField";
+import { Section, FormField, Input, Textarea, Select, Button } from "@/components/ui";
 
 export type ProgramInitial = {
   id?: string;
@@ -32,24 +33,6 @@ function slugify(s: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-function Section({
-  title,
-  desc,
-  children,
-}: {
-  title: string;
-  desc?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="card">
-      <h2 className="text-base font-semibold">{title}</h2>
-      {desc && <p className="mt-1 text-xs text-[--muted-2]">{desc}</p>}
-      <div className="mt-4 space-y-4">{children}</div>
-    </section>
-  );
-}
-
 export default function ProgramAdminForm({
   initial,
 }: {
@@ -72,15 +55,12 @@ export default function ProgramAdminForm({
   return (
     <form action={formAction} className="space-y-6">
       {!isNew && <input type="hidden" name="id" value={initial?.id} />}
-      {/* name 은 controlled 이므로 hidden 으로 제출 */}
       <input type="hidden" name="name" value={name} />
 
-      {/* 1. 대표 이미지 */}
       <Section title="대표 이미지">
         <ImageField name="image" folder="programs" initial={initial?.image ?? ""} />
       </Section>
 
-      {/* 2. 스크린샷 */}
       <Section title="스크린샷">
         <ImageListField
           name="screenshots"
@@ -89,45 +69,32 @@ export default function ProgramAdminForm({
         />
       </Section>
 
-      {/* 3. 기본 정보 */}
       <Section title="기본 정보">
-        <div>
-          <label className="label">구분</label>
-          <select name="type" defaultValue={initial?.type ?? "web"} className="input">
+        <FormField label="구분">
+          <Select name="type" defaultValue={initial?.type ?? "web"}>
             <option value="web">컴퓨터 웹프로그램</option>
             <option value="mobile">모바일앱</option>
-          </select>
-        </div>
-        <div>
-          <label className="label">이름</label>
-          <input
+          </Select>
+        </FormField>
+        <FormField label="이름">
+          <Input
             value={name}
             onChange={(e) => onName(e.target.value)}
             required
-            className="input"
             placeholder="프로그램 이름"
           />
-        </div>
-        <div>
-          <label className="label">부제</label>
-          <input name="subtitle" defaultValue={initial?.subtitle ?? ""} className="input" />
-        </div>
-        <div>
-          <label className="label">요약</label>
-          <input name="summary" defaultValue={initial?.summary ?? ""} className="input" />
-        </div>
-        <div>
-          <label className="label">설명</label>
-          <textarea
-            name="description"
-            defaultValue={initial?.description ?? ""}
-            rows={2}
-            className="input"
-          />
-        </div>
+        </FormField>
+        <FormField label="부제">
+          <Input name="subtitle" defaultValue={initial?.subtitle ?? ""} />
+        </FormField>
+        <FormField label="요약">
+          <Input name="summary" defaultValue={initial?.summary ?? ""} />
+        </FormField>
+        <FormField label="설명">
+          <Textarea name="description" defaultValue={initial?.description ?? ""} rows={2} />
+        </FormField>
       </Section>
 
-      {/* 4. 주요 기능 */}
       <Section title="주요 기능" desc="한 줄에 하나씩, 빈 항목은 저장되지 않습니다.">
         <StringListField
           name="features"
@@ -136,33 +103,23 @@ export default function ProgramAdminForm({
         />
       </Section>
 
-      {/* 5. 실행 설정 */}
       <Section title="실행 설정">
-        <div>
-          <label className="label">실행 URL</label>
-          <input name="app_url" defaultValue={initial?.app_url ?? ""} className="input" />
-        </div>
+        <FormField label="실행 URL">
+          <Input name="app_url" defaultValue={initial?.app_url ?? ""} />
+        </FormField>
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">공개 상태</label>
-            <select name="status" defaultValue={initial?.status ?? "draft"} className="input">
+          <FormField label="공개 상태">
+            <Select name="status" defaultValue={initial?.status ?? "draft"}>
               <option value="draft">임시저장</option>
               <option value="published">공개</option>
-            </select>
-          </div>
-          <div>
-            <label className="label">정렬 순서</label>
-            <input
-              name="sort_order"
-              type="number"
-              defaultValue={initial?.sort_order ?? 0}
-              className="input"
-            />
-          </div>
+            </Select>
+          </FormField>
+          <FormField label="정렬 순서">
+            <Input name="sort_order" type="number" defaultValue={initial?.sort_order ?? 0} />
+          </FormField>
         </div>
       </Section>
 
-      {/* 6. 업데이트 내역 */}
       <Section title="업데이트 내역">
         <UpdatesField name="updates" initial={initial?.updates ?? []} />
       </Section>
@@ -170,17 +127,17 @@ export default function ProgramAdminForm({
       <details className="card">
         <summary className="cursor-pointer text-sm font-semibold">고급 옵션</summary>
         <div className="mt-4">
-          <label className="label">slug (이름에서 자동 생성, 수정 가능)</label>
-          <input
-            name="slug"
-            value={slug}
-            onChange={(e) => {
-              setSlug(e.target.value);
-              setSlugTouched(true);
-            }}
-            className="input"
-            placeholder="비워두면 이름으로 자동 생성"
-          />
+          <FormField label="slug (이름에서 자동 생성, 수정 가능)">
+            <Input
+              name="slug"
+              value={slug}
+              onChange={(e) => {
+                setSlug(e.target.value);
+                setSlugTouched(true);
+              }}
+              placeholder="비워두면 이름으로 자동 생성"
+            />
+          </FormField>
         </div>
       </details>
 
@@ -190,13 +147,9 @@ export default function ProgramAdminForm({
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="btn btn-accent w-full disabled:opacity-60"
-      >
+      <Button type="submit" disabled={pending} className="w-full disabled:opacity-60">
         {pending ? "저장 중…" : "저장"}
-      </button>
+      </Button>
     </form>
   );
 }

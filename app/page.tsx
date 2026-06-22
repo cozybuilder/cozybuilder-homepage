@@ -2,11 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { type Program } from "@/lib/site";
 import { getPrograms, getMarketing } from "@/lib/content";
+import { Card } from "@/components/ui";
 import HeroVideo from "@/components/HeroVideo";
 
 function HomeProgramCard({ p }: { p: Program }) {
   return (
-    <Link href={`/programs/${p.slug}`} className="card card-hover">
+    <Card href={`/programs/${p.slug}`} hover>
       <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-xl">
         <Image
           src={p.image}
@@ -18,7 +19,7 @@ function HomeProgramCard({ p }: { p: Program }) {
       </div>
       <h3 className="text-base font-semibold">{p.name}</h3>
       <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>
-    </Link>
+    </Card>
   );
 }
 

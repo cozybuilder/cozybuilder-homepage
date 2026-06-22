@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { saveProduct } from "@/app/admin/actions";
 import BackButton from "@/components/BackButton";
+import { Section, FormField, Input, Textarea, Select, Button } from "@/components/ui";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function ProductForm({
@@ -24,88 +25,91 @@ export default async function ProductForm({
   return (
     <div className="mx-auto max-w-2xl">
       <BackButton href="/admin/product" label="Product 목록" />
-      <h1 className="mt-5 mb-2 text-2xl font-semibold tracking-tight">
+      <h1 className="mt-5 mb-8 text-2xl font-semibold tracking-tight">
         {isNew ? "새 상품" : "상품 수정"}
       </h1>
 
-      <form action={saveProduct} className="mt-8 space-y-5">
+      <form action={saveProduct} className="space-y-6">
         {!isNew && <input type="hidden" name="id" value={row?.id} />}
 
-        <div>
-          <label className="label">구분</label>
-          <select name="category" defaultValue={row?.category ?? "ebook"} className="input">
-            <option value="website">홈페이지 제작</option>
-            <option value="ebook">전자책</option>
-          </select>
-        </div>
-        <div>
-          <label className="label">slug</label>
-          <input name="slug" defaultValue={row?.slug ?? ""} required className="input" />
-        </div>
-        <div>
-          <label className="label">이름</label>
-          <input name="name" defaultValue={row?.name ?? ""} required className="input" />
-        </div>
-        <div>
-          <label className="label">간략 설명</label>
-          <input name="summary" defaultValue={row?.summary ?? ""} className="input" />
-        </div>
-        <div>
-          <label className="label">대표 이미지 URL</label>
-          <input name="image" defaultValue={row?.image ?? ""} placeholder="/image/ebook.png" className="input" />
-        </div>
-        <div>
-          <label className="label">주요 내용 (줄마다 1개)</label>
-          <textarea name="contents" defaultValue={contents} rows={4} className="input" />
-        </div>
-        <div>
-          <label className="label">미리보기/스크린샷 URL (줄마다 1개)</label>
-          <textarea name="screenshots" defaultValue={screenshots} rows={3} className="input" />
-        </div>
-        <div>
-          <label className="label">자세한 설명</label>
-          <textarea name="long_description" defaultValue={row?.long_description ?? ""} rows={5} className="input" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">가격</label>
-            <input name="price" defaultValue={row?.price ?? ""} placeholder="₩9,900" className="input" />
-          </div>
-          <div>
-            <label className="label">CTA</label>
-            <select name="cta" defaultValue={row?.cta ?? "contact"} className="input">
-              <option value="contact">문의하기</option>
-              <option value="buy">구매하기</option>
-            </select>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">CTA 라벨</label>
-            <input name="cta_label" defaultValue={row?.cta_label ?? ""} className="input" />
-          </div>
-          <div>
-            <label className="label">CTA URL</label>
-            <input name="cta_url" defaultValue={row?.cta_url ?? ""} placeholder="/contact" className="input" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="label">상태</label>
-            <select name="status" defaultValue={row?.status ?? "draft"} className="input">
-              <option value="draft">draft</option>
-              <option value="published">published</option>
-            </select>
-          </div>
-          <div>
-            <label className="label">정렬 순서</label>
-            <input name="sort_order" type="number" defaultValue={row?.sort_order ?? 0} className="input" />
-          </div>
-        </div>
+        <Section title="기본 정보">
+          <FormField label="구분">
+            <Select name="category" defaultValue={row?.category ?? "ebook"}>
+              <option value="website">홈페이지 제작</option>
+              <option value="ebook">전자책</option>
+            </Select>
+          </FormField>
+          <FormField label="이름">
+            <Input name="name" defaultValue={row?.name ?? ""} required />
+          </FormField>
+          <FormField label="간략 설명">
+            <Input name="summary" defaultValue={row?.summary ?? ""} />
+          </FormField>
+          <FormField label="대표 이미지 URL">
+            <Input name="image" defaultValue={row?.image ?? ""} placeholder="/image/ebook.png" />
+          </FormField>
+        </Section>
 
-        <button type="submit" className="btn btn-accent w-full">
+        <Section title="상세">
+          <FormField label="주요 내용 (줄마다 1개)">
+            <Textarea name="contents" defaultValue={contents} rows={4} />
+          </FormField>
+          <FormField label="미리보기/스크린샷 URL (줄마다 1개)">
+            <Textarea name="screenshots" defaultValue={screenshots} rows={3} />
+          </FormField>
+          <FormField label="자세한 설명">
+            <Textarea name="long_description" defaultValue={row?.long_description ?? ""} rows={5} />
+          </FormField>
+        </Section>
+
+        <Section title="판매/CTA">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="가격">
+              <Input name="price" defaultValue={row?.price ?? ""} placeholder="₩9,900" />
+            </FormField>
+            <FormField label="CTA">
+              <Select name="cta" defaultValue={row?.cta ?? "contact"}>
+                <option value="contact">문의하기</option>
+                <option value="buy">구매하기</option>
+              </Select>
+            </FormField>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="CTA 라벨">
+              <Input name="cta_label" defaultValue={row?.cta_label ?? ""} />
+            </FormField>
+            <FormField label="CTA URL">
+              <Input name="cta_url" defaultValue={row?.cta_url ?? ""} placeholder="/contact" />
+            </FormField>
+          </div>
+        </Section>
+
+        <Section title="공개 설정">
+          <div className="grid grid-cols-2 gap-4">
+            <FormField label="공개 상태">
+              <Select name="status" defaultValue={row?.status ?? "draft"}>
+                <option value="draft">임시저장</option>
+                <option value="published">공개</option>
+              </Select>
+            </FormField>
+            <FormField label="정렬 순서">
+              <Input name="sort_order" type="number" defaultValue={row?.sort_order ?? 0} />
+            </FormField>
+          </div>
+        </Section>
+
+        <details className="card">
+          <summary className="cursor-pointer text-sm font-semibold">고급 옵션</summary>
+          <div className="mt-4">
+            <FormField label="slug (비우면 이름으로 자동 생성)">
+              <Input name="slug" defaultValue={row?.slug ?? ""} />
+            </FormField>
+          </div>
+        </details>
+
+        <Button type="submit" className="w-full">
           저장
-        </button>
+        </Button>
       </form>
     </div>
   );

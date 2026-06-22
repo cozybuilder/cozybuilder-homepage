@@ -130,10 +130,12 @@ export async function saveProduct(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
   const id = str(formData.get("id"));
-  const payload = {
-    slug: str(formData.get("slug")),
+  const name = str(formData.get("name"));
+  let slug = str(formData.get("slug"));
+  if (!slug) slug = slugify(name);
+  const base = {
     category: str(formData.get("category")) === "website" ? "website" : "ebook",
-    name: str(formData.get("name")),
+    name,
     summary: str(formData.get("summary")),
     image: str(formData.get("image")),
     contents: lines(formData.get("contents")),
@@ -147,8 +149,12 @@ export async function saveProduct(formData: FormData) {
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
   };
-  if (id) await supabase.from("products").update(payload).eq("id", id);
-  else await supabase.from("products").insert(payload);
+  if (id) {
+    await supabase.from("products").update(slug ? { ...base, slug } : base).eq("id", id);
+  } else {
+    if (!slug) slug = `product-${Date.now().toString(36)}`;
+    await supabase.from("products").insert({ ...base, slug });
+  }
   revalidateTag(CACHE_TAGS.products, "max");
   revalidatePath("/admin/product");
   revalidatePublic();
@@ -170,10 +176,12 @@ export async function saveMarketing(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
   const id = str(formData.get("id"));
-  const payload = {
-    slug: str(formData.get("slug")),
+  const name = str(formData.get("name"));
+  let slug = str(formData.get("slug"));
+  if (!slug) slug = slugify(name);
+  const base = {
     category: str(formData.get("category")) === "blog" ? "blog" : "sns",
-    name: str(formData.get("name")),
+    name,
     description: str(formData.get("description")),
     image: str(formData.get("image")),
     external_url: str(formData.get("external_url")),
@@ -181,8 +189,15 @@ export async function saveMarketing(formData: FormData) {
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
   };
-  if (id) await supabase.from("marketing_channels").update(payload).eq("id", id);
-  else await supabase.from("marketing_channels").insert(payload);
+  if (id) {
+    await supabase
+      .from("marketing_channels")
+      .update(slug ? { ...base, slug } : base)
+      .eq("id", id);
+  } else {
+    if (!slug) slug = `channel-${Date.now().toString(36)}`;
+    await supabase.from("marketing_channels").insert({ ...base, slug });
+  }
   revalidateTag(CACHE_TAGS.marketing, "max");
   revalidatePath("/admin/marketing");
   revalidatePublic();

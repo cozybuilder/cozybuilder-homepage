@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import SocialButtons from "@/components/SocialButtons";
+import { FormField, Input, Button } from "@/components/ui";
 
 /**
  * Email/password login via Supabase Auth.
@@ -62,14 +63,8 @@ export default function LoginForm({
 
         {/* Form */}
         <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-          <div>
-            <label
-              htmlFor="email"
-              className="mb-2 block text-sm font-medium text-[--muted]"
-            >
-              Email
-            </label>
-            <input
+          <FormField label="Email" htmlFor="email">
+            <Input
               id="email"
               type="email"
               required
@@ -77,18 +72,11 @@ export default function LoginForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-foreground placeholder:text-[--muted-2] outline-none transition-colors focus:border-white/25"
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="mb-2 block text-sm font-medium text-[--muted]"
-            >
-              Password
-            </label>
-            <input
+          <FormField label="Password" htmlFor="password">
+            <Input
               id="password"
               type="password"
               required
@@ -96,9 +84,8 @@ export default function LoginForm({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full rounded-xl border border-white/10 bg-white/[0.02] px-4 py-3 text-sm text-foreground placeholder:text-[--muted-2] outline-none transition-colors focus:border-white/25"
             />
-          </div>
+          </FormField>
 
           {error && (
             <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
@@ -106,13 +93,14 @@ export default function LoginForm({
             </p>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="primary"
             disabled={loading}
-            className="w-full rounded-full bg-white py-3 text-sm font-medium text-black transition-colors hover:bg-white/90 disabled:opacity-60"
+            className="w-full disabled:opacity-60"
           >
             {loading ? "로그인 중…" : "Sign in"}
-          </button>
+          </Button>
         </form>
 
         {/* Social sign-in */}

@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { type Product } from "@/lib/site";
 import { getProducts } from "@/lib/content";
-import { PageHeader } from "@/components/ui";
+import { PageHeader, Card } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Product" };
 
 function ProductCard({ p }: { p: Product }) {
   return (
-    <Link href={`/product/${p.slug}`} className="card card-hover">
+    <Card href={`/product/${p.slug}`} hover>
       <div className="relative mb-5 aspect-[16/9] w-full overflow-hidden rounded-xl">
         <Image
           src={p.image}
@@ -24,7 +23,7 @@ function ProductCard({ p }: { p: Product }) {
       {p.price && (
         <p className="mt-3 text-sm font-semibold text-[--accent]">{p.price}</p>
       )}
-    </Link>
+    </Card>
   );
 }
 

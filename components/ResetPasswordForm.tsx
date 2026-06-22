@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { FormField, Input, Button } from "@/components/ui";
 
 /**
  * 비밀번호 재설정 메일 링크로 진입한 사용자의 새 비밀번호 변경.
@@ -68,34 +69,26 @@ export default function ResetPasswordForm() {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <div>
-        <label className="label" htmlFor="password">
-          새 비밀번호
-        </label>
-        <input
+      <FormField label="새 비밀번호" htmlFor="password">
+        <Input
           id="password"
           type="password"
           required
-          className="input"
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-      </div>
-      <div>
-        <label className="label" htmlFor="confirm">
-          새 비밀번호 확인
-        </label>
-        <input
+      </FormField>
+      <FormField label="새 비밀번호 확인" htmlFor="confirm">
+        <Input
           id="confirm"
           type="password"
           required
-          className="input"
           placeholder="••••••••"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
         />
-      </div>
+      </FormField>
 
       {error && (
         <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
@@ -103,13 +96,9 @@ export default function ResetPasswordForm() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="btn btn-accent w-full disabled:opacity-60"
-      >
+      <Button type="submit" disabled={loading} className="w-full disabled:opacity-60">
         {loading ? "변경 중…" : "비밀번호 변경"}
-      </button>
+      </Button>
     </form>
   );
 }
