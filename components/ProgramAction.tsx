@@ -92,7 +92,7 @@ export default function ProgramAction({
         disabled={busy}
         className="btn btn-accent min-w-[140px] disabled:opacity-60"
       >
-        {busy ? "처리 중…" : "구독하기"}
+        {busy ? "처리 중…" : "무료 구독"}
       </button>
     );
   }
@@ -115,7 +115,7 @@ export default function ProgramAction({
         disabled={busy}
         className="btn btn-ghost min-w-[140px] disabled:opacity-60"
       >
-        {busy ? "처리 중…" : "구독취소"}
+        {busy ? "처리 중…" : "구독 해제"}
       </button>
     </div>
   );

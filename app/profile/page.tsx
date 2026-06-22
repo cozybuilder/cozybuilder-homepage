@@ -3,6 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/ui";
 import { createClient } from "@/lib/supabase/server";
+import { getApp } from "@/lib/apps";
+import { cancelBetaSubscription } from "@/app/apps/actions";
+
+// 구독 상태가 매 요청 반영되어야 하므로 동적 렌더.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "프로필" };
 
@@ -35,6 +40,18 @@ export default async function ProfilePage() {
   const avatarUrl =
     (user.user_metadata?.avatar_url as string | undefined) ||
     (user.user_metadata?.picture as string | undefined);
+
+  // 무료 구독 중인 웹프로그램 — user_app_subscriptions 의 active/trialing row 를
+  // 앱 정의와 매칭해서 정리. (canAccessApp 와 동일한 활성 상태 기준)
+  const { data: subRows } = await supabase
+    .from("user_app_subscriptions")
+    .select("app_key, status")
+    .eq("user_id", user.id)
+    .in("status", ["active", "trialing"]);
+
+  const subscribedApps = (subRows ?? [])
+    .map((row) => getApp(row.app_key as string))
+    .filter((app): app is NonNullable<typeof app> => app !== null);
 
   return (
     <div className="container-page py-20">
@@ -80,6 +97,51 @@ export default async function ProfilePage() {
             <span className="text-sm text-[--muted]">가입일</span>
             <span className="text-sm">{formatDate(user.created_at)}</span>
           </div>
+        </div>
+
+        {/* 무료 구독 중인 프로그램 */}
+        <div className="card">
+          <h2 className="text-lg font-semibold">무료 구독 중인 프로그램</h2>
+          {subscribedApps.length === 0 ? (
+            <p className="mt-3 text-sm text-[--muted-2]">
+              아직 무료 구독 중인 프로그램이 없습니다.{" "}
+              <Link href="/programs" className="text-[--accent] hover:underline">
+                프로그램 둘러보기 →
+              </Link>
+            </p>
+          ) : (
+            <ul className="mt-4 divide-y divide-[--border]">
+              {subscribedApps.map((app) => (
+                <li
+                  key={app.key}
+                  className="flex flex-wrap items-center justify-between gap-3 py-4 first:pt-0 last:pb-0"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{app.name}</p>
+                    <p className="text-xs text-[--accent]">무료 구독 중</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Link
+                      href={`/apps/${app.key}`}
+                      className="btn btn-accent px-4 py-2"
+                    >
+                      실행하기
+                    </Link>
+                    <form action={cancelBetaSubscription}>
+                      <input type="hidden" name="app" value={app.key} />
+                      <input type="hidden" name="returnTo" value="/profile" />
+                      <button
+                        type="submit"
+                        className="text-xs text-[--muted-2] hover:text-[--muted] hover:underline"
+                      >
+                        구독 해제
+                      </button>
+                    </form>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="text-sm">

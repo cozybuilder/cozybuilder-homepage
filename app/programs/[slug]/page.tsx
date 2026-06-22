@@ -105,7 +105,7 @@ export default async function ProgramDetailPage({
                   href={`/login?next=${encodeURIComponent(`/subscribe?app=${webApp.key}`)}`}
                   className="btn btn-accent min-w-[140px]"
                 >
-                  구독하기
+                  무료 구독
                 </Link>
               ) : access?.allowed ? (
                 <div className="flex flex-wrap justify-center gap-3">
@@ -123,7 +123,7 @@ export default async function ProgramDetailPage({
                       value={`/programs/${program.slug}`}
                     />
                     <button type="submit" className="btn btn-ghost min-w-[140px]">
-                      구독취소
+                      구독 해제
                     </button>
                   </form>
                 </div>
@@ -136,10 +136,17 @@ export default async function ProgramDetailPage({
                     value={`/programs/${program.slug}`}
                   />
                   <button type="submit" className="btn btn-accent min-w-[140px]">
-                    구독하기
+                    무료 구독
                   </button>
                 </form>
               )}
+
+              {/* 무료 구독 안내 — 구독 중일 땐 관리 안내, 미구독일 땐 가입 유도 */}
+              <p className="max-w-md text-center text-sm text-[--muted-2]">
+                {access?.allowed
+                  ? "프로필에서 무료 구독 중인 프로그램을 한눈에 관리할 수 있습니다. 언제든 구독 해제할 수 있습니다."
+                  : "무료 구독하면 프로필에서 구독 중인 프로그램을 한눈에 관리할 수 있습니다. 언제든 구독 해제할 수 있습니다."}
+              </p>
             </div>
           ) : (
             <ProgramAction slug={program.slug} appUrl={program.appUrl} />
