@@ -4,10 +4,19 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProgram } from "@/lib/content";
 import { findAppByProgramSlug } from "@/lib/apps";
+import { canAccessApp } from "@/lib/app-access";
+import { createClient } from "@/lib/supabase/server";
+import {
+  startBetaSubscription,
+  cancelBetaSubscription,
+} from "@/app/apps/actions";
 import { ImagePlaceholder, Placeholder } from "@/components/ui";
 import BackButton from "@/components/BackButton";
 import ProgramAction from "@/components/ProgramAction";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
+
+// 구독 버튼이 현재 사용자 권한을 반영해야 하므로 동적 렌더(접근 판정은 매 요청).
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -52,6 +61,13 @@ export default async function ProgramDetailPage({
 
   const webApp = program.type === "web" ? findAppByProgramSlug(program.slug) : null;
 
+  // 앱 권한 — Dashboard/Subscribe/Apps 와 동일한 단일 판정(canAccessApp) 사용
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const access = webApp && user ? await canAccessApp(user.id, webApp.key) : null;
+
   return (
     <div className="container-page py-12">
       <BackButton href="/programs" label="프로그램 목록" />
@@ -76,18 +92,41 @@ export default async function ProgramDetailPage({
               <StoreButton label="Google Play" url={program.playStoreUrl} />
               <StoreButton label="App Store" url={program.appStoreUrl} />
             </div>
-          ) : (
+          ) : webApp ? (
             <div className="flex flex-col items-center gap-3">
-              {webApp && (
+              {!user ? (
                 <Link
-                  href={`/apps/${webApp.key}`}
+                  href={`/login?next=${encodeURIComponent(`/subscribe?app=${webApp.key}`)}`}
                   className="btn btn-accent min-w-[140px]"
                 >
-                  웹에서 사용하기
+                  구독하기
                 </Link>
+              ) : access?.allowed ? (
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Link
+                    href={`/apps/${webApp.key}`}
+                    className="btn btn-accent min-w-[140px]"
+                  >
+                    실행하기
+                  </Link>
+                  <form action={cancelBetaSubscription}>
+                    <input type="hidden" name="app" value={webApp.key} />
+                    <button type="submit" className="btn btn-ghost min-w-[140px]">
+                      구독취소
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <form action={startBetaSubscription}>
+                  <input type="hidden" name="app" value={webApp.key} />
+                  <button type="submit" className="btn btn-accent min-w-[140px]">
+                    구독하기
+                  </button>
+                </form>
               )}
-              <ProgramAction slug={program.slug} appUrl={program.appUrl} />
             </div>
+          ) : (
+            <ProgramAction slug={program.slug} appUrl={program.appUrl} />
           )}
         </div>
       </section>
