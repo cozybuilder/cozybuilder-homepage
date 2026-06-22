@@ -5,6 +5,11 @@ import { canAccessApp } from "@/lib/app-access";
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader, Card } from "@/components/ui";
 
+// 보안: 앱 접근은 매 요청 서버에서 권한 검증. 정적/ISR 캐시 금지.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export async function generateMetadata({
   params,
 }: {
