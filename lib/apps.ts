@@ -14,7 +14,8 @@ export const APP_DEFINITIONS: Record<string, AppDefinition> = {
     name: "Ebook Publishing System",
     description:
       "원고를 업로드하고 PDF/DOCX/EPUB 전자책으로 변환하는 웹프로그램",
-    programSlug: "ebook",
+    // 실제 published 프로그램 slug 와 일치시켜야 상세에서 구독 버튼이 연결됨
+    programSlug: "ebook-publishing-system",
   },
   shortsfactory: {
     key: "shortsfactory",

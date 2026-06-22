@@ -60,6 +60,12 @@ export default async function ProgramDetailPage({
   if (!program) notFound();
 
   const webApp = program.type === "web" ? findAppByProgramSlug(program.slug) : null;
+  console.log("[programs/detail]", {
+    slug: program.slug,
+    type: program.type,
+    appKey: webApp?.key ?? null,
+    appProgramSlug: webApp?.programSlug ?? null,
+  });
 
   // 앱 권한 — Dashboard/Subscribe/Apps 와 동일한 단일 판정(canAccessApp) 사용
   const supabase = await createClient();
