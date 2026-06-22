@@ -37,6 +37,14 @@ function revalidatePublic() {
 // 폼 액션 반환 상태 (useActionState 용)
 export type SaveState = { error?: string } | null;
 
+function slugify(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 // ── Programs ──
 export async function saveProgram(
   _prev: SaveState,
@@ -45,14 +53,16 @@ export async function saveProgram(
   await requireAdmin();
   const supabase = await createClient();
   const id = str(formData.get("id"));
-  const slug = str(formData.get("slug"));
-  if (!slug) {
-    return { error: "slug 가 비어 있습니다. 고급 옵션에서 slug를 확인하세요." };
-  }
-  const payload = {
-    slug,
+  const name = str(formData.get("name"));
+  let slug = str(formData.get("slug"));
+
+  // slug 없으면 이름 기반 자동 생성 (한글 등으로 비면 신규는 랜덤 fallback)
+  if (!slug) slug = slugify(name);
+
+  // 공통 필드 (slug 는 분기에서 처리)
+  const base = {
     type: str(formData.get("type")) === "mobile" ? "mobile" : "web",
-    name: str(formData.get("name")),
+    name,
     subtitle: str(formData.get("subtitle")),
     summary: str(formData.get("summary")),
     description: str(formData.get("description")),
@@ -66,9 +76,27 @@ export async function saveProgram(
     updated_at: new Date().toISOString(),
   };
 
-  const { data, error } = id
-    ? await supabase.from("programs").update(payload).eq("id", id).select()
-    : await supabase.from("programs").insert(payload).select();
+  console.log("[saveProgram] keys:", [...formData.keys()].join(","), "| id:", id || "(new)", "| slug:", slug);
+
+  let data, error;
+  if (id) {
+    // 수정: slug 비면 기존 slug 유지(payload 에서 제외)
+    const payload = slug ? { ...base, slug } : base;
+    ({ data, error } = await supabase
+      .from("programs")
+      .update(payload)
+      .eq("id", id)
+      .select());
+  } else {
+    // 신규: slug 보장 (비면 랜덤)
+    if (!slug) slug = `program-${Date.now().toString(36)}`;
+    ({ data, error } = await supabase
+      .from("programs")
+      .insert({ ...base, slug })
+      .select());
+  }
+
+  console.log("[saveProgram] result:", { error: error?.message, rows: data?.length });
 
   if (error) {
     console.error("[saveProgram] supabase error:", error);

@@ -178,9 +178,8 @@ export default function ProgramAdminForm({
               setSlug(e.target.value);
               setSlugTouched(true);
             }}
-            required
             className="input"
-            placeholder="예: clipminer"
+            placeholder="비워두면 이름으로 자동 생성"
           />
         </div>
       </details>
