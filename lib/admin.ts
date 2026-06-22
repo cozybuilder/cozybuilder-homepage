@@ -31,7 +31,7 @@ export async function requireAdmin(): Promise<User> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) redirect("/login?error=auth");
+  if (!user) redirect("/login?error=auth&next=/admin");
 
   const { data } = await supabase
     .from("admin_users")
