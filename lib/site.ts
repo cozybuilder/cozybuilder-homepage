@@ -31,19 +31,43 @@ export const bookItems = ["전자책", "출판 프로젝트", "개발 기록"];
 
 export type ProgramType = "web" | "mobile";
 
+// 업데이트 내역 1건 (등록형)
+export type ProgramUpdate = { date: string; text: string };
+
 export type Program = {
   slug: string;
   name: string;
   summary: string;
   description: string;
-  features: string[];
+  features: string[]; // 주요 기능 (개수에 따라 자동 증감)
   emoji: string;
   image: string;
   type: ProgramType;
   appUrl?: string; // web 실행 경로 (없으면 Coming Soon)
   playStoreUrl?: string; // mobile
   appStoreUrl?: string; // mobile
+  screenshots?: string[]; // 여러 장 등록 가능 (좌우 슬라이드)
+  updates?: ProgramUpdate[]; // 텍스트 기록형
 };
+
+// ── Product (제작/출판 상품) — 등록형 표준 구조 ──
+// 관리자 등록 시 products 배열에 항목을 추가하면 카드/상세가 자동 생성된다.
+export type ProductCtaType = "buy" | "contact";
+
+export type Product = {
+  slug: string;
+  name: string;
+  summary: string; // 간략한 설명
+  image: string; // 메인 이미지
+  contents: string[]; // 주요 내용/기능 (개수에 따라 자동 증감)
+  screenshots?: string[]; // 미리보기 이미지 (좌우 슬라이드)
+  longDescription?: string; // 자세한 설명 (긴 텍스트)
+  price?: string; // 가격 (텍스트, 예: "₩50,000" / "문의")
+  cta: ProductCtaType; // 구매하기(buy) / 문의하기(contact)
+};
+
+// 등록형: 관리자 페이지에서 채워질 예정 (현재는 비어 있음)
+export const products: Product[] = [];
 
 export const programs: Program[] = [
   {
@@ -103,6 +127,8 @@ export type SnsChannel = {
   summary: string;
   emoji: string;
   url?: string;
+  image?: string; // 대표 이미지 (등록형)
+  externalUrl?: string; // 외부 링크 버튼 (등록형, 상세페이지 없음)
 };
 
 export const snsChannels: SnsChannel[] = [

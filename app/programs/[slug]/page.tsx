@@ -102,21 +102,51 @@ export default async function ProgramDetailPage({
         </div>
       </section>
 
-      {/* 4. 스크린샷 */}
+      {/* 4. 스크린샷 (여러 장 등록 가능 — 많아지면 좌우 스크롤) */}
       <section className="mx-auto mt-16 max-w-3xl">
         <h2 className="text-2xl font-semibold tracking-tight">스크린샷</h2>
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <ImagePlaceholder ratio="aspect-video" />
-          <ImagePlaceholder ratio="aspect-video" />
-        </div>
+        {program.screenshots && program.screenshots.length > 0 ? (
+          <div className="mt-6 flex snap-x gap-4 overflow-x-auto pb-2">
+            {program.screenshots.map((src, i) => (
+              <div
+                key={i}
+                className="relative aspect-video w-72 shrink-0 snap-start overflow-hidden rounded-xl border border-[--border] bg-[--surface-2]"
+              >
+                <Image
+                  src={src}
+                  alt={`${program.name} 스크린샷 ${i + 1}`}
+                  fill
+                  className="object-cover"
+                  sizes="288px"
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <ImagePlaceholder ratio="aspect-video" />
+            <ImagePlaceholder ratio="aspect-video" />
+          </div>
+        )}
       </section>
 
-      {/* 5. 업데이트 내역 */}
+      {/* 5. 업데이트 내역 (텍스트 기록형) */}
       <section className="mx-auto mt-16 max-w-3xl">
         <h2 className="text-2xl font-semibold tracking-tight">업데이트 내역</h2>
-        <div className="mt-6">
-          <Placeholder label="업데이트 내역 준비 중" />
-        </div>
+        {program.updates && program.updates.length > 0 ? (
+          <ul className="mt-6 space-y-4 border-l border-[--border] pl-6">
+            {program.updates.map((u, i) => (
+              <li key={i}>
+                <p className="text-sm text-[--muted-2]">{u.date}</p>
+                <p className="mt-1 text-[--muted]">{u.text}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="mt-6">
+            <Placeholder label="업데이트 내역 준비 중" />
+          </div>
+        )}
       </section>
     </div>
   );
