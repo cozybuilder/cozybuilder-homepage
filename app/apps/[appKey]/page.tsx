@@ -47,6 +47,13 @@ export default async function AppPage({
   if (!user) redirect(`/login?next=/apps/${appKey}`);
 
   const access = await canAccessApp(user.id, appKey);
+  console.log("[apps/access]", {
+    userId: user.id,
+    appKey,
+    allowed: access.allowed,
+    reason: access.reason,
+    status: access.subscription?.status ?? null,
+  });
   if (!access.allowed) redirect(`/subscribe?app=${appKey}`);
 
   const steps = STEPS[appKey] ?? [];

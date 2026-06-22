@@ -12,9 +12,9 @@ export const dynamic = "force-dynamic";
 export default async function SubscribePage({
   searchParams,
 }: {
-  searchParams: Promise<{ app?: string }>;
+  searchParams: Promise<{ app?: string; error?: string }>;
 }) {
-  const { app: appKey } = await searchParams;
+  const { app: appKey, error: errorMsg } = await searchParams;
   const app = appKey ? getApp(appKey) : null;
 
   const supabase = await createClient();
@@ -25,6 +25,7 @@ export default async function SubscribePage({
   // 단일 진실: canAccessApp 로 현재 접근 가능 여부 판정
   const access = app && user ? await canAccessApp(user.id, app.key) : null;
   const alreadySubscribed = access?.allowed ?? false;
+  const isDev = process.env.NODE_ENV === "development";
 
   return (
     <div className="container-page py-20">
@@ -35,6 +36,30 @@ export default async function SubscribePage({
       />
 
       <div className="mx-auto mt-12 max-w-xl">
+        {errorMsg && (
+          <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {errorMsg}
+          </p>
+        )}
+
+        {isDev && (
+          <pre className="mb-4 overflow-x-auto rounded-lg border border-[--border] bg-[--surface-2] p-3 text-xs text-[--muted-2]">
+{JSON.stringify(
+  {
+    appKey: app?.key ?? null,
+    loggedIn: Boolean(user),
+    allowed: access?.allowed ?? null,
+    reason: access?.reason ?? null,
+    status: access?.subscription?.status ?? null,
+    plan: access?.subscription?.plan ?? null,
+    current_period_end: access?.subscription?.current_period_end ?? null,
+  },
+  null,
+  2
+)}
+          </pre>
+        )}
+
         <Card>
           <p className="text-sm leading-relaxed text-[--muted]">
             {alreadySubscribed ? (

@@ -58,6 +58,24 @@ export default async function DashboardPage() {
       {/* 웹프로그램 (app_key 기반 구독 상태) */}
       <section className="mt-16">
         <h2 className="text-xl font-semibold tracking-tight">웹프로그램</h2>
+
+        {process.env.NODE_ENV === "development" && (
+          <pre className="mt-4 overflow-x-auto rounded-lg border border-[--border] bg-[--surface-2] p-3 text-xs text-[--muted-2]">
+{JSON.stringify(
+  appAccess.map(({ app, access }) => ({
+    appKey: app.key,
+    allowed: access.allowed,
+    reason: access.reason,
+    status: access.subscription?.status ?? null,
+    plan: access.subscription?.plan ?? null,
+    current_period_end: access.subscription?.current_period_end ?? null,
+  })),
+  null,
+  2
+)}
+          </pre>
+        )}
+
         <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {appAccess.map(({ app, access }) => {
             const canUse = access.allowed;
