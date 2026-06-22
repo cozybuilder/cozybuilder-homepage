@@ -7,8 +7,12 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
+  // 보호가 필요한 경로에서만 세션 갱신/검증 (공개 페이지는 Supabase Auth 왕복 없음)
   matcher: [
-    // 정적 파일/이미지/영상 제외한 모든 경로
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|mp4)$).*)",
+    "/admin/:path*",
+    "/dashboard/:path*",
+    "/profile/:path*",
+    "/settings/:path*",
+    "/auth/:path*",
   ],
 };

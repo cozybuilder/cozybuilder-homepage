@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin";
+import { CACHE_TAGS } from "@/lib/content";
 
 function lines(v: FormDataEntryValue | null): string[] {
   return String(v ?? "")
@@ -80,6 +81,7 @@ export async function saveProgram(
     };
   }
 
+  revalidateTag(CACHE_TAGS.programs, "max");
   revalidatePath("/admin/programs");
   revalidatePublic();
   redirect("/admin/programs");
@@ -89,6 +91,7 @@ export async function deleteProgram(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
   await supabase.from("programs").delete().eq("id", str(formData.get("id")));
+  revalidateTag(CACHE_TAGS.programs, "max");
   revalidatePath("/admin/programs");
   revalidatePublic();
   redirect("/admin/programs");
@@ -118,6 +121,7 @@ export async function saveProduct(formData: FormData) {
   };
   if (id) await supabase.from("products").update(payload).eq("id", id);
   else await supabase.from("products").insert(payload);
+  revalidateTag(CACHE_TAGS.products, "max");
   revalidatePath("/admin/product");
   revalidatePublic();
   redirect("/admin/product");
@@ -127,6 +131,7 @@ export async function deleteProduct(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
   await supabase.from("products").delete().eq("id", str(formData.get("id")));
+  revalidateTag(CACHE_TAGS.products, "max");
   revalidatePath("/admin/product");
   revalidatePublic();
   redirect("/admin/product");
@@ -150,6 +155,7 @@ export async function saveMarketing(formData: FormData) {
   };
   if (id) await supabase.from("marketing_channels").update(payload).eq("id", id);
   else await supabase.from("marketing_channels").insert(payload);
+  revalidateTag(CACHE_TAGS.marketing, "max");
   revalidatePath("/admin/marketing");
   revalidatePublic();
   redirect("/admin/marketing");
@@ -162,6 +168,7 @@ export async function deleteMarketing(formData: FormData) {
     .from("marketing_channels")
     .delete()
     .eq("id", str(formData.get("id")));
+  revalidateTag(CACHE_TAGS.marketing, "max");
   revalidatePath("/admin/marketing");
   revalidatePublic();
   redirect("/admin/marketing");

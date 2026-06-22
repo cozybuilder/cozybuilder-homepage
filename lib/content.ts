@@ -1,5 +1,6 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { unstable_cache } from "next/cache";
+import { createClient as createPublicClient } from "@supabase/supabase-js";
 import {
   programs as fallbackPrograms,
   products as fallbackProducts,
@@ -10,7 +11,23 @@ import {
 } from "@/lib/site";
 
 // 공개 화면용 통합 데이터 레이어.
-// 규칙: Supabase에 published 데이터가 있으면 DB 사용, 없으면 lib/site fallback.
+// published 콘텐츠는 쿠키 없는 anon 클라이언트로 조회 + unstable_cache(tags)로 캐싱.
+// → 매 요청 DB 왕복 제거(정적/ISR화). 관리자 저장 시 revalidateTag 로 무효화.
+// DB가 비어 있거나 오류면 lib/site fallback 사용(화면이 비지 않도록).
+
+const supabasePublic = createPublicClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
+
+export const CACHE_TAGS = {
+  programs: "programs",
+  products: "products",
+  marketing: "marketing",
+} as const;
+
+const CACHE_TTL = 3600; // 초
 
 export type MarketingItem = {
   slug: string;
@@ -21,7 +38,6 @@ export type MarketingItem = {
   externalUrl?: string;
 };
 
-// ── 매핑 (DB row → 화면 타입) ──
 /* eslint-disable @typescript-eslint/no-explicit-any */
 function asStringArray(v: any): string[] {
   return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
@@ -73,7 +89,6 @@ function rowToMarketing(r: any): MarketingItem {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-// 마케팅 fallback: 기존 snsChannels → MarketingItem
 const fallbackMarketing: MarketingItem[] = snsChannels
   .filter((c) => ["youtube", "instagram", "blog"].includes(c.slug))
   .map((c) => ({
@@ -85,60 +100,54 @@ const fallbackMarketing: MarketingItem[] = snsChannels
     externalUrl: c.externalUrl ?? "",
   }));
 
-// ── Programs ──
-export async function getPrograms(): Promise<Program[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+// ── 캐시된 published 조회 ──
+export const getPrograms = unstable_cache(
+  async (): Promise<Program[]> => {
+    const { data, error } = await supabasePublic
       .from("programs")
       .select("*")
       .eq("status", "published")
       .order("sort_order", { ascending: true });
     if (error || !data || data.length === 0) return fallbackPrograms;
     return data.map(rowToProgram);
-  } catch {
-    return fallbackPrograms;
-  }
-}
+  },
+  ["programs-list"],
+  { tags: [CACHE_TAGS.programs], revalidate: CACHE_TTL }
+);
 
-export async function getProgram(slug: string): Promise<Program | null> {
-  const all = await getPrograms();
-  return all.find((p) => p.slug === slug) ?? null;
-}
-
-// ── Products ──
-export async function getProducts(): Promise<Product[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+export const getProducts = unstable_cache(
+  async (): Promise<Product[]> => {
+    const { data, error } = await supabasePublic
       .from("products")
       .select("*")
       .eq("status", "published")
       .order("sort_order", { ascending: true });
     if (error || !data || data.length === 0) return fallbackProducts;
     return data.map(rowToProduct);
-  } catch {
-    return fallbackProducts;
-  }
-}
+  },
+  ["products-list"],
+  { tags: [CACHE_TAGS.products], revalidate: CACHE_TTL }
+);
 
-export async function getProduct(slug: string): Promise<Product | null> {
-  const all = await getProducts();
-  return all.find((p) => p.slug === slug) ?? null;
-}
-
-// ── Marketing ──
-export async function getMarketing(): Promise<MarketingItem[]> {
-  try {
-    const supabase = await createClient();
-    const { data, error } = await supabase
+export const getMarketing = unstable_cache(
+  async (): Promise<MarketingItem[]> => {
+    const { data, error } = await supabasePublic
       .from("marketing_channels")
       .select("*")
       .eq("status", "published")
       .order("sort_order", { ascending: true });
     if (error || !data || data.length === 0) return fallbackMarketing;
     return data.map(rowToMarketing);
-  } catch {
-    return fallbackMarketing;
-  }
+  },
+  ["marketing-list"],
+  { tags: [CACHE_TAGS.marketing], revalidate: CACHE_TTL }
+);
+
+// 단건: 캐시된 목록에서 조회 (요청당 추가 DB 왕복 없음)
+export async function getProgram(slug: string): Promise<Program | null> {
+  return (await getPrograms()).find((p) => p.slug === slug) ?? null;
+}
+
+export async function getProduct(slug: string): Promise<Product | null> {
+  return (await getProducts()).find((p) => p.slug === slug) ?? null;
 }
