@@ -82,6 +82,15 @@
       .navitem.on svg{ opacity:1; }
       .navitem .count{ margin-left:auto; font-size:11px; font-weight:700; color:var(--faint); background:var(--sunken); padding:1px 8px; border-radius:999px; }
       .navitem.on .count{ background:#fff; color:var(--accent-ink); }
+      /* 워크플로우 사이드바(원고 만들기 → 책 만들기 → 출력하기) */
+      /* 계층 구조만으로 구분(아이콘 0) — 대분류=섹션 제목, 소분류=들여쓴 내용 */
+      .wf{ display:flex; flex-direction:column; gap:2px; }
+      .wf-group{ margin-top:16px; }
+      .wf-group:first-child{ margin-top:2px; }
+      .wf-head{ font-size:13.5px; font-weight:800; color:var(--ink); letter-spacing:-.01em; padding:6px 10px 8px; }
+      .wf-items{ display:flex; flex-direction:column; gap:1px; }
+      .navitem.sub{ padding:8px 11px 8px 22px; font-size:12.5px; }
+      .wf-cap{ font-size:10.5px; color:var(--faint); padding:0 0 5px 22px; margin-top:-2px; }
       .nav-foot{ flex:none; border-top:1px solid var(--line-2); padding:12px; }
       .storage .lbl{ display:flex; justify-content:space-between; font-size:11px; color:var(--muted); margin-bottom:6px; }
       .bar{ height:6px; border-radius:999px; background:#ECEAE4; overflow:hidden; }
@@ -176,6 +185,26 @@
       .qa .qi{ width:30px; height:30px; border:1px solid var(--line); border-radius:9px; display:flex; align-items:center; justify-content:center; background:var(--panel); }
       .qa:hover .qi{ border-color:#d7d9fb; }
       .qa .qi svg{ width:16px; height:16px; stroke:currentColor; }
+
+      /* 원고 만들기 · 프롬프트 생성기 */
+      #view-promptgen{ grid-column:2 / -1; }
+      .pg-wrap{ max-width:780px; margin:0 auto; padding:14px 8px 24px; }
+      .pg-title{ font-size:22px; font-weight:800; letter-spacing:-.02em; margin:0 0 8px; }
+      .pg-sub{ font-size:13.5px; line-height:1.7; color:var(--muted); margin:0 0 22px; }
+      .pg-label{ display:block; font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--faint); text-transform:uppercase; margin:0 0 8px; }
+      .pg-input{ width:100%; font-size:15px; padding:13px 15px; border:1px solid var(--line); border-radius:var(--r-ctl); background:var(--panel); color:var(--ink); transition:border-color .14s,box-shadow .14s; }
+      .pg-input:focus{ outline:none; border-color:#9fb4e6; box-shadow:0 0 0 3px rgba(59,110,245,.16); }
+      .pg-examples{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:12px 0 0; font-size:12px; color:var(--faint); }
+      .pg-chip{ border:1px solid var(--line); background:var(--sunken); color:var(--ink-2); font:inherit; font-size:12px; padding:6px 12px; border-radius:999px; cursor:pointer; box-shadow:none; transition:background .12s,border-color .12s; }
+      .pg-chip:hover{ background:var(--accent-soft); color:var(--accent-ink); border-color:#d7d9fb; }
+      .pg-actions{ display:flex; align-items:center; gap:12px; margin:22px 0 0; }
+      .pg-actions .primary{ font-size:14px; padding:11px 26px; }
+      .pg-result{ margin-top:24px; border:1px solid var(--line); border-radius:var(--r-card); overflow:hidden; box-shadow:var(--sh-card); }
+      .pg-result-h{ display:flex; align-items:center; justify-content:space-between; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--sunken); }
+      .pg-result-t{ font-size:12.5px; font-weight:700; color:var(--ink-2); }
+      .pg-pre{ margin:0; background:#171a21; color:#E6E8EE; font-family:'SF Mono',ui-monospace,Consolas,monospace; font-size:12px; line-height:1.65; padding:16px 18px; max-height:46vh; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+
+      .hide{ display:none !important; }
     </style>
   </head>
   <body>
@@ -221,20 +250,46 @@
       <div class="workspace">
         <!-- 좌측 NAV -->
         <aside class="pane">
-          <div class="pane-h"><span class="ttl">프로젝트</span></div>
+          <div class="pane-h"><span class="ttl">워크플로우</span></div>
           <div class="pane-scroll">
             <div class="proj-card">
               <div class="thumb"></div>
               <div><div class="nm">나의 첫 번째 전자책</div><div class="meta">최종 수정: 방금 전</div></div>
             </div>
-            <div class="navlist">
-              <div class="navitem on"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M15 3v4h4"/><path d="M9 13h6M9 17h4"/></svg>원고<span class="count">24</span></div>
-              <div class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4 3 2.5L16 12l3 3"/></svg>이미지<span class="count">128</span></div>
-              <div class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="6" r="3"/><circle cx="6" cy="13" r="3"/><circle cx="17" cy="16" r="3"/><path d="M9 8l1.5 2M9 15l5 1"/></svg>테마<span class="count">4</span></div>
-              <div class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12"/><path d="M4 6h.01M4 12h.01M4 18h.01"/></svg>목차 구성</div>
-              <div class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6"/></svg>표지 디자인</div>
-              <div class="navitem"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M8 8l4-4 4 4"/><rect x="4" y="15" width="16" height="5" rx="1.5"/></svg>출력 설정</div>
-            </div>
+            <nav class="wf">
+              <!-- 원고 만들기 -->
+              <div class="wf-group">
+                <div class="wf-head">원고 만들기</div>
+                <div class="wf-items">
+                  <div class="navitem sub" data-view="gen">프롬프트 생성기</div>
+                </div>
+              </div>
+              <!-- 책 만들기 -->
+              <div class="wf-group">
+                <div class="wf-head">책 만들기</div>
+                <div class="wf-items">
+                  <div class="navitem sub">프로젝트</div>
+                  <div class="navitem sub on">원고</div>
+                  <div class="navitem sub">이미지</div>
+                  <div class="navitem sub">디자인</div>
+                  <div class="wf-cap">테마 · 목차 · 레이아웃</div>
+                  <div class="navitem sub">표지</div>
+                  <div class="navitem sub">출판 정보</div>
+                </div>
+              </div>
+              <!-- 출력하기 -->
+              <div class="wf-group">
+                <div class="wf-head">출력하기</div>
+                <div class="wf-items">
+                  <div class="navitem sub">출력 설정</div>
+                  <div class="navitem sub">미리보기</div>
+                  <div class="navitem sub">PDF</div>
+                  <div class="navitem sub">DOCX</div>
+                  <div class="navitem sub">EPUB</div>
+                  <div class="navitem sub">크몽 샘플</div>
+                </div>
+              </div>
+            </nav>
           </div>
           <div class="nav-foot">
             <div class="storage">
@@ -250,7 +305,7 @@
         </aside>
 
         <!-- 챕터 패널 -->
-        <aside class="pane">
+        <aside class="pane book-view">
           <div class="pane-h">
             <div class="search">
               <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.2-3.2"/></svg><input type="text" placeholder="챕터 검색…" /></div>
@@ -296,7 +351,7 @@
         </aside>
 
         <!-- 에디터 -->
-        <section class="pane editor">
+        <section class="pane editor book-view">
           <div class="etoolbar">
             <button class="ebtn wide">H1
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
@@ -355,7 +410,7 @@
         </section>
 
         <!-- 인스펙터 -->
-        <aside class="pane">
+        <aside class="pane book-view">
           <div class="insp-tabs" id="insptabs">
             <button class="on" data-p="prop">속성</button>
             <button data-p="style">스타일</button>
@@ -409,6 +464,39 @@
             </div>
           </div>
         </aside>
+
+        <!-- 원고 만들기 > 프롬프트 생성기 (사이드바에서 선택 시 표시, 작업 영역 차지) -->
+        <section class="pane hide" id="view-promptgen">
+          <div class="pane-h"><span class="ttl">원고 만들기 · 프롬프트 생성기</span></div>
+          <div class="pane-scroll">
+            <div class="pg-wrap">
+              <h2 class="pg-title">프롬프트 생성기</h2>
+              <p class="pg-sub">전자책 <b>주제 하나만</b> 입력하면, 엔진에 최적화된 원고 작성 프롬프트가 자동으로 만들어집니다.<br />복사해서 ChatGPT · Claude 에 붙여넣어 Markdown 원고(본문 + 이미지 프롬프트)를 받으세요.</p>
+
+              <label class="pg-label" for="pg-topic">전자책 주제</label>
+              <input id="pg-topic" class="pg-input" type="text" placeholder="예) 40대 이후 건강관리 / 감사일기의 힘 / 반려견과 행복하게 사는 법" />
+              <div class="pg-examples">
+                <span>예시</span>
+                <button type="button" class="pg-chip">40대 이후 건강관리</button>
+                <button type="button" class="pg-chip">감사일기의 힘</button>
+                <button type="button" class="pg-chip">반려견과 행복하게 사는 법</button>
+              </div>
+
+              <div class="pg-actions">
+                <button class="btn primary" id="pg-generate">프롬프트 생성</button>
+                <span class="stage" id="pg-hint"></span>
+              </div>
+
+              <div class="pg-result hide" id="pg-result">
+                <div class="pg-result-h">
+                  <span class="pg-result-t">생성된 프롬프트</span>
+                  <button class="btn" id="pg-copy">전체 복사</button>
+                </div>
+                <pre class="pg-pre" id="pg-pre"></pre>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <!-- ───────── 하단 빠른 추가 ───────── -->
@@ -448,12 +536,104 @@
             if (t) t.classList.add('on');
           });
         });
-        // 좌측 nav 활성
-        document.querySelectorAll('.navlist .navitem').forEach(function (n) {
+        // 좌측 워크플로우 nav 활성 + 작업 영역 뷰 전환(프롬프트 생성기 ↔ 책 만들기)
+        function showView(gen) {
+          document.querySelectorAll('.book-view').forEach(function (p) { p.classList.toggle('hide', gen); });
+          var pg = document.getElementById('view-promptgen');
+          if (pg) pg.classList.toggle('hide', !gen);
+        }
+        document.querySelectorAll('.wf .navitem').forEach(function (n) {
           n.addEventListener('click', function () {
-            document.querySelectorAll('.navlist .navitem').forEach(function (x) { x.classList.remove('on'); });
+            document.querySelectorAll('.wf .navitem').forEach(function (x) { x.classList.remove('on'); });
             n.classList.add('on');
+            showView(n.getAttribute('data-view') === 'gen');
           });
+        });
+
+        // ── 프롬프트 생성기 ── (AI 호출 없음 — 확정 프롬프트에 주제만 치환)
+        var PROMPT_TEMPLATE = [
+          '전자책 주제:',
+          '{{TOPIC}}',
+          '',
+          '당신은 전문 전자책 작가입니다.',
+          '위 주제로 실제 판매 가능한 전자책 원고를 작성해주세요.',
+          '',
+          '조건:',
+          '1. Markdown 형식으로 작성',
+          '2. 읽기 쉬운 문체',
+          '3. 초보자도 이해할 수 있도록 설명',
+          '4. 최소 8개 이상의 Chapter 구성',
+          '5. 각 Chapter는 충분한 내용을 포함 (일반 본문 위주)',
+          '6. 컴포넌트(표·체크리스트·FAQ·Timeline 등)는 꼭 필요할 때만, 한 Chapter에 1~2개 이내로만 사용',
+          '7. 억지로 여러 컴포넌트를 넣지 말 것 — 목표는 "읽기 편한 책"이지 "컴포넌트 쇼케이스"가 아님',
+          '8. 에세이·명언집·자기계발서 등은 컴포넌트를 거의 쓰지 말고 본문 흐름으로 작성',
+          '9. 중요한 부분은 강조, 실전 팁 포함, 독자가 바로 따라할 수 있도록 구성',
+          '10. 이미지가 필요한 부분은 이미지 블록 형식으로 작성',
+          '',
+          '[정확한 형식 — 이 형식을 반드시 지켜주세요]',
+          '- 제목: 첫 줄에  # 책 제목',
+          '- 부제/저자: 그 아래에  subtitle: 부제   /   author: 저자',
+          '- 각 장(章): "## Chapter 1. 제목" 형식 (숫자와 점 필수, 1부터 순서대로)',
+          '- 강조: ==중요한 문장==',
+          '- 컴포넌트 예 (꼭 필요할 때만 사용 — 형식 참고용):',
+          ':::checklist',
+          '- 항목 1',
+          '- 항목 2',
+          ':::',
+          '',
+          ':::faq',
+          'q: 질문',
+          'a: 답변',
+          ':::',
+          '',
+          '- 표지 이미지는 원고 최상단(제목·부제·저자 아래, 첫 Chapter 앞)에 반드시 1개:',
+          ':::image',
+          'id: cover',
+          'type: cover',
+          'filename: cover.png',
+          'prompt: 전자책 표지 디자인. 책 제목·부제·저자명이 들어갈 여백을 둔 세로형 A4 비율(1240x1748 이상) 표지. 주제에 맞는 분위기·색감을 상세히.',
+          ':::',
+          '',
+          '- 본문 이미지는 IMG-001 부터, 각 형식 그대로:',
+          ':::image',
+          'id: IMG-001',
+          'type: chapter',
+          'filename: IMG-001.png',
+          'prompt: 본문과 어울리는 이미지 설명(생성 AI가 바로 쓸 수 있게 상세히)',
+          ':::',
+          '',
+          '이미지 블록 규칙:',
+          '- 표지: id=cover, type=cover, filename=cover.png — 딱 1개, 최상단. 절대 IMG-001 로 만들지 말 것.',
+          '- 본문: id=IMG-001, IMG-002, IMG-003 … 순서, type=chapter, filename=IMG-00N.png',
+          '- 표지는 세로 A4(1240x1748 이상), 본문은 9:16 세로(1080x1920 이상) 권장',
+          '- prompt는 생성 AI가 바로 쓸 수 있게 상세하게',
+          '',
+          '목표는 실제 돈을 받고 판매할 수 있는 수준의 전자책입니다.',
+        ].join('\n');
+
+        var pgTopic = document.getElementById('pg-topic');
+        var pgPre = document.getElementById('pg-pre');
+        var pgResult = document.getElementById('pg-result');
+        var pgHint = document.getElementById('pg-hint');
+        function generatePrompt() {
+          var topic = (pgTopic.value || '').trim();
+          if (!topic) { pgHint.textContent = '주제를 입력하세요'; pgHint.className = 'stage err'; pgTopic.focus(); return; }
+          pgHint.textContent = '';
+          pgPre.textContent = PROMPT_TEMPLATE.replace('{{TOPIC}}', topic);
+          pgResult.classList.remove('hide');
+          pgResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        var pgGen = document.getElementById('pg-generate');
+        if (pgGen) pgGen.addEventListener('click', generatePrompt);
+        if (pgTopic) pgTopic.addEventListener('keydown', function (e) { if (e.key === 'Enter') generatePrompt(); });
+        document.querySelectorAll('.pg-chip').forEach(function (c) {
+          c.addEventListener('click', function () { pgTopic.value = c.textContent.trim(); pgTopic.focus(); });
+        });
+        var pgCopy = document.getElementById('pg-copy');
+        if (pgCopy) pgCopy.addEventListener('click', async function () {
+          try { await navigator.clipboard.writeText(pgPre.textContent); } catch (e) {}
+          var o = pgCopy.textContent; pgCopy.textContent = '복사됨 ✓';
+          setTimeout(function () { pgCopy.textContent = o; }, 1300);
         });
         // 챕터 항목 활성
         document.querySelectorAll('.tchild').forEach(function (c) {
