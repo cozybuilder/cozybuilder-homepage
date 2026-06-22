@@ -5,8 +5,27 @@ import {
   snsChannels,
   websiteServices,
   bookItems,
+  type Program,
 } from "@/lib/site";
 import HeroVideo from "@/components/HeroVideo";
+
+function HomeProgramCard({ p }: { p: Program }) {
+  return (
+    <Link href={`/programs/${p.slug}`} className="card card-hover">
+      <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-xl">
+        <Image
+          src={p.image}
+          alt={p.name}
+          fill
+          className="object-cover"
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+        />
+      </div>
+      <h3 className="text-base font-semibold">{p.name}</h3>
+      <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>
+    </Link>
+  );
+}
 
 export default function HomePage() {
   return (
@@ -52,28 +71,27 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* Programs (카드) */}
+        {/* Programs (카드) — 컴퓨터 웹프로그램 / 모바일앱 구분 */}
         <h3 className="text-lg font-semibold tracking-tight">Programs</h3>
-        <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {programs.map((p) => (
-            <Link
-              key={p.slug}
-              href={`/programs/${p.slug}`}
-              className="card card-hover"
-            >
-              <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-xl">
-                <Image
-                  src={p.image}
-                  alt={p.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                />
-              </div>
-              <h3 className="text-base font-semibold">{p.name}</h3>
-              <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>
-            </Link>
-          ))}
+
+        <h4 className="mt-6 text-sm font-medium text-[--muted]">
+          컴퓨터 웹프로그램
+        </h4>
+        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {programs
+            .filter((p) => p.type === "web")
+            .map((p) => (
+              <HomeProgramCard key={p.slug} p={p} />
+            ))}
+        </div>
+
+        <h4 className="mt-8 text-sm font-medium text-[--muted]">모바일앱</h4>
+        <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {programs
+            .filter((p) => p.type === "mobile")
+            .map((p) => (
+              <HomeProgramCard key={p.slug} p={p} />
+            ))}
         </div>
 
         {/* Website Development (텍스트) */}

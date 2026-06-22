@@ -46,6 +46,9 @@ function TextList({ items }: { items: string[] }) {
 }
 
 export default function ProductPage() {
+  const webPrograms = programs.filter((p) => p.type === "web");
+  const mobilePrograms = programs.filter((p) => p.type === "mobile");
+
   return (
     <div className="container-page py-20">
       <PageHeader
@@ -54,11 +57,22 @@ export default function ProductPage() {
         description="CozyBuilder가 만드는 프로그램과 서비스."
       />
 
-      {/* Programs */}
+      {/* Programs — 컴퓨터 웹프로그램 / 모바일앱 구분 */}
       <section className="mt-16">
         <h2 className="text-xl font-semibold tracking-tight">Programs</h2>
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {programs.map((p) => (
+
+        <h3 className="mt-6 text-sm font-medium text-[--muted]">
+          컴퓨터 웹프로그램
+        </h3>
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {webPrograms.map((p) => (
+            <ProgramCard key={p.slug} p={p} />
+          ))}
+        </div>
+
+        <h3 className="mt-8 text-sm font-medium text-[--muted]">모바일앱</h3>
+        <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {mobilePrograms.map((p) => (
             <ProgramCard key={p.slug} p={p} />
           ))}
         </div>
