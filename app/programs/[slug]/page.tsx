@@ -117,6 +117,11 @@ export default async function ProgramDetailPage({
                   </Link>
                   <form action={cancelBetaSubscription}>
                     <input type="hidden" name="app" value={webApp.key} />
+                    <input
+                      type="hidden"
+                      name="returnTo"
+                      value={`/programs/${program.slug}`}
+                    />
                     <button type="submit" className="btn btn-ghost min-w-[140px]">
                       구독취소
                     </button>
@@ -125,6 +130,11 @@ export default async function ProgramDetailPage({
               ) : (
                 <form action={startBetaSubscription}>
                   <input type="hidden" name="app" value={webApp.key} />
+                  <input
+                    type="hidden"
+                    name="returnTo"
+                    value={`/programs/${program.slug}`}
+                  />
                   <button type="submit" className="btn btn-accent min-w-[140px]">
                     구독하기
                   </button>

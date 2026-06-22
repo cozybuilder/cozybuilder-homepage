@@ -97,6 +97,7 @@ export default async function DashboardPage() {
                       </Link>
                       <form action={cancelBetaSubscription}>
                         <input type="hidden" name="app" value={app.key} />
+                        <input type="hidden" name="returnTo" value="/dashboard" />
                         <button type="submit" className="btn btn-ghost px-4 py-2">
                           구독 취소
                         </button>
@@ -105,6 +106,7 @@ export default async function DashboardPage() {
                   ) : (
                     <form action={startBetaSubscription}>
                       <input type="hidden" name="app" value={app.key} />
+                      <input type="hidden" name="returnTo" value="/dashboard" />
                       <button type="submit" className="btn btn-accent px-4 py-2">
                         구독 시작
                       </button>

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getApp } from "@/lib/apps";
+import { safeNextPath } from "@/lib/auth-redirect";
 
 // 베타 셀프 구독 토글. user_id 는 항상 서버 세션에서만 취득(클라이언트 입력 금지).
 // appKey 는 APP_DEFINITIONS 에 있는 값만 허용. RLS 가 본인 row 만 쓰도록 강제.
@@ -56,7 +57,8 @@ export async function startBetaSubscription(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath(`/apps/${appKey}`);
-  redirect(`/apps/${appKey}`);
+  // 호출한 페이지로 복귀(없으면 앱 진입). 상세/대시보드는 머무르며 버튼만 갱신.
+  redirect(safeNextPath(String(formData.get("returnTo") ?? ""), `/apps/${appKey}`));
 }
 
 export async function cancelBetaSubscription(formData: FormData) {
@@ -101,5 +103,6 @@ export async function cancelBetaSubscription(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath(`/apps/${appKey}`);
-  redirect(`/subscribe?app=${appKey}`);
+  // 호출한 페이지로 복귀(없으면 구독 안내). 상세/대시보드는 머무르며 버튼만 갱신.
+  redirect(safeNextPath(String(formData.get("returnTo") ?? ""), `/subscribe?app=${appKey}`));
 }
