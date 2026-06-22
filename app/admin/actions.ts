@@ -33,13 +33,23 @@ function revalidatePublic() {
   revalidatePath("/marketing");
 }
 
+// 폼 액션 반환 상태 (useActionState 용)
+export type SaveState = { error?: string } | null;
+
 // ── Programs ──
-export async function saveProgram(formData: FormData) {
+export async function saveProgram(
+  _prev: SaveState,
+  formData: FormData
+): Promise<SaveState> {
   await requireAdmin();
   const supabase = await createClient();
   const id = str(formData.get("id"));
+  const slug = str(formData.get("slug"));
+  if (!slug) {
+    return { error: "slug 가 비어 있습니다. 고급 옵션에서 slug를 확인하세요." };
+  }
   const payload = {
-    slug: str(formData.get("slug")),
+    slug,
     type: str(formData.get("type")) === "mobile" ? "mobile" : "web",
     name: str(formData.get("name")),
     subtitle: str(formData.get("subtitle")),
@@ -54,8 +64,22 @@ export async function saveProgram(formData: FormData) {
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
   };
-  if (id) await supabase.from("programs").update(payload).eq("id", id);
-  else await supabase.from("programs").insert(payload);
+
+  const { data, error } = id
+    ? await supabase.from("programs").update(payload).eq("id", id).select()
+    : await supabase.from("programs").insert(payload).select();
+
+  if (error) {
+    console.error("[saveProgram] supabase error:", error);
+    return { error: error.message };
+  }
+  if (id && (!data || data.length === 0)) {
+    return {
+      error:
+        "업데이트된 행이 없습니다. 관리자 권한(admin_users 등록) 또는 RLS 정책을 확인하세요.",
+    };
+  }
+
   revalidatePath("/admin/programs");
   revalidatePublic();
   redirect("/admin/programs");

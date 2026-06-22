@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { saveProgram } from "@/app/admin/actions";
 import ImageField from "@/components/admin/ImageField";
 import ImageListField from "@/components/admin/ImageListField";
@@ -59,6 +59,7 @@ export default function ProgramAdminForm({
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
+  const [state, formAction, pending] = useActionState(saveProgram, null);
 
   const onName = (v: string) => {
     setName(v);
@@ -69,7 +70,7 @@ export default function ProgramAdminForm({
   };
 
   return (
-    <form action={saveProgram} className="space-y-6">
+    <form action={formAction} className="space-y-6">
       {!isNew && <input type="hidden" name="id" value={initial?.id} />}
       {/* name 은 controlled 이므로 hidden 으로 제출 */}
       <input type="hidden" name="name" value={name} />
@@ -184,8 +185,18 @@ export default function ProgramAdminForm({
         </div>
       </details>
 
-      <button type="submit" className="btn btn-accent w-full">
-        저장
+      {state?.error && (
+        <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          저장 실패: {state.error}
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="btn btn-accent w-full disabled:opacity-60"
+      >
+        {pending ? "저장 중…" : "저장"}
       </button>
     </form>
   );
