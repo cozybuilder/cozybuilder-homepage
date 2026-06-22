@@ -1,27 +1,4 @@
-/** Standard page intro block used across inner pages. */
-export function PageHeader({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow?: string;
-  title: string;
-  description?: string;
-}) {
-  return (
-    <div className="mx-auto max-w-3xl text-center">
-      {eyebrow && <p className="eyebrow mb-4">{eyebrow}</p>}
-      <h1 className="heading-gradient text-4xl font-semibold tracking-tight md:text-5xl">
-        {title}
-      </h1>
-      {description && (
-        <p className="mt-5 text-lg text-[--muted]">{description}</p>
-      )}
-    </div>
-  );
-}
-
-/** Placeholder block to mark content yet to be filled in. */
+/** 내용 준비 중 placeholder 블록. */
 export function Placeholder({ label = "내용 준비 중" }: { label?: string }) {
   return (
     <div className="flex min-h-32 items-center justify-center rounded-xl border border-dashed border-[--border-strong] bg-[--surface-2]/40 p-6 text-sm text-[--muted-2]">
@@ -30,7 +7,7 @@ export function Placeholder({ label = "내용 준비 중" }: { label?: string })
   );
 }
 
-/** Decorative gradient image stand-in (no real assets yet). */
+/** 그라데이션 이미지 자리표시자(실제 에셋 없을 때). */
 export function ImagePlaceholder({
   ratio = "aspect-video",
   label,
