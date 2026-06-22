@@ -46,6 +46,17 @@
 
 html {
   scroll-behavior: smooth;
+  /* 네이티브 컨트롤(select/option/date 등)을 다크로 렌더 */
+  color-scheme: dark;
+}
+
+/* select 닫힘/열림 모두 다크 통일 (브라우저 기본 흰 배경 방지) */
+select.input {
+  color-scheme: dark;
+}
+select.input option {
+  background-color: #111217;
+  color: #ffffff;
 }
 
 body {
