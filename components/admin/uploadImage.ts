@@ -7,11 +7,29 @@ import { createClient } from "@/lib/supabase/client";
 
 const BUCKET = "cms-images";
 
-async function resizeToWebp(
-  file: File,
-  max = 1600,
-  quality = 0.8
-): Promise<Blob | null> {
+// 이미지 종류별 프리셋.
+//  - hero  : 대표 이미지 (긴 변 1600px, quality 0.82)
+//  - thumb : 썸네일/카드/스크린샷 (긴 변 1200px, quality 0.8)
+export type ImageKind = "hero" | "thumb";
+
+const PRESETS: Record<ImageKind, { max: number; quality: number }> = {
+  hero: { max: 1600, quality: 0.82 },
+  thumb: { max: 1200, quality: 0.8 },
+};
+
+// 용량 목표(300~800KB 내외). 초과 시 quality 를 단계적으로 낮춰 재인코딩한다.
+const TARGET_MAX_BYTES = 800 * 1024;
+const MIN_QUALITY = 0.6;
+const QUALITY_STEP = 0.07;
+
+function encode(canvas: HTMLCanvasElement, quality: number): Promise<Blob | null> {
+  return new Promise((resolve) =>
+    canvas.toBlob((b) => resolve(b), "image/webp", quality)
+  );
+}
+
+async function resizeToWebp(file: File, kind: ImageKind): Promise<Blob | null> {
+  const { max, quality } = PRESETS[kind];
   try {
     const bitmap = await createImageBitmap(file);
     const scale = Math.min(1, max / Math.max(bitmap.width, bitmap.height));
@@ -23,17 +41,27 @@ async function resizeToWebp(
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     ctx.drawImage(bitmap, 0, 0, w, h);
-    return await new Promise((resolve) =>
-      canvas.toBlob((b) => resolve(b), "image/webp", quality)
-    );
+
+    // 시작 quality 로 인코딩 후, 용량 목표를 넘으면 quality 만 단계적으로 낮춰 재인코딩.
+    let q = quality;
+    let blob = await encode(canvas, q);
+    while (blob && blob.size > TARGET_MAX_BYTES && q > MIN_QUALITY) {
+      q = Math.max(MIN_QUALITY, q - QUALITY_STEP);
+      blob = await encode(canvas, q);
+    }
+    return blob;
   } catch {
     return null;
   }
 }
 
-export async function uploadImage(file: File, folder: string): Promise<string> {
+export async function uploadImage(
+  file: File,
+  folder: string,
+  kind: ImageKind = "hero"
+): Promise<string> {
   const supabase = createClient();
-  const webp = await resizeToWebp(file);
+  const webp = await resizeToWebp(file, kind);
   const body: Blob = webp ?? file;
   const ext = webp ? "webp" : (file.name.split(".").pop() || "bin");
   const contentType = webp ? "image/webp" : file.type || "application/octet-stream";

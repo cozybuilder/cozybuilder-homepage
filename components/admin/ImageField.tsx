@@ -1,17 +1,19 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { uploadImage } from "@/components/admin/uploadImage";
+import { uploadImage, type ImageKind } from "@/components/admin/uploadImage";
 
 /** 단일 대표 이미지: 큰 카드 + 아이콘 → 업로드 → 미리보기(변경/삭제). 고급 옵션: URL 직접 입력. */
 export default function ImageField({
   name,
   folder,
   initial = "",
+  kind = "hero",
 }: {
   name: string;
   folder: string;
   initial?: string;
+  kind?: ImageKind;
 }) {
   const [url, setUrl] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -27,7 +29,7 @@ export default function ImageField({
     setBusy(true);
     setErr(null);
     try {
-      setUrl(await uploadImage(file, folder));
+      setUrl(await uploadImage(file, folder, kind));
     } catch (e) {
       console.error("[ImageField] upload error:", e);
       const msg = e instanceof Error ? e.message : String(e);

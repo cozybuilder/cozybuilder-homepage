@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { saveProduct } from "@/app/admin/actions";
 import BackButton from "@/components/BackButton";
 import { Section, FormField, Input, Textarea, Select, Button } from "@/components/ui";
+import ImageField from "@/components/admin/ImageField";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function ProductForm({
@@ -45,8 +46,8 @@ export default async function ProductForm({
           <FormField label="간략 설명">
             <Input name="summary" defaultValue={row?.summary ?? ""} />
           </FormField>
-          <FormField label="대표 이미지 URL">
-            <Input name="image" defaultValue={row?.image ?? ""} placeholder="/image/ebook.png" />
+          <FormField label="대표 이미지">
+            <ImageField name="image" folder="product" initial={row?.image ?? ""} />
           </FormField>
         </Section>
 

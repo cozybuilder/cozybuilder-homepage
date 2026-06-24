@@ -1,17 +1,19 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { uploadImage } from "@/components/admin/uploadImage";
+import { uploadImage, type ImageKind } from "@/components/admin/uploadImage";
 
 /** 여러 이미지: 비어있으면 큰 추가 카드, 있으면 썸네일 그리드(+추가). 고급 옵션: URL 직접 추가. */
 export default function ImageListField({
   name,
   folder,
   initial = [],
+  kind = "thumb",
 }: {
   name: string;
   folder: string;
   initial?: string[];
+  kind?: ImageKind;
 }) {
   const [urls, setUrls] = useState<string[]>(initial);
   const [busy, setBusy] = useState(false);
@@ -27,7 +29,7 @@ export default function ImageListField({
     setErr(null);
     try {
       const uploaded: string[] = [];
-      for (const f of files) uploaded.push(await uploadImage(f, folder));
+      for (const f of files) uploaded.push(await uploadImage(f, folder, kind));
       setUrls((prev) => [...prev, ...uploaded]);
     } catch (e) {
       console.error("[ImageListField] upload error:", e);
