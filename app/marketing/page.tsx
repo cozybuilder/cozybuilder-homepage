@@ -5,6 +5,15 @@ import { PageHeader, ImagePlaceholder } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Marketing" };
 
+// SNS 채널 key → 표시명(카드 우측)
+const CHANNEL_LABELS: Record<string, string> = {
+  instagram: "인스타그램",
+  youtube: "유튜브",
+  tiktok: "틱톡",
+  facebook: "페이스북",
+  threads: "쓰레드",
+};
+
 /** 외부 링크 래퍼: external_url 있으면 새 탭 링크, 없으면 준비 중(비활성). */
 function LinkCard({
   item,
@@ -43,37 +52,50 @@ export default async function MarketingPage() {
         description="기록과 콘텐츠를 나누는 채널들."
       />
 
-      {/* SNS — 세로형 모바일 채널 카드 */}
+      {/* SNS — 세로형 채널 카드 (데스크톱 4열 / 태블릿 2열 / 모바일 1열) */}
       {sns.length > 0 && (
-        <section className="mx-auto mt-16 max-w-xl">
+        <section className="mx-auto mt-16 max-w-5xl">
           <h2 className="text-xl font-semibold tracking-tight">SNS</h2>
-          <div className="mt-6 grid grid-cols-2 gap-5">
-            {sns.map((c) => (
-              <LinkCard key={c.slug} item={c} className="card flex flex-col">
-                <div className="mb-4">
-                  {c.image ? (
-                    <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-[--border]">
-                      <Image
-                        src={c.image}
-                        alt={c.name}
-                        fill
-                        className="object-cover"
-                        sizes="200px"
-                      />
-                    </div>
-                  ) : (
-                    <ImagePlaceholder ratio="aspect-[3/4]" label={c.name} />
+          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {sns.map((c) => {
+              const channelLabel = c.channelType
+                ? CHANNEL_LABELS[c.channelType] ?? ""
+                : "";
+              return (
+                <LinkCard key={c.slug} item={c} className="card flex flex-col">
+                  <div className="mb-4">
+                    {c.image ? (
+                      <div className="relative aspect-[3/4] w-full overflow-hidden rounded-xl border border-[--border]">
+                        <Image
+                          src={c.image}
+                          alt={c.name}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 240px"
+                        />
+                      </div>
+                    ) : (
+                      <ImagePlaceholder ratio="aspect-[3/4]" label={c.name} />
+                    )}
+                  </div>
+                  {/* 한 줄: 제목(왼쪽) + 채널명(우측 정렬) */}
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="truncate text-base font-semibold">{c.name}</h3>
+                    {channelLabel && (
+                      <span className="shrink-0 text-xs text-[--muted-2]">
+                        {channelLabel}
+                      </span>
+                    )}
+                  </div>
+                  {c.description && (
+                    <p className="mt-1 text-sm text-[--muted]">{c.description}</p>
                   )}
-                </div>
-                <h3 className="text-base font-semibold">{c.name}</h3>
-                {c.description && (
-                  <p className="mt-1 text-sm text-[--muted]">{c.description}</p>
-                )}
-                <span className="mt-3 text-sm text-[--accent]">
-                  {c.externalUrl ? "바로가기 →" : "준비 중"}
-                </span>
-              </LinkCard>
-            ))}
+                  <span className="mt-3 text-sm text-[--accent]">
+                    {c.externalUrl ? "바로가기 →" : "준비 중"}
+                  </span>
+                </LinkCard>
+              );
+            })}
           </div>
         </section>
       )}

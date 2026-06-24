@@ -32,6 +32,7 @@ const CACHE_TTL = 3600; // 초
 export type MarketingItem = {
   slug: string;
   category: "sns" | "blog";
+  channelType?: string; // sns 하위 채널: instagram/youtube/tiktok/facebook/threads
   name: string;
   description?: string;
   image?: string;
@@ -77,10 +78,19 @@ function rowToProduct(r: any): Product {
   };
 }
 
+const SNS_CHANNEL_KEYS = ["instagram", "youtube", "tiktok", "facebook", "threads"];
+
 function rowToMarketing(r: any): MarketingItem {
+  // category 는 sns/blog 로 정규화(옛 잘못된 채널 key 가 들어와도 sns 로).
+  const category = r.category === "blog" ? "blog" : "sns";
+  // 하위 채널: channel_type 우선, 없으면 옛 category 에 박힌 채널 key 를 사용.
+  const channelType =
+    (r.channel_type as string | undefined) ||
+    (SNS_CHANNEL_KEYS.includes(r.category) ? (r.category as string) : "");
   return {
     slug: r.slug,
-    category: r.category === "blog" ? "blog" : "sns",
+    category,
+    channelType,
     name: r.name,
     description: r.description ?? "",
     image: r.image ?? "",

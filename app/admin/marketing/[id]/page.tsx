@@ -2,17 +2,10 @@ import { createClient } from "@/lib/supabase/server";
 import { saveMarketing } from "@/app/admin/actions";
 import BackButton from "@/components/BackButton";
 import ImageField from "@/components/admin/ImageField";
+import MarketingCategoryFields from "@/components/admin/MarketingCategoryFields";
 import { Section, FormField, Input, Select, Button } from "@/components/ui";
 
-// 구분(채널) — 저장값은 영문 key, 화면 표시는 한국어.
-const CHANNELS: { value: string; label: string }[] = [
-  { value: "instagram", label: "인스타그램" },
-  { value: "youtube", label: "유튜브" },
-  { value: "tiktok", label: "틱톡" },
-  { value: "facebook", label: "페이스북" },
-  { value: "threads", label: "쓰레드" },
-  { value: "blog", label: "블로그" },
-];
+const SNS_CHANNELS = ["instagram", "youtube", "tiktok", "facebook", "threads"];
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function MarketingForm({
@@ -34,10 +27,12 @@ export default async function MarketingForm({
     row = data;
   }
 
-  // 기존 데이터 호환: 옛 값(sns 등)이 새 목록에 없으면 "(기존)" 옵션으로 보존 → 깨지지 않고 수동 변경 가능.
-  const currentCategory = (row?.category as string | undefined) ?? "instagram";
-  const isLegacyCategory =
-    Boolean(row?.category) && !CHANNELS.some((c) => c.value === row.category);
+  // 기존 데이터 호환: 옛 잘못된 category(instagram 등)는 sns + 그 채널로 정규화해 표시.
+  const rawCat = row?.category as string | undefined;
+  const initialCategory = rawCat === "blog" ? "blog" : "sns";
+  const initialChannel =
+    (row?.channel_type as string | undefined) ||
+    (rawCat && SNS_CHANNELS.includes(rawCat) ? rawCat : "instagram");
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -50,18 +45,10 @@ export default async function MarketingForm({
         {!isNew && <input type="hidden" name="id" value={row?.id} />}
 
         <Section title="기본 정보">
-          <FormField label="구분">
-            <Select name="category" defaultValue={currentCategory}>
-              {isLegacyCategory && (
-                <option value={row.category}>{row.category} (기존)</option>
-              )}
-              {CHANNELS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </Select>
-          </FormField>
+          <MarketingCategoryFields
+            initialCategory={initialCategory}
+            initialChannel={initialChannel}
+          />
           <FormField label="이름">
             <Input name="name" defaultValue={row?.name ?? ""} required />
           </FormField>

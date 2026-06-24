@@ -179,13 +179,17 @@ export async function saveMarketing(formData: FormData) {
   const name = str(formData.get("name"));
   let slug = str(formData.get("slug"));
   if (!slug) slug = slugify(name);
-  // 구분(채널) 선택 UI는 유지하되, DB 저장은 스키마 제약에 맞춘다.
-  // marketing_channels.category 는 CHECK (category in ('sns','blog')) 제약이 있어
-  // instagram/youtube 등을 그대로 넣으면 insert 가 실패(저장 차단)한다 → blog 외 전부 'sns'.
-  // (선택한 채널 key 의 영구 저장은 별도 컬럼/제약 완화 후 별도 작업 — 지금은 name/링크로 구분.)
+  // 구분(category)은 기존대로 'sns'/'blog' (0002 CHECK 유지).
+  // SNS 하위 채널은 channel_type 에 저장(blog 이면 null). 채널 key 를 category 에 넣지 않는다.
   const category = str(formData.get("category")) === "blog" ? "blog" : "sns";
+  const SNS_CHANNELS = ["instagram", "youtube", "tiktok", "facebook", "threads"];
+  const rawChannel = str(formData.get("channel_type"));
+  const channelType =
+    category === "sns" && SNS_CHANNELS.includes(rawChannel) ? rawChannel : null;
+
   const base = {
     category,
+    channel_type: channelType,
     name,
     description: str(formData.get("description")),
     image: str(formData.get("image")),
@@ -194,23 +198,27 @@ export async function saveMarketing(formData: FormData) {
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
   };
-  let error;
-  if (id) {
-    ({ error } = await supabase
-      .from("marketing_channels")
-      .update(slug ? { ...base, slug } : base)
-      .eq("id", id));
-  } else {
-    if (!slug) slug = `channel-${Date.now().toString(36)}`;
-    ({ error } = await supabase
-      .from("marketing_channels")
-      .insert({ ...base, slug }));
+  if (!id && !slug) slug = `channel-${Date.now().toString(36)}`;
+  const full: Record<string, unknown> = slug ? { ...base, slug } : { ...base };
+
+  const write = (payload: Record<string, unknown>) =>
+    id
+      ? supabase.from("marketing_channels").update(payload).eq("id", id)
+      : supabase.from("marketing_channels").insert(payload);
+
+  let { error } = await write(full);
+  if (error && /channel_type/i.test(error.message)) {
+    // channel_type 컬럼이 아직 없음(0007 미실행) → 제외하고 재시도(저장 보장, 채널값은 0007 후 반영).
+    const withoutChannel = { ...full };
+    delete withoutChannel.channel_type;
+    ({ error } = await write(withoutChannel));
   }
   if (error) {
     // 조용한 실패 방지: 서버 로그로 원인 노출(스토리지/제약/RLS 등).
     console.error("[saveMarketing] supabase error:", error.message, {
       id: id || "(new)",
       category,
+      channelType,
     });
   }
   revalidateTag(CACHE_TAGS.marketing, "max");
