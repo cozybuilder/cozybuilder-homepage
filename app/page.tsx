@@ -3,7 +3,11 @@ import Image from "next/image";
 import { type Program } from "@/lib/site";
 import { getPrograms, getMarketing } from "@/lib/content";
 import { Card } from "@/components/ui";
+import { MarketingSnsCard, MarketingBlogCard } from "@/components/MarketingCard";
 import HeroVideo from "@/components/HeroVideo";
+
+// Home Marketing 섹션은 너무 길어지지 않게 카테고리별 최대 4개까지만 노출 (나머지는 /marketing).
+const HOME_MARKETING_LIMIT = 4;
 
 function HomeProgramCard({ p }: { p: Program }) {
   return (
@@ -28,8 +32,12 @@ export default async function HomePage() {
   const marketing = await getMarketing();
   const webPrograms = programs.filter((p) => p.type === "web");
   const mobilePrograms = programs.filter((p) => p.type === "mobile");
-  const sns = marketing.filter((m) => m.category === "sns");
-  const blogs = marketing.filter((m) => m.category === "blog");
+  const sns = marketing
+    .filter((m) => m.category === "sns")
+    .slice(0, HOME_MARKETING_LIMIT);
+  const blogs = marketing
+    .filter((m) => m.category === "blog")
+    .slice(0, HOME_MARKETING_LIMIT);
 
   return (
     <>
@@ -124,55 +132,29 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {/* SNS (외부 링크 — 상세페이지 없음) */}
-        <h3 className="text-lg font-semibold tracking-tight">SNS</h3>
-        <ul className="mt-4 space-y-1.5 text-[--muted]">
-          {sns.map((c) => (
-            <li key={c.slug}>
-              {c.externalUrl ? (
-                <a
-                  href={c.externalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-                >
-                  <span className="text-[--accent]">·</span>
-                  {c.name}
-                </a>
-              ) : (
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-[--accent]">·</span>
-                  {c.name}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
+        {/* SNS — 세로형 채널 카드 (데스크톱 4열 / 태블릿 2열 / 모바일 1열) */}
+        {sns.length > 0 && (
+          <>
+            <h3 className="text-lg font-semibold tracking-tight">SNS</h3>
+            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {sns.map((c) => (
+                <MarketingSnsCard key={c.slug} item={c} />
+              ))}
+            </div>
+          </>
+        )}
 
-        {/* Blog (외부 링크 — 상세페이지 없음) */}
-        <h3 className="mt-12 text-lg font-semibold tracking-tight">Blog</h3>
-        <ul className="mt-4 space-y-1.5 text-[--muted]">
-          {blogs.map((b) => (
-            <li key={b.slug}>
-              {b.externalUrl ? (
-                <a
-                  href={b.externalUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-                >
-                  <span className="text-[--accent]">·</span>
-                  {b.name}
-                </a>
-              ) : (
-                <span className="inline-flex items-center gap-2">
-                  <span className="text-[--accent]">·</span>
-                  {b.name}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
+        {/* Blog — 일반 카드 */}
+        {blogs.length > 0 && (
+          <>
+            <h3 className="mt-12 text-lg font-semibold tracking-tight">Blog</h3>
+            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {blogs.map((b) => (
+                <MarketingBlogCard key={b.slug} item={b} />
+              ))}
+            </div>
+          </>
+        )}
       </section>
     </>
   );
