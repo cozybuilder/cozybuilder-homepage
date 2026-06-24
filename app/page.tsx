@@ -1,13 +1,52 @@
 import Link from "next/link";
 import Image from "next/image";
-import { type Program } from "@/lib/site";
-import { getPrograms, getMarketing } from "@/lib/content";
-import { Card } from "@/components/ui";
+import { type Program, type Product, productPriceDisplay } from "@/lib/site";
+import { getPrograms, getMarketing, getProducts } from "@/lib/content";
+import { Card, ImagePlaceholder } from "@/components/ui";
 import { MarketingSnsCard, MarketingBlogCard } from "@/components/MarketingCard";
 import HeroVideo from "@/components/HeroVideo";
 
-// Home Marketing 섹션은 너무 길어지지 않게 카테고리별 최대 4개까지만 노출 (나머지는 /marketing).
+// Home 섹션은 너무 길어지지 않게 최대 4개까지만 노출 (나머지는 각 페이지에서).
 const HOME_MARKETING_LIMIT = 4;
+const HOME_PRODUCT_LIMIT = 4;
+
+// Home Product 축소형 카드 (/product 카드보다 작고 가볍게).
+function HomeProductCard({ p }: { p: Product }) {
+  const soldout = p.status === "soldout";
+  const priceText = p.options.length > 0 ? "옵션선택" : productPriceDisplay(p);
+  return (
+    <Link
+      href={`/product/${p.slug}`}
+      className="block rounded-2xl border border-[--border] bg-[--surface] p-4 transition-all duration-300 hover:border-[--border-strong]"
+    >
+      <div className="relative mb-3 aspect-[16/9] w-full overflow-hidden rounded-xl">
+        {p.thumbnailUrl ? (
+          <Image
+            src={p.thumbnailUrl}
+            alt={p.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
+        ) : (
+          <ImagePlaceholder ratio="aspect-[16/9]" label={p.title} />
+        )}
+        {soldout && (
+          <span className="absolute right-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+            품절
+          </span>
+        )}
+      </div>
+      <h3 className="truncate text-sm font-semibold">{p.title}</h3>
+      {p.shortDescription && (
+        <p className="mt-1 line-clamp-2 text-xs text-[--muted]">
+          {p.shortDescription}
+        </p>
+      )}
+      <p className="mt-2 text-xs font-semibold text-[--accent]">{priceText}</p>
+    </Link>
+  );
+}
 
 function HomeProgramCard({ p }: { p: Program }) {
   return (
@@ -30,6 +69,7 @@ function HomeProgramCard({ p }: { p: Program }) {
 export default async function HomePage() {
   const programs = await getPrograms();
   const marketing = await getMarketing();
+  const products = (await getProducts()).slice(0, HOME_PRODUCT_LIMIT);
   const webPrograms = programs.filter((p) => p.type === "web");
   const mobilePrograms = programs.filter((p) => p.type === "mobile");
   const sns = marketing
@@ -112,9 +152,15 @@ export default async function HomePage() {
           </Link>
         </div>
 
-        {/* 분류 제목만 유지 (상품 카드는 /product 에서 노출) */}
-        <h3 className="text-lg font-semibold tracking-tight">홈페이지 제작</h3>
-        <h3 className="mt-8 text-lg font-semibold tracking-tight">전자책</h3>
+        {products.length > 0 ? (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {products.map((p) => (
+              <HomeProductCard key={p.slug} p={p} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[--muted]">등록된 상품이 없습니다.</p>
+        )}
       </section>
 
       {/* ---------------- Marketing ---------------- */}
