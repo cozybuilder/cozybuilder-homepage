@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/content";
-import { productPriceDisplay, optionPriceDisplay } from "@/lib/site";
+import { productPriceDisplay } from "@/lib/site";
 import { ImagePlaceholder } from "@/components/ui";
 import BackButton from "@/components/BackButton";
-import ProductCtaButton from "@/components/ProductCtaButton";
+import ProductPurchasePanel from "@/components/ProductPurchasePanel";
 
 export async function generateMetadata({
   params,
@@ -26,14 +26,14 @@ export default async function ProductDetailPage({
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const priceText = productPriceDisplay(product);
+  const basePriceText = productPriceDisplay(product);
   const soldout = product.status === "soldout";
 
   return (
     <div className="container-page py-12">
       <BackButton href="/product" label="Product" />
 
-      {/* 1. 메인 이미지 + 액션 */}
+      {/* 1. 메인 이미지 */}
       <section className="mx-auto mt-8 max-w-3xl">
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-[--border] bg-black">
           {product.thumbnailUrl ? (
@@ -54,48 +54,30 @@ export default async function ProductDetailPage({
             </span>
           )}
         </div>
-
-        {/* 가격 + 버튼 (button_type 정책: inquiry→문의, payment→결제 준비중, soldout→품절) */}
-        <div className="mt-6 flex flex-col items-center gap-3">
-          {priceText && <p className="text-lg font-semibold">{priceText}</p>}
-          <ProductCtaButton buttonType={product.buttonType} soldout={soldout} />
-        </div>
       </section>
 
-      {/* 2. 간략한 설명 */}
-      <section className="mx-auto mt-12 max-w-3xl">
+      {/* 2. 제목 + 간략한 설명 */}
+      <section className="mx-auto mt-10 max-w-3xl">
         <h1 className="text-4xl font-semibold tracking-tight">{product.title}</h1>
         {product.shortDescription && (
           <p className="mt-3 text-lg text-[--accent]">{product.shortDescription}</p>
         )}
       </section>
 
-      {/* 3. 옵션 (옵션 비교/목록) */}
-      {product.options.length > 0 && (
-        <section className="mx-auto mt-16 max-w-3xl">
-          <h2 className="text-2xl font-semibold tracking-tight">옵션</h2>
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {product.options.map((o, i) => {
-              const optPrice = optionPriceDisplay(o);
-              return (
-                <div key={i} className="card">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-semibold">{o.name}</h3>
-                    {optPrice && (
-                      <span className="shrink-0 text-sm font-semibold text-[--accent]">
-                        {optPrice}
-                      </span>
-                    )}
-                  </div>
-                  {o.description && (
-                    <p className="mt-2 text-sm text-[--muted]">{o.description}</p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {/* 3. 옵션 선택 + 결제/문의 (옵션 없으면 기본 가격 기준 CTA) */}
+      <section className="mx-auto mt-12 max-w-3xl">
+        {product.options.length > 0 && (
+          <h2 className="mb-6 text-2xl font-semibold tracking-tight">옵션 선택</h2>
+        )}
+        <ProductPurchasePanel
+          productSlug={product.slug}
+          priceType={product.priceType}
+          status={product.status ?? "published"}
+          buttonType={product.buttonType}
+          basePriceText={basePriceText}
+          options={product.options}
+        />
+      </section>
 
       {/* 4. 상세 이미지 (여러 장 — 좌우 스크롤) */}
       {product.galleryUrls.length > 0 && (
