@@ -179,8 +179,20 @@ export async function saveMarketing(formData: FormData) {
   const name = str(formData.get("name"));
   let slug = str(formData.get("slug"));
   if (!slug) slug = slugify(name);
+  // 구분(채널) — 새 채널 key 보존. 알 수 없는 값은 기존 호환을 위해 sns 로.
+  const MARKETING_CATEGORIES = [
+    "instagram",
+    "youtube",
+    "tiktok",
+    "facebook",
+    "threads",
+    "blog",
+    "sns",
+  ];
+  const rawCategory = str(formData.get("category"));
+  const category = MARKETING_CATEGORIES.includes(rawCategory) ? rawCategory : "sns";
   const base = {
-    category: str(formData.get("category")) === "blog" ? "blog" : "sns",
+    category,
     name,
     description: str(formData.get("description")),
     image: str(formData.get("image")),

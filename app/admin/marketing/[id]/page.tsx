@@ -1,7 +1,18 @@
 import { createClient } from "@/lib/supabase/server";
 import { saveMarketing } from "@/app/admin/actions";
 import BackButton from "@/components/BackButton";
+import ImageField from "@/components/admin/ImageField";
 import { Section, FormField, Input, Select, Button } from "@/components/ui";
+
+// 구분(채널) — 저장값은 영문 key, 화면 표시는 한국어.
+const CHANNELS: { value: string; label: string }[] = [
+  { value: "instagram", label: "인스타그램" },
+  { value: "youtube", label: "유튜브" },
+  { value: "tiktok", label: "틱톡" },
+  { value: "facebook", label: "페이스북" },
+  { value: "threads", label: "쓰레드" },
+  { value: "blog", label: "블로그" },
+];
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function MarketingForm({
@@ -23,6 +34,11 @@ export default async function MarketingForm({
     row = data;
   }
 
+  // 기존 데이터 호환: 옛 값(sns 등)이 새 목록에 없으면 "(기존)" 옵션으로 보존 → 깨지지 않고 수동 변경 가능.
+  const currentCategory = (row?.category as string | undefined) ?? "instagram";
+  const isLegacyCategory =
+    Boolean(row?.category) && !CHANNELS.some((c) => c.value === row.category);
+
   return (
     <div className="mx-auto max-w-2xl">
       <BackButton href="/admin/marketing" label="Marketing 목록" />
@@ -35,9 +51,15 @@ export default async function MarketingForm({
 
         <Section title="기본 정보">
           <FormField label="구분">
-            <Select name="category" defaultValue={row?.category ?? "sns"}>
-              <option value="sns">SNS</option>
-              <option value="blog">Blog</option>
+            <Select name="category" defaultValue={currentCategory}>
+              {isLegacyCategory && (
+                <option value={row.category}>{row.category} (기존)</option>
+              )}
+              {CHANNELS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
             </Select>
           </FormField>
           <FormField label="이름">
@@ -46,11 +68,15 @@ export default async function MarketingForm({
           <FormField label="설명">
             <Input name="description" defaultValue={row?.description ?? ""} />
           </FormField>
-          <FormField label="대표 이미지 URL">
-            <Input name="image" defaultValue={row?.image ?? ""} />
+          <FormField label="대표 이미지">
+            <ImageField name="image" folder="marketing" initial={row?.image ?? ""} />
           </FormField>
           <FormField label="외부 링크">
-            <Input name="external_url" defaultValue={row?.external_url ?? ""} placeholder="https://..." />
+            <Input
+              name="external_url"
+              defaultValue={row?.external_url ?? ""}
+              placeholder="https://..."
+            />
           </FormField>
         </Section>
 
@@ -62,8 +88,15 @@ export default async function MarketingForm({
                 <option value="published">공개</option>
               </Select>
             </FormField>
-            <FormField label="정렬 순서">
-              <Input name="sort_order" type="number" defaultValue={row?.sort_order ?? 0} />
+            <FormField label="표시 순서">
+              <Input
+                name="sort_order"
+                type="number"
+                defaultValue={row?.sort_order ?? 0}
+              />
+              <p className="mt-1 text-xs text-[--muted-2]">
+                숫자가 작을수록 먼저 표시됩니다. 예: 0, 10, 20
+              </p>
             </FormField>
           </div>
         </Section>
