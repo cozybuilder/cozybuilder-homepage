@@ -16,6 +16,7 @@ const TYPE_ORDER: ProductType[] = ["digital", "service", "subscription", "physic
 
 function ProductCard({ p }: { p: Product }) {
   const price = productPriceDisplay(p);
+  const soldout = p.status === "soldout";
   return (
     <Card href={`/product/${p.slug}`} hover>
       <div className="relative mb-5 aspect-[16/9] w-full overflow-hidden rounded-xl">
@@ -29,6 +30,11 @@ function ProductCard({ p }: { p: Product }) {
           />
         ) : (
           <ImagePlaceholder ratio="aspect-[16/9]" label={p.title} />
+        )}
+        {soldout && (
+          <span className="absolute right-2 top-2 rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white">
+            품절
+          </span>
         )}
       </div>
       <h3 className="text-lg font-semibold">{p.title}</h3>

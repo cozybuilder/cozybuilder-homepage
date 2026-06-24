@@ -29,6 +29,7 @@ export default async function ProductForm({
         productType: row.product_type ?? "digital",
         category: row.category ?? "",
         status: row.status ?? "draft",
+        buttonType: row.button_type ?? "inquiry",
         featured: !!row.featured,
         priceType: row.price_type ?? "fixed",
         price: typeof row.price === "number" ? row.price : null,

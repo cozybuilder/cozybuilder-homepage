@@ -9,10 +9,12 @@ import {
   type ProductType,
   type ProductPriceType,
   type ProductStatus,
+  type ProductButtonType,
   type ProductOption,
   PRODUCT_TYPE_LABELS,
   PRICE_TYPE_LABELS,
   PRODUCT_STATUS_LABELS,
+  BUTTON_TYPE_LABELS,
   formatKRW,
 } from "@/lib/site";
 
@@ -23,6 +25,7 @@ export type ProductInitial = {
   productType?: ProductType;
   category?: string;
   status?: ProductStatus;
+  buttonType?: ProductButtonType;
   featured?: boolean;
   priceType?: ProductPriceType;
   price?: number | null;
@@ -69,6 +72,7 @@ function amountHint(s: string): string {
 const PRODUCT_TYPES = Object.keys(PRODUCT_TYPE_LABELS) as ProductType[];
 const PRICE_TYPES = Object.keys(PRICE_TYPE_LABELS) as ProductPriceType[];
 const STATUSES = Object.keys(PRODUCT_STATUS_LABELS) as ProductStatus[];
+const BUTTON_TYPES = Object.keys(BUTTON_TYPE_LABELS) as ProductButtonType[];
 
 export default function ProductAdminForm({ initial }: { initial?: ProductInitial }) {
   const isNew = !initial?.id;
@@ -81,6 +85,9 @@ export default function ProductAdminForm({ initial }: { initial?: ProductInitial
   );
   const [category, setCategory] = useState(initial?.category ?? "");
   const [status, setStatus] = useState<ProductStatus>(initial?.status ?? "draft");
+  const [buttonType, setButtonType] = useState<ProductButtonType>(
+    initial?.buttonType ?? "inquiry"
+  );
   const [featured, setFeatured] = useState(Boolean(initial?.featured));
 
   const [priceType, setPriceType] = useState<ProductPriceType>(
@@ -172,6 +179,7 @@ export default function ProductAdminForm({ initial }: { initial?: ProductInitial
       <input type="hidden" name="title" value={title} />
       <input type="hidden" name="product_type" value={productType} />
       <input type="hidden" name="status" value={status} />
+      <input type="hidden" name="button_type" value={buttonType} />
       <input type="hidden" name="featured" value={featured ? "true" : "false"} />
       <input type="hidden" name="price_type" value={priceType} />
       <input type="hidden" name="options" value={optionsJson} />
@@ -244,6 +252,18 @@ export default function ProductAdminForm({ initial }: { initial?: ProductInitial
             </label>
           </FormField>
         </div>
+        <FormField label="버튼 유형">
+          <Select
+            value={buttonType}
+            onChange={(e) => setButtonType(e.target.value as ProductButtonType)}
+          >
+            {BUTTON_TYPES.map((t) => (
+              <option key={t} value={t}>
+                {BUTTON_TYPE_LABELS[t]}
+              </option>
+            ))}
+          </Select>
+        </FormField>
       </Section>
 
       {/* B. 가격 정보 */}

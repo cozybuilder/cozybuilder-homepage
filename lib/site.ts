@@ -61,6 +61,12 @@ export type ProductPriceType =
   | "monthly"
   | "yearly";
 export type ProductStatus = "draft" | "published" | "hidden" | "soldout";
+export type ProductButtonType = "inquiry" | "payment";
+
+export const BUTTON_TYPE_LABELS: Record<ProductButtonType, string> = {
+  inquiry: "문의하기",
+  payment: "결제하기",
+};
 
 export const PRODUCT_TYPE_LABELS: Record<ProductType, string> = {
   digital: "디지털 상품",
@@ -109,6 +115,7 @@ export type Product = {
   priceType: ProductPriceType;
   options: ProductOption[];
   status?: ProductStatus;
+  buttonType: ProductButtonType;
   featured?: boolean;
 };
 
@@ -150,6 +157,7 @@ export const products: Product[] = [
     priceType: "fixed",
     options: [],
     status: "published",
+    buttonType: "inquiry",
     featured: false,
   },
 ];

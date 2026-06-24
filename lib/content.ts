@@ -80,6 +80,7 @@ function rowToProduct(r: any): Product {
     priceType: r.price_type ?? "fixed",
     options: Array.isArray(r.options) ? r.options : [],
     status: r.status,
+    buttonType: r.button_type ?? "inquiry",
     featured: !!r.featured,
   };
 }
@@ -133,10 +134,11 @@ export const getPrograms = unstable_cache(
 
 export const getProducts = unstable_cache(
   async (): Promise<Product[]> => {
+    // published + soldout 공개(품절은 표시만, draft/hidden 비공개). RLS(0009)와 일치.
     const { data, error } = await supabasePublic
       .from("products")
       .select("*")
-      .eq("status", "published")
+      .in("status", ["published", "soldout"])
       .order("sort_order", { ascending: true });
     if (error || !data || data.length === 0) return fallbackProducts;
     return data.map(rowToProduct);

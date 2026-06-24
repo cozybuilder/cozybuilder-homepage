@@ -198,6 +198,11 @@ export async function saveProduct(
       "draft"
     ),
     featured: str(formData.get("featured")) === "true",
+    button_type: pick(
+      formData.get("button_type"),
+      ["inquiry", "payment"] as const,
+      "inquiry"
+    ),
     price_type: pick(
       formData.get("price_type"),
       ["fixed", "sale", "quote", "free", "monthly", "yearly"] as const,

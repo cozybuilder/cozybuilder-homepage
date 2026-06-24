@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/content";
 import { productPriceDisplay, optionPriceDisplay } from "@/lib/site";
 import { ImagePlaceholder } from "@/components/ui";
 import BackButton from "@/components/BackButton";
+import ProductCtaButton from "@/components/ProductCtaButton";
 
 export async function generateMetadata({
   params,
@@ -27,6 +27,7 @@ export default async function ProductDetailPage({
   if (!product) notFound();
 
   const priceText = productPriceDisplay(product);
+  const soldout = product.status === "soldout";
 
   return (
     <div className="container-page py-12">
@@ -47,14 +48,17 @@ export default async function ProductDetailPage({
           ) : (
             <ImagePlaceholder ratio="aspect-[16/9]" label={product.title} />
           )}
+          {soldout && (
+            <span className="absolute right-3 top-3 rounded-full bg-red-600 px-3 py-1 text-xs font-semibold text-white">
+              품절
+            </span>
+          )}
         </div>
 
-        {/* 가격 + 문의 버튼 (결제는 v1 범위 밖 — 문의 유도) */}
+        {/* 가격 + 버튼 (button_type 정책: inquiry→문의, payment→결제 준비중, soldout→품절) */}
         <div className="mt-6 flex flex-col items-center gap-3">
           {priceText && <p className="text-lg font-semibold">{priceText}</p>}
-          <Link href="/contact" className="btn btn-accent min-w-[140px]">
-            문의하기
-          </Link>
+          <ProductCtaButton buttonType={product.buttonType} soldout={soldout} />
         </div>
       </section>
 
