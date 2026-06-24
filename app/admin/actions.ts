@@ -125,36 +125,122 @@ export async function deleteProgram(formData: FormData) {
   redirect("/admin/programs");
 }
 
-// ── Products ──
-export async function saveProduct(formData: FormData) {
+// ── Products (범용 상품 CMS v1) ──
+function pick<T extends string>(
+  v: FormDataEntryValue | null,
+  allowed: readonly T[],
+  fallback: T
+): T {
+  const s = str(v) as T;
+  return allowed.includes(s) ? s : fallback;
+}
+
+// 숫자 문자열 → 정수 또는 null (콤마/공백 허용)
+function intOrNull(v: FormDataEntryValue | null): number | null {
+  const s = str(v).replace(/[, ]/g, "");
+  if (s === "") return null;
+  const n = Number(s);
+  return Number.isFinite(n) ? Math.round(n) : null;
+}
+
+// options 입력(JSON 문자열) → 정규화 배열. 빈 이름 제외.
+function parseOptions(v: FormDataEntryValue | null): Record<string, unknown>[] {
+  try {
+    const parsed = JSON.parse(String(v ?? "[]"));
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((o) => {
+        const name = String(o?.name ?? "").trim();
+        const rawPrice = o?.price;
+        const price =
+          typeof rawPrice === "number"
+            ? Math.round(rawPrice)
+            : intOrNull(rawPrice == null ? "" : String(rawPrice));
+        const out: Record<string, unknown> = {
+          name,
+          price,
+          price_label: String(o?.price_label ?? "").trim(),
+          description: String(o?.description ?? "").trim(),
+        };
+        const billing = String(o?.billing ?? "").trim();
+        if (billing) out.billing = billing;
+        return out;
+      })
+      .filter((o) => o.name);
+  } catch {
+    return [];
+  }
+}
+
+export async function saveProduct(
+  _prev: SaveState,
+  formData: FormData
+): Promise<SaveState> {
   await requireAdmin();
   const supabase = await createClient();
   const id = str(formData.get("id"));
-  const name = str(formData.get("name"));
+  const title = str(formData.get("title"));
   let slug = str(formData.get("slug"));
-  if (!slug) slug = slugify(name);
+  if (!slug) slug = slugify(title);
+
+  // 견적 문의(quote)는 가격 비어도 저장 가능 — price/sale_price 는 항상 nullable.
   const base = {
-    category: str(formData.get("category")) === "website" ? "website" : "ebook",
-    name,
-    summary: str(formData.get("summary")),
-    image: str(formData.get("image")),
-    contents: lines(formData.get("contents")),
-    screenshots: lines(formData.get("screenshots")),
-    long_description: str(formData.get("long_description")),
-    price: str(formData.get("price")),
-    cta: str(formData.get("cta")) === "buy" ? "buy" : "contact",
-    cta_label: str(formData.get("cta_label")),
-    cta_url: str(formData.get("cta_url")),
-    status: str(formData.get("status")) === "published" ? "published" : "draft",
-    sort_order: Number(str(formData.get("sort_order"))) || 0,
+    title,
+    product_type: pick(
+      formData.get("product_type"),
+      ["digital", "service", "subscription", "physical"] as const,
+      "digital"
+    ),
+    category: str(formData.get("category")),
+    status: pick(
+      formData.get("status"),
+      ["draft", "published", "hidden", "soldout"] as const,
+      "draft"
+    ),
+    featured: str(formData.get("featured")) === "true",
+    price_type: pick(
+      formData.get("price_type"),
+      ["fixed", "sale", "quote", "free", "monthly", "yearly"] as const,
+      "fixed"
+    ),
+    price: intOrNull(formData.get("price")),
+    sale_price: intOrNull(formData.get("sale_price")),
+    price_label: str(formData.get("price_label")),
+    thumbnail_url: str(formData.get("thumbnail_url")),
+    gallery_urls: lines(formData.get("gallery_urls")),
+    short_description: str(formData.get("short_description")),
+    description: str(formData.get("description")),
+    options: parseOptions(formData.get("options")),
     updated_at: new Date().toISOString(),
   };
+
+  let data, error;
   if (id) {
-    await supabase.from("products").update(slug ? { ...base, slug } : base).eq("id", id);
+    const payload = slug ? { ...base, slug } : base;
+    ({ data, error } = await supabase
+      .from("products")
+      .update(payload)
+      .eq("id", id)
+      .select());
   } else {
     if (!slug) slug = `product-${Date.now().toString(36)}`;
-    await supabase.from("products").insert({ ...base, slug });
+    ({ data, error } = await supabase
+      .from("products")
+      .insert({ ...base, slug })
+      .select());
   }
+
+  if (error) {
+    console.error("[saveProduct] supabase error:", error);
+    return { error: error.message };
+  }
+  if (id && (!data || data.length === 0)) {
+    return {
+      error:
+        "업데이트된 행이 없습니다. 관리자 권한(admin_users 등록) 또는 RLS 정책을 확인하세요.",
+    };
+  }
+
   revalidateTag(CACHE_TAGS.products, "max");
   revalidatePath("/admin/product");
   revalidatePublic();

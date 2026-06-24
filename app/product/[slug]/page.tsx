@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProduct } from "@/lib/content";
+import { productPriceDisplay, optionPriceDisplay } from "@/lib/site";
 import { ImagePlaceholder } from "@/components/ui";
 import BackButton from "@/components/BackButton";
 
@@ -13,7 +14,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const product = await getProduct(slug);
-  return { title: product ? product.name : "Product" };
+  return { title: product ? product.title : "Product" };
 }
 
 export default async function ProductDetailPage({
@@ -25,7 +26,7 @@ export default async function ProductDetailPage({
   const product = await getProduct(slug);
   if (!product) notFound();
 
-  const ctaHref = product.ctaUrl || "/contact";
+  const priceText = productPriceDisplay(product);
 
   return (
     <div className="container-page py-12">
@@ -34,61 +35,77 @@ export default async function ProductDetailPage({
       {/* 1. 메인 이미지 + 액션 */}
       <section className="mx-auto mt-8 max-w-3xl">
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-[--border] bg-black">
-          <Image
-            src={product.image}
-            alt={product.name}
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
-          />
+          {product.thumbnailUrl ? (
+            <Image
+              src={product.thumbnailUrl}
+              alt={product.title}
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+            />
+          ) : (
+            <ImagePlaceholder ratio="aspect-[16/9]" label={product.title} />
+          )}
         </div>
 
-        {/* 가격 + 구매/문의 버튼 */}
+        {/* 가격 + 문의 버튼 (결제는 v1 범위 밖 — 문의 유도) */}
         <div className="mt-6 flex flex-col items-center gap-3">
-          {product.price && (
-            <p className="text-lg font-semibold">{product.price}</p>
-          )}
-          <Link href={ctaHref} className="btn btn-accent min-w-[140px]">
-            {product.cta === "buy" ? "구매하기" : "문의하기"}
+          {priceText && <p className="text-lg font-semibold">{priceText}</p>}
+          <Link href="/contact" className="btn btn-accent min-w-[140px]">
+            문의하기
           </Link>
         </div>
       </section>
 
       {/* 2. 간략한 설명 */}
       <section className="mx-auto mt-12 max-w-3xl">
-        <h1 className="text-4xl font-semibold tracking-tight">{product.name}</h1>
-        <p className="mt-3 text-lg text-[--accent]">{product.summary}</p>
+        <h1 className="text-4xl font-semibold tracking-tight">{product.title}</h1>
+        {product.shortDescription && (
+          <p className="mt-3 text-lg text-[--accent]">{product.shortDescription}</p>
+        )}
       </section>
 
-      {/* 3. 주요 내용 (개수에 따라 자동 증감) */}
-      {product.contents.length > 0 && (
+      {/* 3. 옵션 (옵션 비교/목록) */}
+      {product.options.length > 0 && (
         <section className="mx-auto mt-16 max-w-3xl">
-          <h2 className="text-2xl font-semibold tracking-tight">주요 내용</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">옵션</h2>
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            {product.contents.map((c) => (
-              <div key={c} className="card flex items-center gap-3 py-4">
-                <span className="text-[--accent]">◆</span>
-                <span className="text-sm">{c}</span>
-              </div>
-            ))}
+            {product.options.map((o, i) => {
+              const optPrice = optionPriceDisplay(o);
+              return (
+                <div key={i} className="card">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-semibold">{o.name}</h3>
+                    {optPrice && (
+                      <span className="shrink-0 text-sm font-semibold text-[--accent]">
+                        {optPrice}
+                      </span>
+                    )}
+                  </div>
+                  {o.description && (
+                    <p className="mt-2 text-sm text-[--muted]">{o.description}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
       )}
 
-      {/* 4. 미리보기 (여러 장 — 좌우 스크롤) */}
-      <section className="mx-auto mt-16 max-w-3xl">
-        <h2 className="text-2xl font-semibold tracking-tight">미리보기</h2>
-        {product.screenshots && product.screenshots.length > 0 ? (
+      {/* 4. 상세 이미지 (여러 장 — 좌우 스크롤) */}
+      {product.galleryUrls.length > 0 && (
+        <section className="mx-auto mt-16 max-w-3xl">
+          <h2 className="text-2xl font-semibold tracking-tight">상세 이미지</h2>
           <div className="mt-6 flex snap-x gap-4 overflow-x-auto pb-2">
-            {product.screenshots.map((src, i) => (
+            {product.galleryUrls.map((src, i) => (
               <div
                 key={i}
                 className="relative aspect-video w-72 shrink-0 snap-start overflow-hidden rounded-xl border border-[--border] bg-[--surface-2]"
               >
                 <Image
                   src={src}
-                  alt={`${product.name} 미리보기 ${i + 1}`}
+                  alt={`${product.title} 상세 이미지 ${i + 1}`}
                   fill
                   className="object-cover"
                   sizes="288px"
@@ -96,20 +113,15 @@ export default async function ProductDetailPage({
               </div>
             ))}
           </div>
-        ) : (
-          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <ImagePlaceholder ratio="aspect-video" />
-            <ImagePlaceholder ratio="aspect-video" />
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* 5. 자세한 설명 (긴 텍스트) */}
-      {product.longDescription && (
+      {product.description && (
         <section className="mx-auto mt-16 max-w-3xl">
           <h2 className="text-2xl font-semibold tracking-tight">자세한 설명</h2>
           <p className="mt-6 whitespace-pre-line leading-relaxed text-[--muted]">
-            {product.longDescription}
+            {product.description}
           </p>
         </section>
       )}

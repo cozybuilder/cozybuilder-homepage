@@ -9,16 +9,24 @@ export default function ImageField({
   folder,
   initial = "",
   kind = "hero",
+  onChange,
 }: {
   name: string;
   folder: string;
   initial?: string;
   kind?: ImageKind;
+  onChange?: (url: string) => void;
 }) {
-  const [url, setUrl] = useState(initial);
+  const [url, setUrlState] = useState(initial);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // 미리보기 등 상위 컴포넌트가 현재 URL 을 알 수 있도록 onChange 통지.
+  const setUrl = (u: string) => {
+    setUrlState(u);
+    onChange?.(u);
+  };
 
   const pick = () => fileRef.current?.click();
 

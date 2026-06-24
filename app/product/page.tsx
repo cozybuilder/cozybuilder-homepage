@@ -1,27 +1,42 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { type Product } from "@/lib/site";
+import {
+  type Product,
+  type ProductType,
+  PRODUCT_TYPE_LABELS,
+  productPriceDisplay,
+} from "@/lib/site";
 import { getProducts } from "@/lib/content";
-import { PageHeader, Card } from "@/components/ui";
+import { PageHeader, Card, ImagePlaceholder } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Product" };
 
+// 상품 유형 표시 순서
+const TYPE_ORDER: ProductType[] = ["digital", "service", "subscription", "physical"];
+
 function ProductCard({ p }: { p: Product }) {
+  const price = productPriceDisplay(p);
   return (
     <Card href={`/product/${p.slug}`} hover>
       <div className="relative mb-5 aspect-[16/9] w-full overflow-hidden rounded-xl">
-        <Image
-          src={p.image}
-          alt={p.name}
-          fill
-          className="object-cover"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-        />
+        {p.thumbnailUrl ? (
+          <Image
+            src={p.thumbnailUrl}
+            alt={p.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
+        ) : (
+          <ImagePlaceholder ratio="aspect-[16/9]" label={p.title} />
+        )}
       </div>
-      <h3 className="text-lg font-semibold">{p.name}</h3>
-      <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>
-      {p.price && (
-        <p className="mt-3 text-sm font-semibold text-[--accent]">{p.price}</p>
+      <h3 className="text-lg font-semibold">{p.title}</h3>
+      {p.shortDescription && (
+        <p className="mt-2 text-sm text-[--muted]">{p.shortDescription}</p>
+      )}
+      {price && (
+        <p className="mt-3 text-sm font-semibold text-[--accent]">{price}</p>
       )}
     </Card>
   );
@@ -40,28 +55,31 @@ function ProductGrid({ items }: { items: Product[] }) {
 
 export default async function ProductPage() {
   const products = await getProducts();
-  const website = products.filter((p) => p.category === "website");
-  const ebook = products.filter((p) => p.category !== "website");
 
   return (
     <div className="container-page py-20">
       <PageHeader
         eyebrow="Product"
         title="Product"
-        description="제작·출판 상품 영역."
+        description="코지빌더가 판매하는 상품과 서비스."
       />
 
-      {/* 홈페이지 제작 */}
-      <section className="mt-16">
-        <h2 className="text-xl font-semibold tracking-tight">홈페이지 제작</h2>
-        <ProductGrid items={website} />
-      </section>
+      {TYPE_ORDER.map((t) => {
+        const items = products.filter((p) => p.productType === t);
+        if (items.length === 0) return null;
+        return (
+          <section key={t} className="mt-16">
+            <h2 className="text-xl font-semibold tracking-tight">
+              {PRODUCT_TYPE_LABELS[t]}
+            </h2>
+            <ProductGrid items={items} />
+          </section>
+        );
+      })}
 
-      {/* 전자책 */}
-      <section className="mt-16">
-        <h2 className="text-xl font-semibold tracking-tight">전자책</h2>
-        <ProductGrid items={ebook} />
-      </section>
+      {products.length === 0 && (
+        <p className="mt-16 text-sm text-[--muted]">등록된 상품이 없습니다.</p>
+      )}
     </div>
   );
 }

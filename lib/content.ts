@@ -62,19 +62,25 @@ function rowToProgram(r: any): Program {
   };
 }
 
+// 마이그레이션(0008) 전/후 모두 안전하도록 레거시 컬럼명도 fallback 으로 읽는다.
 function rowToProduct(r: any): Product {
+  const legacyTextPrice = typeof r.price === "string" ? r.price : "";
   return {
     slug: r.slug,
-    name: r.name,
-    summary: r.summary ?? "",
-    image: r.image ?? "",
-    contents: asStringArray(r.contents),
-    screenshots: asStringArray(r.screenshots),
-    longDescription: r.long_description ?? "",
-    price: r.price ?? "",
-    cta: r.cta === "buy" ? "buy" : "contact",
-    ctaUrl: r.cta_url ?? "",
-    category: r.category === "website" ? "website" : "ebook",
+    title: r.title ?? r.name ?? "",
+    productType: r.product_type ?? "digital",
+    category: r.category ?? "",
+    thumbnailUrl: r.thumbnail_url ?? r.image ?? "",
+    galleryUrls: asStringArray(r.gallery_urls ?? r.screenshots),
+    shortDescription: r.short_description ?? r.summary ?? "",
+    description: r.description ?? r.long_description ?? "",
+    price: typeof r.price === "number" ? r.price : null,
+    salePrice: typeof r.sale_price === "number" ? r.sale_price : null,
+    priceLabel: r.price_label ?? legacyTextPrice,
+    priceType: r.price_type ?? "fixed",
+    options: Array.isArray(r.options) ? r.options : [],
+    status: r.status,
+    featured: !!r.featured,
   };
 }
 
