@@ -5,6 +5,10 @@ import { PageHeader, ImagePlaceholder } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Marketing" };
 
+// 관리자 콘텐츠를 항상 최신으로 반영(정적 ISR 캐시로 일부 채널이 누락돼 보이던 문제 방지).
+// 데이터(getMarketing)는 여전히 캐시되며 관리자 저장 시 revalidateTag 로 갱신된다.
+export const dynamic = "force-dynamic";
+
 // SNS 채널 key → 표시명(카드 우측)
 const CHANNEL_LABELS: Record<string, string> = {
   instagram: "인스타그램",
