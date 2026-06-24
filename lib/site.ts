@@ -17,12 +17,12 @@ export const siteConfig = {
 export type NavItem = { label: string; href: string };
 
 export const mainNav: NavItem[] = [
-  { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
-  { label: "Programs", href: "/programs" },
-  { label: "Product", href: "/product" },
-  { label: "Marketing", href: "/marketing" },
-  { label: "Contact", href: "/contact" },
+  { label: "홈", href: "/" },
+  { label: "소개", href: "/about" },
+  { label: "프로그램", href: "/programs" },
+  { label: "제품", href: "/product" },
+  { label: "마케팅", href: "/marketing" },
+  { label: "문의", href: "/contact" },
 ];
 
 // Product 하위 분류 (초기 텍스트 항목)

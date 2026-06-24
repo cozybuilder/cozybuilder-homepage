@@ -74,20 +74,27 @@ export default function Header() {
 
         {/* Desktop nav */}
         <ul className="hidden items-center gap-1 md:flex">
-          {mainNav.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={`rounded-full px-4 py-2 text-sm transition-colors ${
-                  isActive(item.href)
-                    ? "text-foreground"
-                    : "text-[--muted] hover:text-foreground"
-                }`}
-              >
-                {item.label}
-              </Link>
-            </li>
-          ))}
+          {mainNav.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`relative rounded-full px-4 py-2 text-sm transition-colors ${
+                    active
+                      ? "text-foreground"
+                      : "text-[--muted] hover:text-foreground"
+                  }`}
+                >
+                  {item.label}
+                  {active && (
+                    <span className="pointer-events-none absolute inset-x-4 -bottom-0.5 h-0.5 rounded-full bg-gradient-to-r from-[--accent] to-[--accent-2]" />
+                  )}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
 
         {/* Desktop auth: 로그인 버튼 또는 프로필 드롭다운 */}

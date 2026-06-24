@@ -10,16 +10,13 @@ import HeroVideo from "@/components/HeroVideo";
 const HOME_MARKETING_LIMIT = 4;
 const HOME_PRODUCT_LIMIT = 4;
 
-// Home Product 축소형 카드 (/product 카드보다 작고 가볍게).
+// Home Product 카드 — Program 카드와 동일 규격(.card + hover) + 가격/품절.
 function HomeProductCard({ p }: { p: Product }) {
   const soldout = p.status === "soldout";
   const priceText = p.options.length > 0 ? "옵션선택" : productPriceDisplay(p);
   return (
-    <Link
-      href={`/product/${p.slug}`}
-      className="block rounded-2xl border border-[--border] bg-[--surface] p-4 transition-all duration-300 hover:border-[--border-strong]"
-    >
-      <div className="relative mb-3 aspect-[16/9] w-full overflow-hidden rounded-xl">
+    <Card href={`/product/${p.slug}`} hover>
+      <div className="relative mb-4 aspect-[16/9] w-full overflow-hidden rounded-xl">
         {p.thumbnailUrl ? (
           <Image
             src={p.thumbnailUrl}
@@ -32,19 +29,19 @@ function HomeProductCard({ p }: { p: Product }) {
           <ImagePlaceholder ratio="aspect-[16/9]" label={p.title} />
         )}
         {soldout && (
-          <span className="absolute right-2 top-2 rounded-full bg-red-600 px-2 py-0.5 text-[10px] font-semibold text-white">
+          <span className="absolute right-2 top-2 rounded-full bg-red-600 px-2.5 py-1 text-xs font-semibold text-white">
             품절
           </span>
         )}
       </div>
-      <h3 className="truncate text-sm font-semibold">{p.title}</h3>
+      <h3 className="text-base font-semibold">{p.title}</h3>
       {p.shortDescription && (
-        <p className="mt-1 line-clamp-2 text-xs text-[--muted]">
+        <p className="mt-2 line-clamp-2 text-sm text-[--muted]">
           {p.shortDescription}
         </p>
       )}
-      <p className="mt-2 text-xs font-semibold text-[--accent]">{priceText}</p>
-    </Link>
+      <p className="mt-3 text-sm font-semibold text-[--accent]">{priceText}</p>
+    </Card>
   );
 }
 
@@ -82,7 +79,7 @@ export default async function HomePage() {
   return (
     <>
       {/* ---------------- Hero ---------------- */}
-      <section className="container-page relative pt-10 pb-24 md:pt-14 md:pb-32">
+      <section className="container-page relative pt-10 pb-12 md:pt-14 md:pb-16">
         <h1 className="heading-gradient text-center text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl md:text-7xl">
           Build.
           <br />
@@ -102,18 +99,15 @@ export default async function HomePage() {
         </div>
 
         {/* Cinematic Hero video */}
-        <div className="mt-16">
+        <div className="mt-12">
           <HeroVideo />
         </div>
       </section>
 
       {/* ---------------- Programs ---------------- */}
-      <section className="container-page py-16">
-        <div className="mb-10 flex items-end justify-between">
-          <div>
-            <p className="eyebrow mb-3">Programs</p>
-            <h2 className="text-3xl font-semibold tracking-tight">프로그램</h2>
-          </div>
+      <section className="container-page py-12">
+        <div className="mb-8 flex items-end justify-between">
+          <h2 className="text-3xl font-semibold tracking-tight">프로그램</h2>
           <Link
             href="/programs"
             className="text-sm text-[--muted] transition-colors hover:text-foreground"
@@ -138,12 +132,9 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- Product ---------------- */}
-      <section className="container-page py-16">
-        <div className="mb-10 flex items-end justify-between">
-          <div>
-            <p className="eyebrow mb-3">Product</p>
-            <h2 className="text-3xl font-semibold tracking-tight">제품</h2>
-          </div>
+      <section className="container-page py-12">
+        <div className="mb-8 flex items-end justify-between">
+          <h2 className="text-3xl font-semibold tracking-tight">제품</h2>
           <Link
             href="/product"
             className="text-sm text-[--muted] transition-colors hover:text-foreground"
@@ -164,12 +155,9 @@ export default async function HomePage() {
       </section>
 
       {/* ---------------- Marketing ---------------- */}
-      <section className="container-page py-16">
-        <div className="mb-10 flex items-end justify-between">
-          <div>
-            <p className="eyebrow mb-3">Marketing</p>
-            <h2 className="text-3xl font-semibold tracking-tight">마케팅</h2>
-          </div>
+      <section className="container-page py-12">
+        <div className="mb-8 flex items-end justify-between">
+          <h2 className="text-3xl font-semibold tracking-tight">마케팅</h2>
           <Link
             href="/marketing"
             className="text-sm text-[--muted] transition-colors hover:text-foreground"
