@@ -1,113 +1,71 @@
-import type { Metadata } from "next";
-import Link from "next/link";
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { getApp } from "@/lib/apps";
 import { canAccessApp } from "@/lib/app-access";
 import { createClient } from "@/lib/supabase/server";
-import { startBetaSubscription } from "@/app/apps/actions";
-import { PageHeader, Card } from "@/components/ui";
+import { safeNextPath } from "@/lib/auth-redirect";
 
-export const metadata: Metadata = { title: "구독 안내" };
 export const dynamic = "force-dynamic";
 
-export default async function SubscribePage({
+/**
+ * 무료 구독 게이트 (UI 없음 — 항상 redirect).
+ *
+ * 흐름: 프로그램 상세의 "무료 구독"(비로그인) → /login?next=/subscribe?app=KEY → 로그인 후 여기로.
+ * 여기서 멱등 구독 처리 후, 곧바로 프로그램 상세로 돌려보낸다.
+ * → "이미 구독 중입니다" 같은 임시 결과 페이지를 렌더하지 않는다.
+ *
+ * app_key / programSlug 기반 공통 구조: ebook 전용 하드코딩 없음.
+ * 다른 웹프로그램(ShortsFactory/ClipMiner 등)에도 동일하게 동작한다.
+ * 권한 단일 진실은 플랫폼(user_app_subscriptions + canAccessApp).
+ */
+export default async function SubscribeGate({
   searchParams,
 }: {
-  searchParams: Promise<{ app?: string; error?: string }>;
+  searchParams: Promise<{ app?: string; returnTo?: string }>;
 }) {
-  const { app: appKey, error: errorMsg } = await searchParams;
+  const { app: appKey, returnTo } = await searchParams;
   const app = appKey ? getApp(appKey) : null;
+  if (!app) redirect("/dashboard");
+
+  // 최종 도착지 = 프로그램 상세(또는 명시된 returnTo). 임시 결과 페이지로 보내지 않는다.
+  const dest = safeNextPath(returnTo, `/programs/${app.programSlug}`);
 
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // 단일 진실: canAccessApp 로 현재 접근 가능 여부 판정
-  const access = app && user ? await canAccessApp(user.id, app.key) : null;
-  const alreadySubscribed = access?.allowed ?? false;
-  const isDev = process.env.NODE_ENV === "development";
+  // 비로그인 → 로그인 후 다시 이 게이트로(돌아오면 구독 처리).
+  if (!user) {
+    redirect(`/login?next=${encodeURIComponent(`/subscribe?app=${app.key}`)}`);
+  }
 
-  return (
-    <div className="container-page py-20">
-      <PageHeader
-        eyebrow="Subscribe"
-        title={alreadySubscribed ? "이미 구독 중입니다" : "구독이 필요한 프로그램입니다"}
-        description={app ? app.name : "웹프로그램"}
-      />
+  // 이미 접근 가능하면 구독 처리 없이 상세로(중복 구독/UI 없음).
+  const access = await canAccessApp(user.id, app.key);
+  if (!access.allowed) {
+    // 무료 베타 구독(멱등 upsert). RLS 가 본인 row 만 쓰도록 강제.
+    const { error } = await supabase.from("user_app_subscriptions").upsert(
+      {
+        user_id: user.id,
+        app_key: app.key,
+        status: "active",
+        plan: "beta",
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "user_id,app_key" }
+    );
+    if (error) {
+      console.error("[subscribe-gate] upsert failed", {
+        appKey: app.key,
+        userId: user.id,
+        error: error.message,
+      });
+      // 실패해도 임시 페이지로 보내지 않고 상세로(상세의 CTA가 다시 '무료 구독'으로 보임 → 재시도).
+      redirect(`/programs/${app.programSlug}`);
+    }
+    revalidatePath("/dashboard");
+    revalidatePath(`/apps/${app.key}`);
+  }
 
-      <div className="mx-auto mt-12 max-w-xl">
-        {errorMsg && (
-          <p className="mb-4 rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
-            {errorMsg}
-          </p>
-        )}
-
-        {isDev && (
-          <pre className="mb-4 overflow-x-auto rounded-lg border border-[--border] bg-[--surface-2] p-3 text-xs text-[--muted-2]">
-{JSON.stringify(
-  {
-    appKey: app?.key ?? null,
-    loggedIn: Boolean(user),
-    allowed: access?.allowed ?? null,
-    reason: access?.reason ?? null,
-    status: access?.subscription?.status ?? null,
-    plan: access?.subscription?.plan ?? null,
-    current_period_end: access?.subscription?.current_period_end ?? null,
-  },
-  null,
-  2
-)}
-          </pre>
-        )}
-
-        <Card>
-          <p className="text-sm leading-relaxed text-[--muted]">
-            {alreadySubscribed ? (
-              <>이 프로그램을 사용할 수 있는 상태입니다. 바로 실행해 보세요.</>
-            ) : (
-              <>
-                이 프로그램은 구독 사용자에게 제공되는 웹프로그램입니다.
-                <br />
-                현재는 결제 시스템 준비 중이며, 베타 기간 동안 무료로 사용할 수
-                있습니다.
-              </>
-            )}
-          </p>
-        </Card>
-
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
-          {app && alreadySubscribed && (
-            <Link href={`/apps/${app.key}`} className="btn btn-accent min-w-[140px]">
-              앱 열기
-            </Link>
-          )}
-
-          {app && user && !alreadySubscribed && (
-            <form action={startBetaSubscription}>
-              <input type="hidden" name="app" value={app.key} />
-              <button type="submit" className="btn btn-accent min-w-[140px]">
-                베타 구독 시작
-              </button>
-            </form>
-          )}
-
-          {app && !user && (
-            <Link
-              href={`/login?next=${encodeURIComponent(`/subscribe?app=${app.key}`)}`}
-              className="btn btn-accent min-w-[140px]"
-            >
-              로그인하고 시작
-            </Link>
-          )}
-
-          <Link href="/dashboard" className="btn btn-ghost min-w-[140px]">
-            대시보드로 돌아가기
-          </Link>
-          <Link href="/contact" className="btn btn-ghost min-w-[140px]">
-            문의하기
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
+  redirect(dest);
 }

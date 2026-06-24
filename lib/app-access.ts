@@ -84,7 +84,7 @@ export async function canAccessApp(
 
 /**
  * 앱 페이지 공통 가드 — 로그인 + 구독 권한을 매 요청 검증.
- * 미로그인 → /login, 권한 없음 → /subscribe 로 redirect.
+ * 미로그인 → /login, 권한 없음 → 프로그램 상세(/programs/[slug]) 로 redirect.
  * 통과 시 인증된 user 를 반환한다. (앱 라우트들이 동일 진입 규칙을 공유)
  */
 export async function requireAppAccess(appKey: string): Promise<User> {
@@ -95,6 +95,11 @@ export async function requireAppAccess(appKey: string): Promise<User> {
   if (!user) redirect(`/login?next=/apps/${appKey}`);
 
   const access = await canAccessApp(user.id, appKey);
-  if (!access.allowed) redirect(`/subscribe?app=${appKey}`);
+  if (!access.allowed) {
+    // 미구독 상태로 앱 직접 접근 → 임시 페이지가 아니라 프로그램 상세로.
+    // 상세의 CTA가 "무료 구독"으로 보이므로 사용자가 명시적으로 구독한다.
+    const app = getApp(appKey);
+    redirect(`/programs/${app?.programSlug ?? appKey}`);
+  }
   return user;
 }

@@ -8,14 +8,17 @@ import { safeNextPath } from "@/lib/auth-redirect";
 
 // 베타 셀프 구독 토글. user_id 는 항상 서버 세션에서만 취득(클라이언트 입력 금지).
 // appKey 는 APP_DEFINITIONS 에 있는 값만 허용. RLS 가 본인 row 만 쓰도록 강제.
-// 실패 시 redirect 하지 않고 /subscribe?...&error= 로 사유를 표시한다.
+// 성공/실패 모두 임시 결과 페이지로 보내지 않고 returnTo(없으면 프로그램 상세)로 복귀한다.
 
 function loginNext(appKey: string) {
   return `/login?next=${encodeURIComponent(`/subscribe?app=${appKey}`)}`;
 }
 
+// 실패 시에도 임시 결과 페이지로 보내지 않는다. 프로그램 상세로 복귀(상세 CTA에서 재시도).
 function failTo(appKey: string, message: string): never {
-  redirect(`/subscribe?app=${appKey}&error=${encodeURIComponent(message)}`);
+  const app = getApp(appKey);
+  console.error("[beta-subscription] failed", { appKey, message });
+  redirect(`/programs/${app?.programSlug ?? appKey}`);
 }
 
 export async function startBetaSubscription(formData: FormData) {
@@ -103,6 +106,13 @@ export async function cancelBetaSubscription(formData: FormData) {
 
   revalidatePath("/dashboard");
   revalidatePath(`/apps/${appKey}`);
-  // 호출한 페이지로 복귀(없으면 구독 안내). 상세/대시보드는 머무르며 버튼만 갱신.
-  redirect(safeNextPath(String(formData.get("returnTo") ?? ""), `/subscribe?app=${appKey}`));
+  // 호출한 페이지로 복귀(없으면 프로그램 상세). 상세/대시보드는 머무르며 버튼만 갱신.
+  // 주의: 구독 게이트(/subscribe)로 보내면 즉시 재구독되므로 절대 fallback 으로 쓰지 않는다.
+  const app = getApp(appKey);
+  redirect(
+    safeNextPath(
+      String(formData.get("returnTo") ?? ""),
+      `/programs/${app?.programSlug ?? appKey}`
+    )
+  );
 }
