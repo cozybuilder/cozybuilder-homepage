@@ -19,13 +19,39 @@ export default async function EbookAppPage() {
 
   return (
     <>
-      {/* ── 데스크톱(≥1180px): 독립 풀페이지 앱 (전체 화면, 카드/프레임 없음) ── */}
-      <iframe
-        src="/apps/ebook/studio.html"
-        title="전자책 스튜디오"
-        className="fixed inset-0 z-[60] hidden h-screen w-screen bg-background min-[1180px]:block"
-        style={{ border: 0 }}
-      />
+      {/* ── 데스크톱(≥1180px): 앱 셸(부모 레벨 상단 바) + 풀페이지 스튜디오 iframe ──
+          "← 홈페이지로"는 iframe 밖(부모/앱 페이지 레벨)에서 처리한다.
+          studio.html(엔진 셸)·engine.bundle.js 와 완전히 분리 → 엔진 WIP 미혼입. */}
+      <div className="fixed inset-0 z-[60] hidden flex-col bg-background min-[1180px]:flex">
+        <div className="flex h-11 flex-none items-center border-b border-[--border] bg-background px-3">
+          <Link
+            href="/programs/ebook-publishing-system"
+            className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-sm text-[--muted] transition-colors hover:border-white/20 hover:bg-white/[0.08] hover:text-foreground"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M19 12H5" />
+              <path d="M12 19l-7-7 7-7" />
+            </svg>
+            홈페이지로
+          </Link>
+        </div>
+        <iframe
+          src="/apps/ebook/studio.html"
+          title="전자책 스튜디오"
+          className="w-full flex-1 bg-background"
+          style={{ border: 0 }}
+        />
+      </div>
 
       {/* ── 1180px 미만: 데스크톱 권장 안내(작은 화면 실행 차단) ── */}
       <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-5 bg-background px-6 text-center min-[1180px]:hidden">
