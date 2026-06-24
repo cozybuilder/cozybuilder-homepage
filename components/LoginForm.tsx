@@ -13,7 +13,7 @@ import { FormField, Input, Button } from "@/components/ui";
  */
 export default function LoginForm({
   initialError = null,
-  nextPath = "/dashboard",
+  nextPath = "/",
 }: {
   initialError?: string | null;
   nextPath?: string;

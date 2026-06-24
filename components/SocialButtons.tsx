@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 
 // Google OAuth 만 적용. (Kakao/Naver 는 정책상 제외)
 export default function SocialButtons({
-  nextPath = "/dashboard",
+  nextPath = "/",
 }: {
   nextPath?: string;
 }) {
@@ -19,7 +19,7 @@ export default function SocialButtons({
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        // PKCE 코드 교환을 위해 콜백 라우트로 보낸 뒤 next(기본 /dashboard) 로 이동.
+        // PKCE 코드 교환을 위해 콜백 라우트로 보낸 뒤 next(기본 /) 로 이동.
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(
           nextPath
         )}`,

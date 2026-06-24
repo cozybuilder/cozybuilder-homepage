@@ -12,18 +12,37 @@ export default function Header() {
   const [open, setOpen] = useState(false); // 모바일 메뉴
   const [menuOpen, setMenuOpen] = useState(false); // 프로필 드롭다운
   const [user, setUser] = useState<User | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false); // admin_users 등록 여부
   const pathname = usePathname();
   const router = useRouter();
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // 로그인 상태 구독.
+  // 로그인 상태 구독 + admin 판정(서버 가드와 동일하게 admin_users 테이블 기준).
   useEffect(() => {
     const supabase = createClient();
-    supabase.auth.getUser().then(({ data }) => setUser(data.user));
+    // admin_users RLS 는 본인 row select 를 허용 → 비관리자는 row 없음 → false.
+    const checkAdmin = async (u: User | null) => {
+      if (!u) {
+        setIsAdmin(false);
+        return;
+      }
+      const { data } = await supabase
+        .from("admin_users")
+        .select("user_id")
+        .eq("user_id", u.id)
+        .maybeSingle();
+      setIsAdmin(!!data);
+    };
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      checkAdmin(data.user);
+    });
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      const u = session?.user ?? null;
+      setUser(u);
+      checkAdmin(u);
     });
     return () => subscription.unsubscribe();
   }, []);
@@ -97,8 +116,13 @@ export default function Header() {
           })}
         </ul>
 
-        {/* Desktop auth: 로그인 버튼 또는 프로필 드롭다운 */}
-        <div className="hidden md:block">
+        {/* Desktop auth: (관리자) + 로그인 버튼 또는 프로필 드롭다운 */}
+        <div className="hidden items-center gap-3 md:flex">
+          {isAdmin && (
+            <Link href="/admin" className="btn btn-ghost px-4 py-2 text-sm">
+              관리자
+            </Link>
+          )}
           {user ? (
             <div className="relative" ref={menuRef}>
               <button
@@ -204,6 +228,19 @@ export default function Header() {
                 </Link>
               </li>
             ))}
+
+            {/* 관리자 전용 진입 (admin 에게만) */}
+            {isAdmin && (
+              <li className="mt-2 border-t border-[--border] pt-2">
+                <Link
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-lg px-3 py-3 text-base text-[--accent] transition-colors hover:text-foreground"
+                >
+                  관리자
+                </Link>
+              </li>
+            )}
 
             {/* 로그인 상태별 메뉴 */}
             {user ? (

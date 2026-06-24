@@ -2,7 +2,7 @@
 // 내부 경로만 허용한다. 외부 URL / 프로토콜 상대 경로(//, /\)는 차단.
 export function safeNextPath(
   next?: string | null,
-  fallback = "/dashboard"
+  fallback = "/"
 ): string {
   if (!next) return fallback;
   if (!next.startsWith("/")) return fallback;
