@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { getApp } from "@/lib/apps";
+import { notFound, redirect } from "next/navigation";
+import { getApp, getAppLaunchUrl } from "@/lib/apps";
 import { requireAppAccess } from "@/lib/app-access";
+import { signLaunchToken } from "@/lib/launch-token";
 import { PageHeader, Card } from "@/components/ui";
 
 // 보안: 앱 접근은 매 요청 서버에서 권한 검증. 정적/ISR 캐시 금지.
@@ -19,6 +20,11 @@ export async function generateMetadata({
   return { title: app ? app.name : "App" };
 }
 
+// 범용 앱 런처 게이트 (모든 웹앱 공통):
+//   1) 미로그인 → /login   2) 미구독 → /programs/[slug]  (둘 다 requireAppAccess 내부 처리)
+//   3) 권한 통과 + 독립 배포됨(launchUrl) → 단명 launch token 발급 후 독립 앱 도메인으로 redirect
+//   4) 독립 배포 전 → "준비 중" 플레이스홀더
+// 실제 기능/데이터/출력 UI 는 독립 앱 책임. 홈페이지는 게이트 + 진입 트리거만 담당.
 export default async function AppPage({
   params,
 }: {
@@ -29,21 +35,26 @@ export default async function AppPage({
   if (!app) notFound();
 
   // 로그인 + 구독 권한 검증(미통과 시 내부에서 redirect).
-  // ebook 은 전용 라우트(/apps/ebook)가 처리하므로 여기 도달하지 않는다.
-  await requireAppAccess(appKey);
+  const user = await requireAppAccess(appKey);
 
+  // 독립 앱이 배포되어 있으면 launch token 발급 후 그 도메인으로 이동(iframe 없음).
+  const launchUrl = getAppLaunchUrl(appKey);
+  if (launchUrl) {
+    const token = signLaunchToken(user.id, appKey);
+    redirect(`${launchUrl}/?launch_token=${encodeURIComponent(token)}`);
+  }
+
+  // 아직 독립 배포 전 — 플레이스홀더.
   return (
     <div className="container-page py-20">
       <PageHeader eyebrow="App" title={app.name} description={app.description} />
 
       <div className="mx-auto mt-14 max-w-3xl">
         <Card>
-          <p className="text-sm text-[--muted]">앱 화면 준비 중입니다.</p>
+          <p className="text-sm text-[--muted]">앱 준비 중입니다.</p>
         </Card>
-
         <p className="mt-8 text-center text-xs text-[--muted-2]">
-          홈페이지 안에서 실행되는 웹프로그램입니다. 실제 엔진 연결은 다음 단계에서
-          제공됩니다.
+          독립 앱 배포 후 이 진입점에서 자동 실행됩니다.
         </p>
       </div>
     </div>
