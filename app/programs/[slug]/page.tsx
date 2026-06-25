@@ -108,24 +108,31 @@ export default async function ProgramDetailPage({
                   무료 구독
                 </Link>
               ) : access?.allowed ? (
-                <div className="flex flex-wrap justify-center gap-3">
-                  <Link
-                    href={`/apps/${webApp.key}`}
-                    className="btn btn-accent min-w-[140px]"
-                  >
-                    실행하기
-                  </Link>
-                  <form action={cancelBetaSubscription}>
-                    <input type="hidden" name="app" value={webApp.key} />
-                    <input
-                      type="hidden"
-                      name="returnTo"
-                      value={`/programs/${program.slug}`}
-                    />
-                    <button type="submit" className="btn btn-ghost min-w-[140px]">
-                      구독 해제
-                    </button>
-                  </form>
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex flex-wrap justify-center gap-3">
+                    <Link
+                      href={`/apps/${webApp.key}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn btn-accent min-w-[140px]"
+                    >
+                      실행하기
+                    </Link>
+                    <form action={cancelBetaSubscription}>
+                      <input type="hidden" name="app" value={webApp.key} />
+                      <input
+                        type="hidden"
+                        name="returnTo"
+                        value={`/programs/${program.slug}`}
+                      />
+                      <button type="submit" className="btn btn-ghost min-w-[140px]">
+                        구독 해제
+                      </button>
+                    </form>
+                  </div>
+                  <p className="text-xs text-[--muted-2]">
+                    새 탭에서 전자책 스튜디오가 실행됩니다.
+                  </p>
                 </div>
               ) : (
                 <form action={startBetaSubscription}>

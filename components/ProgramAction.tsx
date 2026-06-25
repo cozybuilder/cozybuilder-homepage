@@ -99,24 +99,36 @@ export default function ProgramAction({
 
   // subscribed
   return (
-    <div className="flex flex-wrap justify-center gap-4">
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-wrap justify-center gap-4">
+        {appUrl ? (
+          <a
+            href={appUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-accent min-w-[140px]"
+          >
+            실행하기
+          </a>
+        ) : (
+          <span className="btn btn-accent min-w-[140px] cursor-not-allowed opacity-60">
+            실행하기 (Coming Soon)
+          </span>
+        )}
+        <button
+          type="button"
+          onClick={() => setSubscription(false)}
+          disabled={busy}
+          className="btn btn-ghost min-w-[140px] disabled:opacity-60"
+        >
+          {busy ? "처리 중…" : "구독 해제"}
+        </button>
+      </div>
       {appUrl ? (
-        <a href={appUrl} className="btn btn-accent min-w-[140px]">
-          실행하기
-        </a>
-      ) : (
-        <span className="btn btn-accent min-w-[140px] cursor-not-allowed opacity-60">
-          실행하기 (Coming Soon)
-        </span>
-      )}
-      <button
-        type="button"
-        onClick={() => setSubscription(false)}
-        disabled={busy}
-        className="btn btn-ghost min-w-[140px] disabled:opacity-60"
-      >
-        {busy ? "처리 중…" : "구독 해제"}
-      </button>
+        <p className="text-xs text-[--muted-2]">
+          새 탭에서 프로그램이 실행됩니다.
+        </p>
+      ) : null}
     </div>
   );
 }
