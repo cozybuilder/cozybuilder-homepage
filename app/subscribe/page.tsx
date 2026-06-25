@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { getApp } from "@/lib/apps";
 import { canAccessApp } from "@/lib/app-access";
 import { createClient } from "@/lib/supabase/server";
@@ -63,8 +62,8 @@ export default async function SubscribeGate({
       // 실패해도 임시 페이지로 보내지 않고 상세로(상세의 CTA가 다시 '무료 구독'으로 보임 → 재시도).
       redirect(`/programs/${app.programSlug}`);
     }
-    revalidatePath("/dashboard");
-    revalidatePath(`/apps/${app.key}`);
+    // 주의: revalidatePath 는 Server Action/Route Handler 전용 — 페이지 렌더 중 호출 시 throw.
+    // 구독 상태는 canAccessApp(캐시 없는 DB 조회) + /apps/* force-dynamic 으로 즉시 반영되므로 불필요.
   }
 
   redirect(dest);
