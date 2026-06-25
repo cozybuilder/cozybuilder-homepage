@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireAppAccess } from "@/lib/app-access";
+import { signLaunchToken } from "@/lib/launch-token";
 
 // 앱 접근은 매 요청 서버에서 권한 검증(플랫폼 역할). 정적 캐시 금지.
 export const dynamic = "force-dynamic";
@@ -15,7 +17,15 @@ export const metadata: Metadata = { title: "전자책 스튜디오" };
 // 인증/구독 게이트는 유지(requireAppAccess). 이번 Phase 는 UI 셸 / 출력 엔진 미연결.
 export default async function EbookAppPage() {
   // 로그인 + 무료 구독 권한 검증(미통과 시 내부에서 redirect).
-  await requireAppAccess("ebook");
+  const user = await requireAppAccess("ebook");
+
+  // V3 컷오버: EBOOK_APP_URL(서버 전용 env) 설정 시 → 단명 launch token 발급 후
+  // 외부 독립 Ebook 앱으로 redirect. 미설정이면 기존 내장 iframe 셸 유지(무중단).
+  const ebookUrl = process.env.EBOOK_APP_URL;
+  if (ebookUrl) {
+    const token = signLaunchToken(user.id, "ebook");
+    redirect(`${ebookUrl.replace(/\/$/, "")}/?launch_token=${encodeURIComponent(token)}`);
+  }
 
   return (
     <>
