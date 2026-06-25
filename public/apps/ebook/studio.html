@@ -21,15 +21,15 @@
       }
       *{ box-sizing:border-box; }
       html,body{ height:100%; }
-      /* 외부(body)에서만 여백/스크롤 — 앱 셸은 고정 규격으로 가운데 정렬 */
-      body{ margin:0; font-family:var(--font); font-size:var(--fs); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; display:flex; overflow:auto; }
+      /* 부모(iframe) 높이에 맞춰 셸이 채워지도록 — 외부 스크롤/잘림 방지 */
+      body{ margin:0; font-family:var(--font); font-size:var(--fs); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; display:flex; overflow:hidden; }
       svg{ display:block; }
       ::-webkit-scrollbar{ width:10px; height:10px; }
       ::-webkit-scrollbar-thumb{ background:#dcdad3; border-radius:8px; border:3px solid transparent; background-clip:padding-box; }
       ::-webkit-scrollbar-thumb:hover{ background:#ccc9bf; background-clip:padding-box; }
 
       /* ── 전체 셸 ── */
-      .studio{ flex:none; margin:auto; width:1440px; height:900px; display:flex; flex-direction:column; }
+      .studio{ flex:none; margin:auto; width:100%; max-width:1440px; height:100%; display:flex; flex-direction:column; }
 
       /* ── 상단 헤더 ── */
       .topbar{ flex:none; height:60px; display:flex; align-items:center; gap:14px; padding:0 16px; background:var(--panel); border-bottom:1px solid var(--line); }
