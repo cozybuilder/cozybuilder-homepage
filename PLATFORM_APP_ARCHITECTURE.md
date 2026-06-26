@@ -1,7 +1,10 @@
-# PLATFORM_APP_ARCHITECTURE — 플랫폼 / 프로그램 분리 원칙
+# PLATFORM_APP_ARCHITECTURE — 플랫폼 / 프로그램 분리 (Homepage 구현)
 
-> CozyBuilder Homepage(플랫폼)와 각 Program(독립 제품)의 경계를 규정한다.
-> 이 문서는 "어디까지가 Homepage의 책임이고, 어디부터가 Program의 책임인가"의 **권위 기준**이다.
+> **정책 SSOT는 cozybuilder-ops의 `PROGRAM_INTEGRATION.md`다.**
+> (Homepage↔독립 프로그램 경계의 상위 정책은 그 문서가 단독 소유한다.)
+> 이 문서는 그 정책의 **Homepage 측 구현 상세**를 소유한다 — `/apps/[appKey]` 런처 게이트,
+> launch token(HS256) 발급·검증, `user_app_subscriptions`/`canAccessApp` 권한 판정, app_key 레지스트리 등.
+> 정책 변경은 ops 문서에서, 구현 변경은 이 문서에서. 같은 사실을 양쪽에 복제하지 않는다.
 
 ## 핵심 원칙 (한 문장)
 
