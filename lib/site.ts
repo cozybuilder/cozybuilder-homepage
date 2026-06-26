@@ -179,10 +179,10 @@ export const programs: Program[] = [
   {
     slug: "clipminer",
     name: "ClipMiner",
-    summary: "영상에서 가치 있는 클립을 자동으로 채굴하는 도구",
+    summary: "Douyin·Xiaohongshu 영상 URL을 다운로드해 저장하고 쇼츠 제작까지 관리하는 데스크톱 프로그램",
     description:
-      "긴 영상 속에서 의미 있는 순간을 자동으로 찾아내고 클립으로 추출합니다.",
-    features: ["자동 하이라이트 추출", "자막 인식", "클립 내보내기", "배치 처리"],
+      "영상 URL을 입력하면 내장 yt-dlp로 다운로드해 로컬에 저장하고, 제목·태그·메모로 관리하며, 제작완료 상태와 완성된 제작영상까지 한곳에서 관리하는 Windows 데스크톱 프로그램입니다.",
+    features: ["URL 영상 다운로드 (Douyin/Xiaohongshu)", "다운로드 영상 저장·태그·메모", "제작완료 상태 관리", "제작영상(완성본) 관리"],
     emoji: "⛏️",
     image: "/image/clipminer.png",
     type: "web",

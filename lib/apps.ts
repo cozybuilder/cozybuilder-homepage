@@ -30,7 +30,7 @@ export const APP_DEFINITIONS: Record<string, AppDefinition> = {
   clipminer: {
     key: "clipminer",
     name: "ClipMiner",
-    description: "쇼핑쇼츠 소스 영상 관리를 돕는 웹프로그램",
+    description: "영상 URL 다운로드 + 쇼츠 제작 관리 데스크톱 프로그램 (Windows)",
     programSlug: "clipminer",
   },
 };
