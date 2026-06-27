@@ -34,6 +34,13 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      {/* Impact.com 사이트 소유권 인증 태그. 비표준 value 속성이라 metadata API(content 생성) 대신 직접 렌더하고, value는 meta 타입에 없어 스프레드로 우회. React 19가 <head>로 hoist. */}
+      <meta
+        {...({
+          name: "impact-site-verification",
+          value: "10d552fd-aa6f-4a9a-ac65-248fa668f7ef",
+        } as React.MetaHTMLAttributes<HTMLMetaElement>)}
+      />
       <body className="bg-aurora flex min-h-full flex-col">
         <Header />
         <main className="flex-1">{children}</main>
