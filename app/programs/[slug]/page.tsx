@@ -74,6 +74,13 @@ export default async function ProgramDetailPage({
   } = await supabase.auth.getUser();
   const access = webApp && user ? await canAccessApp(user.id, webApp.key) : null;
 
+  // 실행 대상 URL — CMS 실행 URL(app_url)을 최우선으로 사용한다.
+  // 값이 있으면 외부 도메인으로 즉시 이동하고, 비어 있을 때만 내부 /apps/[key] fallback.
+  const launchUrl = program.appUrl?.trim() ?? "";
+  const launchHref = webApp
+    ? launchUrl || `/apps/${webApp.key}`
+    : null;
+
   return (
     <div className="container-page py-12">
       <BackButton href="/programs" label="프로그램 목록" />
@@ -111,7 +118,7 @@ export default async function ProgramDetailPage({
                 <div className="flex flex-col items-center gap-2">
                   <div className="flex flex-wrap justify-center gap-3">
                     <Link
-                      href={`/apps/${webApp.key}`}
+                      href={launchHref!}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-accent min-w-[140px]"
@@ -131,7 +138,7 @@ export default async function ProgramDetailPage({
                     </form>
                   </div>
                   <p className="text-xs text-[--muted-2]">
-                    새 탭에서 전자책 스튜디오가 실행됩니다.
+                    새 탭에서 프로그램이 실행됩니다.
                   </p>
                 </div>
               ) : (
