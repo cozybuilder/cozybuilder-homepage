@@ -145,6 +145,9 @@ type SupabaseLike = {
   rpc: (fn: string, args?: Record<string, unknown>) => PromiseLike<{ data: any; error: any }>;
 };
 
+// 원본 이벤트 직접 조회용(관리자 쿠키 클라이언트 — RLS admin select 적용).
+type SupabaseFromLike = { from: (table: string) => any };
+
 export type AnalyticsOverview = {
   total_users: number;
   today_active: number;
@@ -202,5 +205,112 @@ export async function getByVersion(sb: SupabaseLike): Promise<VersionStat[]> {
     app_version: r.app_version,
     users: Number(r.users ?? 0),
   }));
+}
+
+// ── 일별 + 프로그램별 분해 (원본 30일치를 1회 조회해 JS 집계) ──
+// 추가 마이그레이션 없이 전체 시계열과 app_key 별 시계열을 동시에 만든다.
+export type DayAgg = { day: string; active: number; events: number };
+export type AppBreakdown = {
+  appKey: string;
+  users: number; // 기간 내 distinct anonymous_id
+  launches: number; // app_launch count
+  downloads: number; // download count(스토어/다운로드 클릭)
+  events: number;
+  days: DayAgg[]; // 날짜축(axis)과 동일 길이, 빈 날은 0
+};
+export type DailyBreakdown = {
+  axis: string[];
+  overall: DayAgg[];
+  byApp: Record<string, AppBreakdown>;
+};
+
+function seoulToday(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
+}
+
+function lastNDates(n: number): string[] {
+  const base = new Date(`${seoulToday()}T00:00:00Z`);
+  const out: string[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    const d = new Date(base);
+    d.setUTCDate(d.getUTCDate() - i);
+    out.push(d.toISOString().slice(0, 10));
+  }
+  return out;
+}
+
+export async function getDailyBreakdown(
+  sb: SupabaseFromLike,
+  days = 30
+): Promise<DailyBreakdown> {
+  const axis = lastNDates(days);
+  const since = axis[0];
+
+  const { data } = await sb
+    .from("analytics_events")
+    .select("app_key,event_date,anonymous_id,event_name")
+    .gte("event_date", since)
+    .limit(100000);
+  const rows: any[] = Array.isArray(data) ? data : [];
+
+  const overallDay = new Map<string, Set<string>>();
+  const overallEvents = new Map<string, number>();
+  const appDay = new Map<string, Map<string, Set<string>>>();
+  const appDayEvents = new Map<string, Map<string, number>>();
+  const appUsers = new Map<string, Set<string>>();
+  const appCounts = new Map<string, { launches: number; downloads: number; events: number }>();
+
+  for (const r of rows) {
+    const key = String(r.app_key ?? "");
+    const day = String(r.event_date ?? "");
+    const anon = String(r.anonymous_id ?? "");
+    const name = String(r.event_name ?? "");
+    if (!key || !day) continue;
+
+    if (!overallDay.has(day)) overallDay.set(day, new Set());
+    overallDay.get(day)!.add(anon);
+    overallEvents.set(day, (overallEvents.get(day) ?? 0) + 1);
+
+    if (!appDay.has(key)) appDay.set(key, new Map());
+    const dm = appDay.get(key)!;
+    if (!dm.has(day)) dm.set(day, new Set());
+    dm.get(day)!.add(anon);
+
+    if (!appDayEvents.has(key)) appDayEvents.set(key, new Map());
+    const em = appDayEvents.get(key)!;
+    em.set(day, (em.get(day) ?? 0) + 1);
+
+    if (!appUsers.has(key)) appUsers.set(key, new Set());
+    appUsers.get(key)!.add(anon);
+
+    if (!appCounts.has(key)) appCounts.set(key, { launches: 0, downloads: 0, events: 0 });
+    const c = appCounts.get(key)!;
+    c.events += 1;
+    if (name === "app_launch") c.launches += 1;
+    else if (name === "download") c.downloads += 1;
+  }
+
+  const overall: DayAgg[] = axis.map((d) => ({
+    day: d,
+    active: overallDay.get(d)?.size ?? 0,
+    events: overallEvents.get(d) ?? 0,
+  }));
+
+  const byApp: Record<string, AppBreakdown> = {};
+  for (const key of appDay.keys()) {
+    const dm = appDay.get(key)!;
+    const em = appDayEvents.get(key) ?? new Map<string, number>();
+    const c = appCounts.get(key) ?? { launches: 0, downloads: 0, events: 0 };
+    byApp[key] = {
+      appKey: key,
+      users: appUsers.get(key)?.size ?? 0,
+      launches: c.launches,
+      downloads: c.downloads,
+      events: c.events,
+      days: axis.map((d) => ({ day: d, active: dm.get(d)?.size ?? 0, events: em.get(d) ?? 0 })),
+    };
+  }
+
+  return { axis, overall, byApp };
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
