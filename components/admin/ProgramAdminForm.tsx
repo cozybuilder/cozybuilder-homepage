@@ -23,7 +23,6 @@ export type ProgramInitial = {
   app_url?: string;
   play_store_url?: string;
   app_store_url?: string;
-  release_status?: string;
   status?: string;
   sort_order?: number;
 };
@@ -130,18 +129,8 @@ export default function ProgramAdminForm({
       ) : (
         <Section
           title="다운로드 설정 (Mobile App)"
-          desc="출시 완료 + 스토어 URL이 있는 스토어 버튼만 표시됩니다. App Store는 비워도 됩니다."
+          desc="출시 상태는 스토어 URL 존재로 자동 판단됩니다. Google Play URL이 있으면 Android 출시, App Store URL이 있으면 iOS 출시로 표시됩니다. 둘 다 비우면 '출시 준비 중'."
         >
-          <FormField label="출시 상태">
-            <Select
-              name="release_status"
-              defaultValue={initial?.release_status ?? "development"}
-            >
-              <option value="development">개발 중</option>
-              <option value="coming_soon">출시 예정</option>
-              <option value="released">출시 완료</option>
-            </Select>
-          </FormField>
           <FormField label="Google Play URL">
             <Input
               key="mobile-play"

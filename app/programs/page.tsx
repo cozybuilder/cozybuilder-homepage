@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { type Program, RELEASE_STATUS_LABELS } from "@/lib/site";
+import { type Program } from "@/lib/site";
 import { getPrograms } from "@/lib/content";
 import { PageHeader, Card } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Programs" };
 
 function ProgramCard({ p }: { p: Program }) {
-  // 모바일앱이 아직 출시 전(개발 중/출시 예정)이면 카드에 상태 배지 표시.
+  // 모바일앱인데 스토어 링크가 하나도 없으면(=어느 플랫폼도 미출시) 카드에 준비 중 배지.
   const preRelease =
-    p.type === "mobile" &&
-    (p.releaseStatus === "development" || p.releaseStatus === "coming_soon");
+    p.type === "mobile" && !p.playStoreUrl && !p.appStoreUrl;
 
   return (
     <Card href={`/programs/${p.slug}`} hover>
@@ -24,7 +23,7 @@ function ProgramCard({ p }: { p: Program }) {
         />
         {preRelease && (
           <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white backdrop-blur">
-            {RELEASE_STATUS_LABELS[p.releaseStatus!]}
+            출시 준비 중
           </span>
         )}
       </div>

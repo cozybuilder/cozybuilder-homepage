@@ -59,17 +59,10 @@ export async function saveProgram(
   // slug 없으면 이름 기반 자동 생성 (한글 등으로 비면 신규는 랜덤 fallback)
   if (!slug) slug = slugify(name);
 
-  // release_status 는 정해진 3개 값만 허용(나머지/빈값 → null). CHECK 제약 위반 방지.
-  const releaseRaw = str(formData.get("release_status"));
-  const releaseStatus = (
-    ["development", "coming_soon", "released"] as const
-  ).includes(releaseRaw as "development" | "coming_soon" | "released")
-    ? releaseRaw
-    : null;
-
   // 공통 필드 (slug 는 분기에서 처리)
   // platform=web 이면 모바일 필드, platform=mobile 이면 app_url 이 폼에서 렌더되지 않아
   // 자연스럽게 빈값으로 정리된다(플랫폼 전환 시 반대편 링크가 남지 않음).
+  // 출시 상태는 별도 컬럼 없이 스토어 URL 존재로 추론(Release Model v3).
   const base = {
     type: str(formData.get("type")) === "mobile" ? "mobile" : "web",
     name,
@@ -81,9 +74,8 @@ export async function saveProgram(
     screenshots: lines(formData.get("screenshots")),
     updates: updatesFrom(formData.get("updates")),
     app_url: str(formData.get("app_url")), // web 실행 URL (web_url 역할)
-    play_store_url: str(formData.get("play_store_url")), // mobile
-    app_store_url: str(formData.get("app_store_url")), // mobile
-    release_status: releaseStatus, // mobile 출시 상태
+    play_store_url: str(formData.get("play_store_url")), // mobile — Android 출시 여부
+    app_store_url: str(formData.get("app_store_url")), // mobile — iOS 출시 여부
     status: str(formData.get("status")) === "published" ? "published" : "draft",
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
@@ -91,8 +83,9 @@ export async function saveProgram(
 
   console.log("[saveProgram] keys:", [...formData.keys()].join(","), "| id:", id || "(new)", "| slug:", slug);
 
-  // 0010 미실행(모바일 컬럼 없음) 환경에서도 저장이 깨지지 않도록, 컬럼 부재 오류면
-  // 신규 모바일 필드를 제외하고 재시도한다(marketing channel_type 와 동일한 하위호환 패턴).
+  // 0011 미실행(스토어 컬럼 없음) 환경에서도 저장이 깨지지 않도록, 컬럼 부재 오류면
+  // 스토어 필드를 제외하고 재시도한다(marketing channel_type 와 동일한 하위호환 패턴).
+  // 단, 모바일 링크 실제 저장은 0011 적용이 필수다(미적용 시 값은 조용히 유실됨).
   const writeProgram = async (payload: Record<string, unknown>) => {
     if (id) {
       return supabase.from("programs").update(payload).eq("id", id).select();
@@ -105,11 +98,10 @@ export async function saveProgram(
   const payload: Record<string, unknown> = slug ? { ...base, slug } : { ...base };
 
   let { data, error } = await writeProgram(payload);
-  if (error && /play_store_url|app_store_url|release_status/i.test(error.message)) {
+  if (error && /play_store_url|app_store_url/i.test(error.message)) {
     const legacy = { ...payload };
     delete legacy.play_store_url;
     delete legacy.app_store_url;
-    delete legacy.release_status;
     ({ data, error } = await writeProgram(legacy));
   }
 

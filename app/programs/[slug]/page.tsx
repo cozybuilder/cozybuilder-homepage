@@ -3,7 +3,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getProgram } from "@/lib/content";
-import type { ProgramReleaseStatus } from "@/lib/site";
 import { findAppByProgramSlug } from "@/lib/apps";
 import { canAccessApp } from "@/lib/app-access";
 import { createClient } from "@/lib/supabase/server";
@@ -51,43 +50,47 @@ function StoreButton({ label, url }: { label: string; url?: string }) {
   );
 }
 
-/** 비활성 상태 배지 (개발 중 / 출시 예정 / 출시 준비 중). */
-function DisabledBadge({ label }: { label: string }) {
-  return (
-    <span className="btn btn-ghost min-w-[140px] cursor-not-allowed opacity-60">
-      {label}
-    </span>
-  );
-}
-
 /**
- * 모바일앱 다운로드 액션 — 출시 상태(release_status)에 따라 표시.
- * 개발 중/출시 예정 → 비활성 배지. 출시 완료(또는 레거시 미설정) → 등록된 스토어 URL 만 버튼.
+ * 모바일앱 다운로드 액션 — 출시 상태를 스토어 URL 존재로 추론(Release Model v3).
+ * play_store_url 있음=Android 출시 / app_store_url 있음=iOS 출시.
+ *   둘 다 없음 → "출시 준비 중"
+ *   Play 만 → Google Play 버튼 + "iOS 출시 예정" 보조 문구
+ *   App Store 만 → App Store 버튼
+ *   둘 다 → 두 버튼 모두
  */
 function MobileStoreActions({
-  releaseStatus,
   playStoreUrl,
   appStoreUrl,
 }: {
-  releaseStatus?: ProgramReleaseStatus;
   playStoreUrl?: string;
   appStoreUrl?: string;
 }) {
-  if (releaseStatus === "development") return <DisabledBadge label="개발 중" />;
-  if (releaseStatus === "coming_soon") return <DisabledBadge label="출시 예정" />;
+  const hasPlay = Boolean(playStoreUrl);
+  const hasAppStore = Boolean(appStoreUrl);
 
-  const buttons: React.ReactNode[] = [];
-  if (playStoreUrl)
-    buttons.push(
-      <StoreButton key="play" label="Google Play에서 받기" url={playStoreUrl} />
+  if (!hasPlay && !hasAppStore) {
+    return (
+      <span className="btn btn-ghost min-w-[140px] cursor-not-allowed opacity-60">
+        출시 준비 중
+      </span>
     );
-  if (appStoreUrl)
-    buttons.push(
-      <StoreButton key="appstore" label="App Store에서 받기" url={appStoreUrl} />
-    );
-  if (buttons.length === 0) return <DisabledBadge label="출시 준비 중" />;
+  }
 
-  return <div className="flex flex-wrap justify-center gap-4">{buttons}</div>;
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex flex-wrap justify-center gap-4">
+        {hasPlay && (
+          <StoreButton label="Google Play에서 받기" url={playStoreUrl} />
+        )}
+        {hasAppStore && (
+          <StoreButton label="App Store에서 받기" url={appStoreUrl} />
+        )}
+      </div>
+      {hasPlay && !hasAppStore && (
+        <p className="text-xs text-[--muted-2]">iOS 출시 예정</p>
+      )}
+    </div>
+  );
 }
 
 export default async function ProgramDetailPage({
@@ -142,7 +145,6 @@ export default async function ProgramDetailPage({
         <div className="mt-6 flex justify-center">
           {program.type === "mobile" ? (
             <MobileStoreActions
-              releaseStatus={program.releaseStatus}
               playStoreUrl={program.playStoreUrl}
               appStoreUrl={program.appStoreUrl}
             />

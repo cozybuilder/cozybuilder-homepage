@@ -32,15 +32,6 @@ export const bookItems = ["전자책", "출판 프로젝트", "개발 기록"];
 // 플랫폼 구분 — web = 컴퓨터 웹앱, mobile = 모바일앱(스토어 배포).
 export type ProgramType = "web" | "mobile";
 
-// 모바일앱 출시 상태 (web 에는 의미 없음 / 미설정=레거시는 released 취급).
-export type ProgramReleaseStatus = "development" | "coming_soon" | "released";
-
-export const RELEASE_STATUS_LABELS: Record<ProgramReleaseStatus, string> = {
-  development: "개발 중",
-  coming_soon: "출시 예정",
-  released: "출시 완료",
-};
-
 // 업데이트 내역 1건 (등록형)
 export type ProgramUpdate = { date: string; text: string };
 
@@ -54,9 +45,9 @@ export type Program = {
   image: string;
   type: ProgramType;
   appUrl?: string; // web 실행 경로 (없으면 Coming Soon)
-  playStoreUrl?: string; // mobile — Google Play
-  appStoreUrl?: string; // mobile — App Store
-  releaseStatus?: ProgramReleaseStatus; // mobile 출시 상태
+  // mobile 출시 상태는 별도 컬럼 없이 스토어 URL 존재로 추론(Release Model v3).
+  playStoreUrl?: string; // mobile — Google Play (있으면 Android 출시됨)
+  appStoreUrl?: string; // mobile — App Store (있으면 iOS 출시됨)
   screenshots?: string[]; // 여러 장 등록 가능 (좌우 슬라이드)
   updates?: ProgramUpdate[]; // 텍스트 기록형
 };
