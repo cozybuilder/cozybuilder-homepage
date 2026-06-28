@@ -110,15 +110,19 @@ export default async function AdminAnalyticsPage() {
 
       {/* 프로그램별 비교 */}
       <section>
-        <h2 className="mb-4 text-lg font-semibold">프로그램별 비교</h2>
+        <h2 className="mb-1 text-lg font-semibold">프로그램별 비교</h2>
+        <p className="mb-4 text-xs text-[--muted-2]">
+          ※ &lsquo;다운로드 클릭&rsquo;은 스토어/다운로드 버튼 클릭 의도이며 실제 설치 수가 아닙니다.
+          &lsquo;실행수&rsquo;는 진입 횟수(중복 포함)로, 활성 사용자는 &lsquo;사용자&rsquo; 열을 참고하세요.
+        </p>
         <div className="card overflow-x-auto p-0">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[--border] text-left text-xs text-[--muted-2]">
                 <th className="px-4 py-3 font-medium">프로그램</th>
                 <th className="px-4 py-3 text-right font-medium">사용자</th>
-                <th className="px-4 py-3 text-right font-medium">실행(app_launch)</th>
-                <th className="px-4 py-3 text-right font-medium">다운로드</th>
+                <th className="px-4 py-3 text-right font-medium">실행수(app_launch)</th>
+                <th className="px-4 py-3 text-right font-medium">다운로드 클릭</th>
                 <th className="px-4 py-3 text-right font-medium">총 이벤트</th>
               </tr>
             </thead>

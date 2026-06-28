@@ -1,8 +1,7 @@
 # PLATFORM_ANALYTICS_ARCHITECTURE — CozyBuilder Platform Analytics 설계 (v1 분석)
 
-> **상태: 분석/설계 문서 (구현 전).** 이 문서는 설계 확정용 분석 산출물이다.
-> 코드 수정 · DB 마이그레이션 · API Route 생성 · Admin UI 구현 · 커밋/푸시는 **하지 않은 상태**다.
-> 코비 승인 후 v1 구현(STEP 1~4)에 들어간다.
+> **상태: v1 구현 완료 (commit 3065354) · 운영 적용 진행 중.** 설계 + 구현이 반영된 문서다.
+> 운영 적용(0012 SQL 실행 + env 설정)은 코비 승인됨(2026-06-29). v1.1 백로그는 아래 §15.
 >
 > **관계:** 이 문서는 `PLATFORM_APP_ARCHITECTURE.md`(플랫폼/프로그램 분리 원칙)의 하위 구현 설계다.
 > 플랫폼 경계·런처·launch token·RLS·HMAC 패턴은 그 문서를 따르며 같은 사실을 복제하지 않는다.
@@ -256,6 +255,23 @@ create index on public.analytics_events (event_date, anonymous_id);
 
 - 광고 지표, `analytics_sessions` 전용 테이블, 세션 길이/이탈, 이벤트 멱등성(`event_uuid`),
   리텐션 코호트/퍼널, 유료/무료 비교·ARPU, Admin Events 탐색기, 스토어 콘솔 다운로드 자동 동기화.
+
+## 15. v1.1 최우선 백로그 (2026-06-29 코비 승인 등록)
+
+> v1 운영 적용 시 인정·수용한 한계. v1.1에서 우선 해소한다.
+
+1. **daily_stats rollup** — 현재 `analytics_daily_stats`는 비어 있고 대시보드는 `analytics_events`
+   원본을 RPC로 실시간 집계한다. v1.1에서 일 1회 rollup(cron/Edge Function 또는 pg_cron) +
+   PK 기준 upsert(중복 집계 방지) + 90일 원본 보존 정책을 구현한다.
+2. **anonymous_id 통합 전략** — 현재 `app_launch`=`auth_user_hash`, `download`=device UUID 로
+   식별자 체계가 이원화되어 동일인이 두 체계로 분리 집계될 수 있다. v1.1에서 로그인 사용자의
+   device UUID ↔ auth_user_hash 매핑/병합 규칙을 정해 distinct 사용자 과대집계를 제거한다.
+3. **download 라벨 정리** — v1.1에서 "스토어 클릭 / 다운로드 클릭 / (가능 시) 설치 추정"을
+   명확히 구분하는 지표·UX 정리. (v1에서는 관리자 표 헤더를 "다운로드 클릭"으로 1차 표기.)
+4. **ClipMiner 다운로드 계측** — 데스크톱 전용 다운로드 경로(`/download/[appKey]` 라우트 등)로
+   다운로드 시작을 서버 측 계측. (v1은 모바일 스토어 CTA 클릭만 계측.)
+5. **감사일기 내부 SDK** — 모바일 앱 내부 이벤트(`app_open`/DAU/버전) 전송용 경량 SDK
+   (anon UUID secure-store + 오프라인 큐 + 배치 전송) 도입.
 
 ---
 
