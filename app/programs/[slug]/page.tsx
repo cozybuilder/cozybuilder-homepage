@@ -28,24 +28,31 @@ export async function generateMetadata({
   return { title: program ? program.name : "프로그램" };
 }
 
-/** 모바일앱 스토어 버튼 (링크 없으면 출시 준비 중). */
-function StoreButton({ label, url }: { label: string; url?: string }) {
-  if (url) {
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="btn btn-ghost min-w-[140px]"
-      >
-        {label}
-      </a>
-    );
-  }
+// 스토어 버튼 공통 크기 — 두 버튼이 시각적으로 균형을 이루도록 height/padding/굵기/라운드 통일.
+const STORE_BTN_BASE =
+  "flex h-12 w-full items-center justify-center rounded-xl px-5 text-sm font-semibold transition sm:w-auto sm:min-w-[180px]";
+
+/** 활성 CTA — 스토어 URL 존재. CozyBuilder primary gradient(파랑~보라). */
+function StoreCTA({ label, url }: { label: string; url: string }) {
   return (
-    <span className="btn btn-ghost min-w-[140px] cursor-not-allowed flex-col gap-0 py-3 opacity-60">
-      <span>{label}</span>
-      <span className="text-xs text-[--muted-2]">출시 준비 중</span>
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className={`${STORE_BTN_BASE} bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:from-blue-400 hover:to-indigo-400`}
+    >
+      {label}
+    </a>
+  );
+}
+
+/** 비활성 버튼 — 동일한 버튼 형태 유지(작은 보조 텍스트 사용 안 함). */
+function StoreInactive({ label }: { label: string }) {
+  return (
+    <span
+      className={`${STORE_BTN_BASE} cursor-default border border-white/15 bg-transparent text-white/50`}
+    >
+      {label}
     </span>
   );
 }
@@ -53,10 +60,9 @@ function StoreButton({ label, url }: { label: string; url?: string }) {
 /**
  * 모바일앱 다운로드 액션 — 출시 상태를 스토어 URL 존재로 추론(Release Model v3).
  * play_store_url 있음=Android 출시 / app_store_url 있음=iOS 출시.
- *   둘 다 없음 → "출시 준비 중"
- *   Play 만 → Google Play 버튼 + "iOS 출시 예정" 보조 문구
- *   App Store 만 → App Store 버튼
- *   둘 다 → 두 버튼 모두
+ *   둘 다 없음 → 단일 "출시 준비 중" 비활성 버튼
+ *   하나 이상 있음 → 두 버튼을 같은 줄(데스크톱)에 균형 배치.
+ *     활성(URL 있음) → gradient CTA / 비활성(없음) → "OOO 출시 예정" 동일 버튼 형태.
  */
 function MobileStoreActions({
   playStoreUrl,
@@ -70,24 +76,23 @@ function MobileStoreActions({
 
   if (!hasPlay && !hasAppStore) {
     return (
-      <span className="btn btn-ghost min-w-[140px] cursor-not-allowed opacity-60">
-        출시 준비 중
-      </span>
+      <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+        <StoreInactive label="출시 준비 중" />
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="flex flex-wrap justify-center gap-4">
-        {hasPlay && (
-          <StoreButton label="Google Play에서 받기" url={playStoreUrl} />
-        )}
-        {hasAppStore && (
-          <StoreButton label="App Store에서 받기" url={appStoreUrl} />
-        )}
-      </div>
-      {hasPlay && !hasAppStore && (
-        <p className="text-xs text-[--muted-2]">iOS 출시 예정</p>
+    <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+      {hasPlay ? (
+        <StoreCTA label="Google Play에서 받기" url={playStoreUrl!} />
+      ) : (
+        <StoreInactive label="Google Play 출시 예정" />
+      )}
+      {hasAppStore ? (
+        <StoreCTA label="App Store에서 받기" url={appStoreUrl!} />
+      ) : (
+        <StoreInactive label="App Store 출시 예정" />
       )}
     </div>
   );
