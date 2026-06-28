@@ -55,6 +55,13 @@ function rowToProgram(r: any): Program {
     image: r.image ?? "",
     type: r.type === "mobile" ? "mobile" : "web",
     appUrl: r.app_url ?? "",
+    playStoreUrl: r.play_store_url ?? "",
+    appStoreUrl: r.app_store_url ?? "",
+    releaseStatus: ["development", "coming_soon", "released"].includes(
+      r.release_status
+    )
+      ? r.release_status
+      : undefined,
     screenshots: asStringArray(r.screenshots),
     updates: Array.isArray(r.updates)
       ? (r.updates as ProgramUpdate[]).filter((u) => u && u.text)

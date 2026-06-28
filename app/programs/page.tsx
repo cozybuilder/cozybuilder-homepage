@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { type Program } from "@/lib/site";
+import { type Program, RELEASE_STATUS_LABELS } from "@/lib/site";
 import { getPrograms } from "@/lib/content";
 import { PageHeader, Card } from "@/components/ui";
 
 export const metadata: Metadata = { title: "Programs" };
 
 function ProgramCard({ p }: { p: Program }) {
+  // 모바일앱이 아직 출시 전(개발 중/출시 예정)이면 카드에 상태 배지 표시.
+  const preRelease =
+    p.type === "mobile" &&
+    (p.releaseStatus === "development" || p.releaseStatus === "coming_soon");
+
   return (
     <Card href={`/programs/${p.slug}`} hover>
       <div className="relative mb-5 aspect-[16/9] w-full overflow-hidden rounded-xl">
@@ -17,6 +22,11 @@ function ProgramCard({ p }: { p: Program }) {
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
+        {preRelease && (
+          <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white backdrop-blur">
+            {RELEASE_STATUS_LABELS[p.releaseStatus!]}
+          </span>
+        )}
       </div>
       <h3 className="text-lg font-semibold">{p.name}</h3>
       <p className="mt-2 text-sm text-[--muted]">{p.summary}</p>

@@ -32,6 +32,9 @@ export default async function ProgramFormPage({
         screenshots: Array.isArray(r.screenshots) ? r.screenshots : [],
         updates: Array.isArray(r.updates) ? r.updates : [],
         app_url: r.app_url ?? "",
+        play_store_url: r.play_store_url ?? "",
+        app_store_url: r.app_store_url ?? "",
+        release_status: r.release_status ?? "",
         status: r.status ?? "draft",
         sort_order: r.sort_order ?? 0,
       };
