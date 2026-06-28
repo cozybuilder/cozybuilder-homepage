@@ -26,6 +26,9 @@ export default async function AdminLayout({
         <Link href="/admin/marketing" className="text-[--muted] hover:text-foreground">
           Marketing
         </Link>
+        <Link href="/admin/analytics" className="text-[--muted] hover:text-foreground">
+          Analytics
+        </Link>
         <Link href="/" className="ml-auto text-[--muted-2] hover:text-foreground">
           사이트로 →
         </Link>

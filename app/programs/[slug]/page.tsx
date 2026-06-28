@@ -14,6 +14,7 @@ import { ImagePlaceholder, Placeholder } from "@/components/ui";
 import BackButton from "@/components/BackButton";
 import ProgramAction from "@/components/ProgramAction";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
+import DownloadButton from "@/components/DownloadButton";
 
 // 구독 버튼이 현재 사용자 권한을 반영해야 하므로 동적 렌더(접근 판정은 매 요청).
 export const dynamic = "force-dynamic";
@@ -31,20 +32,6 @@ export async function generateMetadata({
 // 스토어 버튼 공통 크기 — 두 버튼이 시각적으로 균형을 이루도록 height/padding/굵기/라운드 통일.
 const STORE_BTN_BASE =
   "flex h-12 w-full items-center justify-center rounded-xl px-5 text-sm font-semibold transition sm:w-auto sm:min-w-[180px]";
-
-/** 활성 CTA — 스토어 URL 존재. CozyBuilder primary gradient(파랑~보라). */
-function StoreCTA({ label, url }: { label: string; url: string }) {
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`${STORE_BTN_BASE} bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:from-blue-400 hover:to-indigo-400`}
-    >
-      {label}
-    </a>
-  );
-}
 
 /** 비활성 버튼 — 동일한 버튼 형태 유지(작은 보조 텍스트 사용 안 함). */
 function StoreInactive({ label }: { label: string }) {
@@ -65,9 +52,11 @@ function StoreInactive({ label }: { label: string }) {
  *     활성(URL 있음) → gradient CTA / 비활성(없음) → "OOO 출시 예정" 동일 버튼 형태.
  */
 function MobileStoreActions({
+  appKey,
   playStoreUrl,
   appStoreUrl,
 }: {
+  appKey: string;
   playStoreUrl?: string;
   appStoreUrl?: string;
 }) {
@@ -85,12 +74,24 @@ function MobileStoreActions({
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
       {hasPlay ? (
-        <StoreCTA label="Google Play에서 받기" url={playStoreUrl!} />
+        <DownloadButton
+          label="Google Play에서 받기"
+          url={playStoreUrl!}
+          appKey={appKey}
+          platform="mobile"
+          store="play"
+        />
       ) : (
         <StoreInactive label="Google Play 출시 예정" />
       )}
       {hasAppStore ? (
-        <StoreCTA label="App Store에서 받기" url={appStoreUrl!} />
+        <DownloadButton
+          label="App Store에서 받기"
+          url={appStoreUrl!}
+          appKey={appKey}
+          platform="mobile"
+          store="appstore"
+        />
       ) : (
         <StoreInactive label="App Store 출시 예정" />
       )}
@@ -150,6 +151,7 @@ export default async function ProgramDetailPage({
         <div className="mt-6 flex justify-center">
           {program.type === "mobile" ? (
             <MobileStoreActions
+              appKey={program.slug}
               playStoreUrl={program.playStoreUrl}
               appStoreUrl={program.appStoreUrl}
             />

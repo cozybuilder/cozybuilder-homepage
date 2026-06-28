@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { getApp, getAppLaunchUrl } from "@/lib/apps";
 import { requireAppAccess } from "@/lib/app-access";
 import { signLaunchToken } from "@/lib/launch-token";
+import { recordEvent } from "@/lib/analytics";
 import { PageHeader, Card } from "@/components/ui";
 
 // 보안: 앱 접근은 매 요청 서버에서 권한 검증. 정적/ISR 캐시 금지.
@@ -36,6 +37,15 @@ export default async function AppPage({
 
   // 로그인 + 구독 권한 검증(미통과 시 내부에서 redirect).
   const user = await requireAppAccess(appKey);
+
+  // 권한 통과 = 앱 진입 성공. app_launch 계측(best-effort, redirect 전).
+  // 익명화: 원본 user_id 대신 HMAC 해시만 저장된다(recordEvent 내부 처리).
+  await recordEvent({
+    appKey,
+    platform: "web",
+    eventName: "app_launch",
+    userId: user.id,
+  });
 
   // 독립 앱이 배포되어 있으면 launch token 발급 후 그 도메인으로 이동(iframe 없음).
   const launchUrl = getAppLaunchUrl(appKey);
