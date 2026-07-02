@@ -1,55 +1,50 @@
 # CozyBuilder Homepage
 
-Next.js (App Router) + TypeScript + Tailwind CSS · Auth: Supabase · 배포: Vercel
+CozyBuilder 홈페이지/플랫폼 저장소.
+
+- Stack: Next.js App Router + TypeScript + Tailwind CSS
+- Auth/DB/Storage: Supabase
+- Deploy: Vercel
+- Domain: `https://cozybuilder.co.kr`
+
+## 문서 기준
+
+- 현재 상태: [`docs/STATUS.md`](./docs/STATUS.md)
+- Analytics 설계/운영: [`docs/platform/PLATFORM_ANALYTICS_ARCHITECTURE.md`](./docs/platform/PLATFORM_ANALYTICS_ARCHITECTURE.md)
+- Auth 정책: [`AUTH_POLICY.md`](./AUTH_POLICY.md)
+- 배포/Auth 체크리스트: [`DEPLOY_AUTH_CHECKLIST.md`](./DEPLOY_AUTH_CHECKLIST.md)
+
+운영/문서 규칙의 SSOT는 `cozybuilder-ops`를 따른다.
 
 ## 환경변수
 
-`.env.local.example` 를 `.env.local` 로 복사 후 Supabase 값 입력:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
-```
-
-## 배포 (Vercel)
-
-1. GitHub 저장소 연결 후 Vercel 프로젝트 생성 (프레임워크 자동 감지: Next.js)
-2. Vercel 환경변수 2개 등록: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-3. 배포 후 Supabase / Google OAuth URL 설정 → 자세한 절차는
-   [DEPLOY_AUTH_CHECKLIST.md](./DEPLOY_AUTH_CHECKLIST.md)
-4. 인증 정책: [AUTH_POLICY.md](./AUTH_POLICY.md)
-
-## Getting Started
-
-First, run the development server:
+`.env.local.example` 를 `.env.local` 로 복사 후 실제 값을 입력한다.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+
+# 서버 전용 — 절대 NEXT_PUBLIC 금지
+SUPABASE_SERVICE_ROLE_KEY=...
+ANALYTICS_SALT=...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- `SUPABASE_SERVICE_ROLE_KEY`: Platform Analytics 이벤트 적재용 서버 전용 키.
+- `ANALYTICS_SALT`: 사용자 해시(HMAC)용 고정 솔트. 변경하면 과거 통계 식별자가 끊긴다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 로컬 실행
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+## 배포
 
-To learn more about Next.js, take a look at the following resources:
+Vercel은 GitHub `main` 브랜치 push 기준으로 자동 배포한다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+환경변수를 변경한 경우 반드시 Vercel에서 재배포한다.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```text
+Vercel → Deployments → 최신 배포 → Redeploy
+```
