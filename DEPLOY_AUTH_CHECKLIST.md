@@ -12,14 +12,19 @@
 
 Vercel > Project > Settings > Environment Variables 에 등록 (Production/Preview/Development 모두):
 
-| Key | Value |
-|-----|-------|
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://zniktvkdqaxqmgwmogyb.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon(public) key |
+| Key | Value | 노출 범위 |
+|-----|-------|-----------|
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://zniktvkdqaxqmgwmogyb.supabase.co` | 공개(클라이언트) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon(public) key | 공개(클라이언트) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service_role key (Project Settings > API) | **서버 전용** |
+| `ANALYTICS_SALT` | 임의의 긴 난수(HMAC 솔트, 로컬/운영 동일 값) | **서버 전용** |
 
-- [ ] 두 변수 등록
+- [ ] 위 변수 등록 (`NEXT_PUBLIC_*` 2개 + 서버 전용 2개)
 - [ ] 등록 후 **재배포(Redeploy)** 해야 반영됨
-- [ ] `service_role` 키는 **절대 등록/사용하지 않음**
+- [ ] `service_role` 키는 **클라이언트/`NEXT_PUBLIC_` 로 절대 노출 금지.**
+      단 **서버 전용(Platform Analytics 인제스트 `/api/analytics/track`)** 용도로는
+      `SUPABASE_SERVICE_ROLE_KEY` 를 서버 환경변수로 등록·사용한다. (`NEXT_PUBLIC_` 접두 금지)
+- [ ] `ANALYTICS_SALT` 도 서버 전용. 로컬 `.env.local` 과 Vercel 에 **동일 값**을 넣어야 해시가 일치.
 
 ---
 
@@ -75,7 +80,9 @@ Client ID / Client Secret 입력 후 Enable.
 
 ## 5. 주의사항 (보안)
 
-- ⚠️ `service_role` key **사용 금지** (프론트/클라이언트 어디에도)
+- ⚠️ `service_role` key **프론트/클라이언트 노출 금지** (`NEXT_PUBLIC_` 금지).
+  - 단 **서버 전용**(Analytics 인제스트 등 서버 코드/라우트 핸들러)에서는 사용 허용.
+    번들에 새지 않도록 `import "server-only"` 모듈에서만 참조한다.
 - ⚠️ Secret key / Google Client Secret **프론트 노출 금지**
   - Client Secret 은 Supabase Provider 설정에만 입력(서버측 보관)
 - ⚠️ `.env.local` **GitHub 업로드 금지** (이미 `.gitignore` 에 `.env*` 포함)

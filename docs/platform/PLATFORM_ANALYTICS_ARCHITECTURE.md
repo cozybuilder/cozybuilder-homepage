@@ -1,7 +1,8 @@
 # PLATFORM_ANALYTICS_ARCHITECTURE — CozyBuilder Platform Analytics 설계 (v1 분석)
 
-> **상태: v1 구현 완료 (commit 3065354) · 운영 적용 진행 중.** 설계 + 구현이 반영된 문서다.
-> 운영 적용(0012 SQL 실행 + env 설정)은 코비 승인됨(2026-06-29). v1.1 백로그는 아래 §15.
+> **상태: v1 구현 완료 · 운영 적용 완료.** 설계 + 구현 + 운영이 반영된 문서다.
+> migration `0012` 운영 DB 적용 + env(`SUPABASE_SERVICE_ROLE_KEY`, `ANALYTICS_SALT`) 설정 완료,
+> **`app_launch` 실제 운영 계측 정상 확인됨.** v1.1 백로그는 아래 §15.
 >
 > **관계:** 이 문서는 `PLATFORM_APP_ARCHITECTURE.md`(플랫폼/프로그램 분리 원칙)의 하위 구현 설계다.
 > 플랫폼 경계·런처·launch token·RLS·HMAC 패턴은 그 문서를 따르며 같은 사실을 복제하지 않는다.
@@ -242,14 +243,17 @@ create index on public.analytics_events (event_date, anonymous_id);
 
 ---
 
-## 12. v1 범위 (승인 후 구현)
+## 12. v1 범위 (구현·운영 완료)
 
-1. `analytics_events` + `analytics_daily_stats` 테이블 (마이그레이션 `0012`).
-2. `/api/analytics/track` 인제스트 API Route (검증·해시·service_role insert).
-3. 일별 rollup + 90일 보존.
-4. 홈페이지 자체 계측 2종: `app_launch`(런처) + `download`(다운로드 버튼) → **앱 수정 0으로 첫 지표**.
-5. `/admin/analytics` Overview + Programs.
-6. 공용 클라이언트 SDK 스니펫(anon_id 생성 + 큐 + POST).
+1. ✅ `analytics_events` + `analytics_daily_stats` 테이블 (마이그레이션 `0012`).
+2. ✅ `/api/analytics/track` 인제스트 API Route (검증·해시·service_role insert).
+3. ✅ 홈페이지 자체 계측 2종: `app_launch`(런처) + `download`(모바일 스토어 CTA 클릭).
+4. ✅ `/admin/analytics` — 전체 KPI + 전체 30일 그래프 + 프로그램별 30일 카드/미니그래프 + 버전 표.
+5. ✅ 공용 클라이언트 SDK 스니펫(`lib/analytics-client.ts` — anon_id 생성 + sendBeacon).
+
+> **v1 범위 밖(→ v1.1 백로그 §15):** 일별 `analytics_daily_stats` **rollup + 90일 보존**은
+> 아직 미가동이다. v1 대시보드는 `analytics_events` 원본을 조회 시 실시간 집계한다.
+> (`analytics_daily_stats` 테이블은 구조만 선반영된 상태.)
 
 ## 13. v2 이후 범위
 
