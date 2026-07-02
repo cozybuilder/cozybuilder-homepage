@@ -36,11 +36,8 @@
 
 ## v1.1 백로그
 
-1. daily_stats rollup
-2. anonymous_id 통합 전략
-3. ClipMiner 다운로드 계측
-4. 감사일기 모바일 SDK 연동
-5. 광고 지표(CTR/수익)
+- Analytics v1.1 백로그 상세는 [docs/platform/PLATFORM_ANALYTICS_ARCHITECTURE.md §15](platform/PLATFORM_ANALYTICS_ARCHITECTURE.md) 가 SSOT다. (이 문서는 목록을 직접 소유하지 않는다.)
+- 광고 지표(CTR/수익)는 v1.1이 아니라 v2 범위.
 
 ## 운영 원칙
 
