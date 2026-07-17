@@ -8,19 +8,30 @@ export default function AppScreenSlot({
   alt,
   label = "앱 화면 준비 중",
   className = "",
+  width = 640,
+  height = 1351,
+  sizes,
+  priority = false,
 }: {
   src?: string | null;
   alt: string;
   label?: string;
   className?: string;
+  /** CLS 방지 — 원본 픽셀 크기. 컨테이너 aspect-ratio 와 일치시켜 잘림 없이 채운다. */
+  width?: number;
+  height?: number;
+  sizes?: string;
+  priority?: boolean;
 }) {
   if (src) {
     return (
       <Image
         src={src}
         alt={alt}
-        width={640}
-        height={1351}
+        width={width}
+        height={height}
+        sizes={sizes}
+        priority={priority}
         className={`h-full w-full object-cover object-top ${className}`}
       />
     );

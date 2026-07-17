@@ -25,23 +25,64 @@ function Lines({ lines }: { lines: string[] }) {
   );
 }
 
-function PhoneMockup({ src, alt }: { src: string | null; alt: string }) {
+function PhoneMockup({
+  src,
+  alt,
+  ratio,
+  dims,
+}: {
+  src: string | null;
+  alt: string;
+  ratio: string;
+  dims?: { w: number; h: number };
+}) {
   return (
     <div className="mx-auto w-[240px] sm:w-[280px]">
-      <div className="aspect-[9/19] overflow-hidden rounded-[2.2rem] border-4 border-[--border-strong] bg-[--surface] shadow-[0_30px_80px_-20px_var(--accent-glow)]">
-        <AppScreenSlot src={src} alt={alt} label="실제 앱 화면이 이 자리에 들어갑니다" />
+      <div
+        className="overflow-hidden rounded-[2.2rem] border-4 border-[--border-strong] bg-[--surface] shadow-[0_30px_80px_-20px_var(--accent-glow)]"
+        style={{ aspectRatio: ratio }}
+      >
+        <AppScreenSlot
+          src={src}
+          alt={alt}
+          label="실제 앱 화면이 이 자리에 들어갑니다"
+          width={dims?.w}
+          height={dims?.h}
+          sizes="280px"
+          priority
+        />
       </div>
     </div>
   );
 }
 
-/** 기능 카드 상단 세로형(9:19) 앱 화면 슬롯 — 5개 카드 동일 규격. */
-function FeatureScreen({ src, alt }: { src: string | null; alt: string }) {
+/** 기능 카드 상단 세로형 앱 화면 슬롯 — 실제 캡처 비율 보존, 전 카드 동일 규격. */
+function FeatureScreen({
+  src,
+  alt,
+  ratio,
+  dims,
+}: {
+  src: string | null;
+  alt: string;
+  ratio: string;
+  dims?: { w: number; h: number };
+}) {
   return (
     <div className="flex justify-center bg-[--surface-2]/40 pb-0 pt-6">
-      <div className="w-32 sm:w-36">
-        <div className="aspect-[9/19] overflow-hidden rounded-2xl border border-[--border-strong] bg-[--surface] shadow-[0_16px_40px_-16px_var(--accent-glow)]">
-          <AppScreenSlot src={src} alt={alt} label="실제 앱 화면 준비 중" />
+      <div className="w-36 sm:w-40">
+        <div
+          className="overflow-hidden rounded-2xl border border-[--border-strong] bg-[--surface] shadow-[0_16px_40px_-16px_var(--accent-glow)]"
+          style={{ aspectRatio: ratio }}
+        >
+          <AppScreenSlot
+            src={src}
+            alt={alt}
+            label="실제 앱 화면 준비 중"
+            width={dims?.w}
+            height={dims?.h}
+            sizes="160px"
+          />
         </div>
       </div>
     </div>
@@ -51,6 +92,8 @@ function FeatureScreen({ src, alt }: { src: string | null; alt: string }) {
 export default function LandingRenderer({ config }: { config: LandingConfig }) {
   const ApplyForm = FORM_COMPONENTS[config.formKind];
   const screens = config.images.appScreens;
+  const heroRatio = config.images.heroRatio ?? "9 / 19";
+  const screenRatio = config.images.screenRatio ?? "9 / 19";
 
   return (
     <div className="pb-24 md:pb-0">
@@ -101,7 +144,12 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
               <p className="mt-4 break-keep text-base text-[--muted-2]">{config.hero.sub}</p>
             </div>
           </div>
-          <PhoneMockup src={screens.hero} alt={config.hero.heroScreenAlt} />
+          <PhoneMockup
+            src={screens.hero}
+            alt={config.hero.heroScreenAlt}
+            ratio={heroRatio}
+            dims={config.images.heroDims}
+          />
         </div>
       </section>
 
@@ -139,6 +187,8 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
               <FeatureScreen
                 src={screens[f.key] ?? null}
                 alt={`${config.productName} ${f.title} 화면`}
+                ratio={screenRatio}
+                dims={config.images.screenDims}
               />
               <div className="p-6 pt-5">
                 <h3 className="text-lg font-semibold text-foreground">{f.title}</h3>

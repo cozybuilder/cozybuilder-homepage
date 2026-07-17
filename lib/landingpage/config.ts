@@ -22,6 +22,12 @@ export type LandingConfig = {
     og: string;
     /** hero + 기능 key 별 실앱 화면. 미확보 시 null → 세로형 placeholder (가짜 UI 금지). */
     appScreens: Record<string, string | null>;
+    /** 실제 이미지의 CSS aspect-ratio — 잘림 방지(비율 보존). 미지정 시 "9 / 19". */
+    heroRatio?: string; // 예: "923 / 1600"
+    screenRatio?: string; // 예: "1080 / 2111"
+    /** CLS 방지용 원본 픽셀 크기 (Next Image width/height). */
+    heroDims?: { w: number; h: number };
+    screenDims?: { w: number; h: number };
   };
   hero: {
     eyebrow: string;
@@ -69,14 +75,20 @@ const cozyrent: LandingConfig = {
   images: {
     dir: "/image/landingpage/cozyrent",
     og: "/image/landingpage/cozyrent/og.png",
+    // 실앱 이미지 원본: cozyrent/public/img (온보딩이미지.png · 1~6.jpg — 번호 순서 유지, 7번 이후 미사용)
     appScreens: {
-      hero: null, // /image/landingpage/cozyrent/hero.png
-      rent: null, // rent.png
-      building: null, // building.png
-      repair: null, // repair.png
-      moveout: null, // moveout.png
-      expense: null, // expense.png
+      hero: "/image/landingpage/cozyrent/hero.png", // 온보딩이미지.png
+      home: "/image/landingpage/cozyrent/home.jpg", // 1.jpg — 홈 상황판
+      rent: "/image/landingpage/cozyrent/rent.jpg", // 2.jpg — 받을 돈·미납
+      building: "/image/landingpage/cozyrent/building.jpg", // 3.jpg — 호실·계약
+      moveout: "/image/landingpage/cozyrent/moveout.jpg", // 4.jpg — 계약 만료·퇴실관리
+      repair: "/image/landingpage/cozyrent/repair.jpg", // 5.jpg — 시설·하자/수선
+      expense: "/image/landingpage/cozyrent/expense.jpg", // 6.jpg — 지출관리
     },
+    heroRatio: "941 / 1672",
+    heroDims: { w: 941, h: 1672 },
+    screenRatio: "1080 / 2111",
+    screenDims: { w: 1080, h: 2111 },
   },
   hero: {
     eyebrow: "출시 전 사전신청 진행 중",
@@ -102,7 +114,13 @@ const cozyrent: LandingConfig = {
   features: {
     eyebrow: "주요 기능",
     title: "건물주에게 필요한 관리만 담았습니다",
+    // 카드 순서 = 실앱 이미지 번호 순서(1→6). 문구 근거: cozyrent/docs/AI_CONTEXT.md §5·§6·철학6
     items: [
+      {
+        key: "home",
+        title: "홈 상황판",
+        desc: "이번 달 받을 돈과 오늘 확인할 일을 홈에서 바로 확인합니다. 문제가 없는 정보는 줄이고 확인할 일부터 보여줍니다.",
+      },
       {
         key: "rent",
         title: "월세·관리비·미납 관리",
@@ -114,14 +132,14 @@ const cozyrent: LandingConfig = {
         desc: "건물과 호실, 계약·보증금 정보를 층별로 정리해 한눈에 확인합니다.",
       },
       {
-        key: "repair",
-        title: "수선·시설·하자 기록",
-        desc: "수선·하자 내역과 시설 정보를 호실·건물별로 기록하고 관리합니다.",
-      },
-      {
         key: "moveout",
         title: "퇴실 점검과 정산 기록",
         desc: "퇴실할 때 점검한 내용과 정산 내역을 기록으로 남깁니다.",
+      },
+      {
+        key: "repair",
+        title: "수선·시설·하자 기록",
+        desc: "수선·하자 내역과 시설 정보를 호실·건물별로 기록하고 관리합니다.",
       },
       {
         key: "expense",
