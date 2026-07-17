@@ -67,12 +67,28 @@ function ChipGroup({
             type="button"
             aria-pressed={selected}
             onClick={() => onChange(o.value)}
-            className={`min-h-[52px] cursor-pointer rounded-xl border px-5 text-base font-medium transition-colors ${
+            className={`inline-flex min-h-[52px] cursor-pointer items-center gap-1.5 rounded-xl border px-5 text-base transition-all duration-150 active:scale-[0.97] ${
               selected
-                ? "border-[--accent] bg-[--accent]/15 text-foreground"
-                : "border-[--border-strong] bg-[--surface-2] text-[--muted] hover:text-foreground"
+                ? "border-[var(--accent)] bg-[var(--accent)] font-semibold text-white shadow-[0_6px_20px_-6px_var(--accent-glow)]"
+                : "border-[var(--border-strong)] bg-[var(--surface-2)] font-medium text-[var(--muted)] hover:border-[var(--accent)] hover:text-foreground"
             }`}
           >
+            {/* 색상 외 구분 — 선택 시 체크 표시 */}
+            {selected && (
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden
+              >
+                <path d="M20 6 9 17l-5-5" />
+              </svg>
+            )}
             {o.label}
           </button>
         );
@@ -100,8 +116,24 @@ export default function PreRegisterForm() {
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<Status>("idle");
+  const [showSummary, setShowSummary] = useState(false); // 필수 누락 시 버튼 아래 요약 안내
   // 상태 갱신은 비동기라 같은 tick 연타를 못 막는다 — ref 로 동기 가드.
   const submittingRef = useRef(false);
+
+  /** 필수 누락 시 첫 오류 필드로 부드럽게 스크롤. */
+  const scrollToFirstError = (next: Record<string, string>) => {
+    const order: [string, string][] = [
+      ["name", "pr-name"],
+      ["contact", "pr-contact"],
+      ["buildingType", "pr-building"],
+      ["consent", "pr-consent"],
+    ];
+    const first = order.find(([key]) => next[key]);
+    if (!first) return;
+    const el = document.getElementById(first[1]);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (el instanceof HTMLInputElement) el.focus({ preventScroll: true });
+  };
 
   const validate = (): Record<string, string> => {
     const next: Record<string, string> = {};
@@ -129,7 +161,12 @@ export default function PreRegisterForm() {
 
     const next = validate();
     setErrors(next);
-    if (Object.keys(next).length > 0) return;
+    if (Object.keys(next).length > 0) {
+      setShowSummary(true);
+      scrollToFirstError(next);
+      return;
+    }
+    setShowSummary(false);
 
     submittingRef.current = true;
     setStatus("submitting");
@@ -255,7 +292,7 @@ export default function PreRegisterForm() {
         </div>
       </div>
 
-      <div>
+      <div id="pr-building">
         <span className="label text-base">
           건물 유형 <span className="text-[--accent]">*</span>
         </span>
@@ -263,7 +300,11 @@ export default function PreRegisterForm() {
           ariaLabel="건물 유형 선택"
           options={BUILDING_OPTIONS}
           value={buildingType}
-          onChange={setBuildingType}
+          onChange={(v) => {
+            setBuildingType(v);
+            // 선택 즉시 필수 오류 제거
+            setErrors((prev) => ({ ...prev, buildingType: "" }));
+          }}
         />
         <FieldError message={errors.buildingType} />
       </div>
@@ -288,7 +329,7 @@ export default function PreRegisterForm() {
         />
       </div>
 
-      <div>
+      <div id="pr-consent">
         <label
           className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-4 ${
             errors.consent ? "border-red-500/60" : "border-[--border-strong]"
@@ -317,13 +358,20 @@ export default function PreRegisterForm() {
         <FieldError message={errors.consent} />
       </div>
 
-      <button
-        type="submit"
-        disabled={status === "submitting"}
-        className="btn btn-accent min-h-[56px] w-full text-lg font-semibold disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {status === "submitting" ? "신청 접수 중..." : "무료로 사전신청하기"}
-      </button>
+      <div>
+        <button
+          type="submit"
+          disabled={status === "submitting"}
+          className="btn btn-accent min-h-[56px] w-full text-lg font-semibold transition-transform active:scale-[0.98] active:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {status === "submitting" ? "신청 접수 중..." : "무료로 사전신청하기"}
+        </button>
+        {showSummary && (
+          <p role="alert" className="mt-3 text-center text-sm text-red-400">
+            필수 항목을 확인해주세요.
+          </p>
+        )}
+      </div>
     </form>
   );
 }
