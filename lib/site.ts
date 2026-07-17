@@ -32,6 +32,18 @@ export const bookItems = ["전자책", "출판 프로젝트", "개발 기록"];
 // 플랫폼 구분 — web = 컴퓨터 웹앱, mobile = 모바일앱(스토어 배포).
 export type ProgramType = "web" | "mobile";
 
+// 배포 상태 — null(레거시)은 released 로 취급(기존 데이터 무변경 원칙).
+// 규칙 SSOT: docs/platform/PROGRAM_OPERATING_MODEL.md §9
+export type ProgramDeployStatus = "preregistration" | "released" | "preparing";
+
+export const DEPLOY_STATUS_LABELS: Record<ProgramDeployStatus, string> = {
+  preregistration: "사전신청",
+  released: "출시됨",
+  preparing: "준비 중",
+};
+
+export const DEFAULT_PREREG_CTA_LABEL = "사전신청하기";
+
 // 업데이트 내역 1건 (등록형)
 export type ProgramUpdate = { date: string; text: string };
 
@@ -48,6 +60,11 @@ export type Program = {
   // mobile 출시 상태는 별도 컬럼 없이 스토어 URL 존재로 추론(Release Model v3).
   playStoreUrl?: string; // mobile — Google Play (있으면 Android 출시됨)
   appStoreUrl?: string; // mobile — App Store (있으면 iOS 출시됨)
+  // 배포 상태(0014). null/미지정 = released 취급 — 기존 프로그램 동작 불변.
+  deployStatus?: ProgramDeployStatus | null;
+  preregUrl?: string; // 사전신청 랜딩 URL (preregistration 상태에서 사용)
+  preregCtaLabel?: string; // 사전신청 버튼 문구 (빈값 → 기본 "사전신청하기")
+  preregBenefit?: string; // 혜택 문구 (선택)
   screenshots?: string[]; // 여러 장 등록 가능 (좌우 슬라이드)
   updates?: ProgramUpdate[]; // 텍스트 기록형
 };

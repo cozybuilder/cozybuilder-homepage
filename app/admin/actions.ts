@@ -45,6 +45,21 @@ function slugify(s: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+// 배포 상태(0014) — allowlist 밖 값은 released 로 정규화(레거시=released 취급과 일치).
+function deployStatusFrom(v: FormDataEntryValue | null): string {
+  const s = str(v);
+  return s === "preregistration" || s === "preparing" ? s : "released";
+}
+
+/** CTA URL 검증 — 내부 경로(/...) 또는 https:// 만 허용. javascript: 등 위험 scheme 차단. */
+function sanitizeCtaUrl(raw: string): string {
+  const v = raw.trim().replace(/\s+/g, "");
+  if (!v) return "";
+  if (/^\/(?!\/)/.test(v)) return v; // 내부 경로 (//host 형태 제외)
+  if (/^https:\/\/.+/i.test(v)) return v;
+  return ""; // 그 외 scheme 은 저장하지 않음
+}
+
 // ── Programs ──
 export async function saveProgram(
   _prev: SaveState,
@@ -76,10 +91,22 @@ export async function saveProgram(
     app_url: str(formData.get("app_url")), // web 실행 URL (web_url 역할)
     play_store_url: str(formData.get("play_store_url")), // mobile — Android 출시 여부
     app_store_url: str(formData.get("app_store_url")), // mobile — iOS 출시 여부
+    deploy_status: deployStatusFrom(formData.get("deploy_status")), // 0014 — 배포 상태
+    prereg_url: sanitizeCtaUrl(str(formData.get("prereg_url"))), // 사전신청 랜딩 URL
+    prereg_cta_label: str(formData.get("prereg_cta_label")).slice(0, 40),
+    prereg_benefit: str(formData.get("prereg_benefit")).slice(0, 120),
     status: str(formData.get("status")) === "published" ? "published" : "draft",
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
   };
+
+  // 사전신청 상태는 유효한 랜딩 URL 이 필수 (내부 경로 또는 https).
+  if (base.deploy_status === "preregistration" && !base.prereg_url) {
+    return {
+      error:
+        "사전신청 랜딩 URL을 입력해주세요. 내부 경로(/landingpage/cozyrent) 또는 https:// URL만 허용됩니다.",
+    };
+  }
 
   console.log("[saveProgram] keys:", [...formData.keys()].join(","), "| id:", id || "(new)", "| slug:", slug);
 
@@ -98,10 +125,15 @@ export async function saveProgram(
   const payload: Record<string, unknown> = slug ? { ...base, slug } : { ...base };
 
   let { data, error } = await writeProgram(payload);
-  if (error && /play_store_url|app_store_url/i.test(error.message)) {
+  // 0011/0014 미적용(컬럼 부재) 환경에서도 저장이 깨지지 않도록 해당 필드 제외 후 재시도.
+  if (error && /play_store_url|app_store_url|deploy_status|prereg_/i.test(error.message)) {
     const legacy = { ...payload };
     delete legacy.play_store_url;
     delete legacy.app_store_url;
+    delete legacy.deploy_status;
+    delete legacy.prereg_url;
+    delete legacy.prereg_cta_label;
+    delete legacy.prereg_benefit;
     ({ data, error } = await writeProgram(legacy));
   }
 

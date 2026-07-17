@@ -34,6 +34,10 @@ export default async function ProgramFormPage({
         app_url: r.app_url ?? "",
         play_store_url: r.play_store_url ?? "",
         app_store_url: r.app_store_url ?? "",
+        deploy_status: r.deploy_status ?? null,
+        prereg_url: r.prereg_url ?? "",
+        prereg_cta_label: r.prereg_cta_label ?? "",
+        prereg_benefit: r.prereg_benefit ?? "",
         status: r.status ?? "draft",
         sort_order: r.sort_order ?? 0,
       };

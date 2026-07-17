@@ -15,6 +15,7 @@ import BackButton from "@/components/BackButton";
 import ProgramAction from "@/components/ProgramAction";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
 import DownloadButton from "@/components/DownloadButton";
+import { DEFAULT_PREREG_CTA_LABEL, type Program } from "@/lib/site";
 
 // 구독 버튼이 현재 사용자 권한을 반영해야 하므로 동적 렌더(접근 판정은 매 요청).
 export const dynamic = "force-dynamic";
@@ -41,6 +42,40 @@ function StoreInactive({ label }: { label: string }) {
     >
       {label}
     </span>
+  );
+}
+
+/**
+ * 사전신청 액션 — deploy_status=preregistration (규칙: PROGRAM_OPERATING_MODEL.md §9)
+ * 스토어/실행 버튼 대신 사전신청 랜딩으로 연결한다. 내부 경로는 같은 탭, 외부 https 는 새 탭.
+ */
+function PreregAction({ program }: { program: Program }) {
+  const url = program.preregUrl?.trim() ?? "";
+  const label = program.preregCtaLabel?.trim() || DEFAULT_PREREG_CTA_LABEL;
+  const external = url.startsWith("https://");
+  if (!url) {
+    // URL 미설정(비정상 데이터) — 준비 중과 동일한 안전 표시
+    return (
+      <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+        <StoreInactive label="준비 중" />
+      </div>
+    );
+  }
+  return (
+    <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3">
+      <a
+        href={url}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        className={`${STORE_BTN_BASE} btn-accent`}
+      >
+        {label}
+      </a>
+      {program.preregBenefit?.trim() && (
+        <p className="max-w-md break-keep text-center text-sm text-[--muted]">
+          {program.preregBenefit}
+        </p>
+      )}
+    </div>
   );
 }
 
@@ -145,11 +180,29 @@ export default async function ProgramDetailPage({
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 768px"
           />
+          {program.deployStatus === "preregistration" && (
+            <span className="absolute right-3 top-3 rounded-full bg-[var(--accent)]/90 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
+              사전신청
+            </span>
+          )}
+          {program.deployStatus === "preparing" && (
+            <span className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-1.5 text-sm text-white backdrop-blur">
+              준비 중
+            </span>
+          )}
         </div>
 
-        {/* 액션: 대표 이미지 바로 아래, 중앙 정렬 (web=구독/실행 / mobile=스토어) */}
+        {/* 액션: 대표 이미지 바로 아래, 중앙 정렬.
+            배포 상태 우선 판정: 사전신청=랜딩 CTA / 준비 중=비활성 표시 /
+            출시됨·레거시=기존 로직(web=구독/실행, mobile=스토어) */}
         <div className="mt-6 flex justify-center">
-          {program.type === "mobile" ? (
+          {program.deployStatus === "preregistration" ? (
+            <PreregAction program={program} />
+          ) : program.deployStatus === "preparing" ? (
+            <div className="mx-auto flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center">
+              <StoreInactive label="준비 중" />
+            </div>
+          ) : program.type === "mobile" ? (
             <MobileStoreActions
               appKey={program.slug}
               playStoreUrl={program.playStoreUrl}

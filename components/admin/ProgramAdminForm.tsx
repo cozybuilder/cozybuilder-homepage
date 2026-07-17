@@ -23,6 +23,10 @@ export type ProgramInitial = {
   app_url?: string;
   play_store_url?: string;
   app_store_url?: string;
+  deploy_status?: string | null;
+  prereg_url?: string;
+  prereg_cta_label?: string;
+  prereg_benefit?: string;
   status?: string;
   sort_order?: number;
 };
@@ -46,6 +50,12 @@ export default function ProgramAdminForm({
   const [slugTouched, setSlugTouched] = useState(Boolean(initial?.slug));
   const [platform, setPlatform] = useState(
     initial?.type === "mobile" ? "mobile" : "web"
+  );
+  // 배포 상태 — 레거시(null)는 released 로 표시(저장해도 기존 동작과 동일).
+  const [deployStatus, setDeployStatus] = useState(
+    initial?.deploy_status === "preregistration" || initial?.deploy_status === "preparing"
+      ? initial.deploy_status
+      : "released"
   );
   const [state, formAction, pending] = useActionState(saveProgram, null);
 
@@ -112,42 +122,110 @@ export default function ProgramAdminForm({
         />
       </Section>
 
-      {platform === "web" ? (
+      <Section
+        title="배포 상태"
+        desc="사전신청 = 출시 전 랜딩 연결 · 출시됨 = 스토어/실행 URL 기반(기존 동작) · 준비 중 = 버튼 숨김."
+      >
+        <FormField label="배포 상태">
+          <Select
+            name="deploy_status"
+            value={deployStatus}
+            onChange={(e) => setDeployStatus(e.target.value)}
+          >
+            <option value="preregistration">사전신청</option>
+            <option value="released">출시됨</option>
+            <option value="preparing">준비 중</option>
+          </Select>
+        </FormField>
+      </Section>
+
+      {deployStatus === "preregistration" && (
         <Section
-          title="실행 설정 (Web App)"
-          desc="실행 URL이 있으면 '실행하기', 없으면 '준비 중'으로 표시됩니다. 예: /apps/ebook, /apps/clipminer, https://example.com"
+          title="사전신청 설정"
+          desc="내부 경로(/landingpage/cozyrent) 또는 https URL만 허용됩니다."
         >
-          <FormField label="실행 URL">
+          <FormField label="사전신청 랜딩 URL (필수)">
             <Input
-              key="web-app_url"
-              name="app_url"
-              defaultValue={initial?.app_url ?? ""}
-              placeholder="/apps/clipminer 또는 https://example.com"
+              key="prereg-url"
+              name="prereg_url"
+              required
+              defaultValue={initial?.prereg_url ?? ""}
+              placeholder="/landingpage/cozyrent"
+            />
+          </FormField>
+          <FormField label="사전신청 버튼 문구 (선택 — 비우면 '사전신청하기')">
+            <Input
+              key="prereg-cta"
+              name="prereg_cta_label"
+              defaultValue={initial?.prereg_cta_label ?? ""}
+              placeholder="사전신청하기"
+            />
+          </FormField>
+          <FormField label="혜택 문구 (선택)">
+            <Input
+              key="prereg-benefit"
+              name="prereg_benefit"
+              defaultValue={initial?.prereg_benefit ?? ""}
+              placeholder="예: 출시 전 신청자 한정 6,900P"
             />
           </FormField>
         </Section>
-      ) : (
-        <Section
-          title="다운로드 설정 (Mobile App)"
-          desc="출시 상태는 스토어 URL 존재로 자동 판단됩니다. Google Play URL이 있으면 Android 출시, App Store URL이 있으면 iOS 출시로 표시됩니다. 둘 다 비우면 '출시 준비 중'."
-        >
-          <FormField label="Google Play URL">
-            <Input
-              key="mobile-play"
-              name="play_store_url"
-              defaultValue={initial?.play_store_url ?? ""}
-              placeholder="https://play.google.com/store/apps/details?id=..."
-            />
-          </FormField>
-          <FormField label="App Store URL">
-            <Input
-              key="mobile-appstore"
-              name="app_store_url"
-              defaultValue={initial?.app_store_url ?? ""}
-              placeholder="https://apps.apple.com/app/... (선택)"
-            />
-          </FormField>
-        </Section>
+      )}
+
+      {deployStatus === "released" &&
+        (platform === "web" ? (
+          <Section
+            title="실행 설정 (Web App)"
+            desc="실행 URL이 있으면 '실행하기', 없으면 '준비 중'으로 표시됩니다. 예: /apps/ebook, /apps/clipminer, https://example.com"
+          >
+            <FormField label="실행 URL">
+              <Input
+                key="web-app_url"
+                name="app_url"
+                defaultValue={initial?.app_url ?? ""}
+                placeholder="/apps/clipminer 또는 https://example.com"
+              />
+            </FormField>
+          </Section>
+        ) : (
+          <Section
+            title="다운로드 설정 (Mobile App)"
+            desc="출시 상태는 스토어 URL 존재로 자동 판단됩니다. Google Play URL이 있으면 Android 출시, App Store URL이 있으면 iOS 출시로 표시됩니다. 둘 다 비우면 '출시 준비 중'."
+          >
+            <FormField label="Google Play URL">
+              <Input
+                key="mobile-play"
+                name="play_store_url"
+                defaultValue={initial?.play_store_url ?? ""}
+                placeholder="https://play.google.com/store/apps/details?id=..."
+              />
+            </FormField>
+            <FormField label="App Store URL">
+              <Input
+                key="mobile-appstore"
+                name="app_store_url"
+                defaultValue={initial?.app_store_url ?? ""}
+                placeholder="https://apps.apple.com/app/... (선택)"
+              />
+            </FormField>
+          </Section>
+        ))}
+
+      {/* 숨겨진 섹션의 기존 값 보존 — 상태 전환 실수로 URL 이 지워지지 않게 한다.
+          (released 의 web/mobile 플랫폼 전환 시 반대편 링크 정리는 기존 동작 그대로) */}
+      {deployStatus !== "released" && (
+        <>
+          <input type="hidden" name="app_url" value={initial?.app_url ?? ""} />
+          <input type="hidden" name="play_store_url" value={initial?.play_store_url ?? ""} />
+          <input type="hidden" name="app_store_url" value={initial?.app_store_url ?? ""} />
+        </>
+      )}
+      {deployStatus !== "preregistration" && (
+        <>
+          <input type="hidden" name="prereg_url" value={initial?.prereg_url ?? ""} />
+          <input type="hidden" name="prereg_cta_label" value={initial?.prereg_cta_label ?? ""} />
+          <input type="hidden" name="prereg_benefit" value={initial?.prereg_benefit ?? ""} />
+        </>
       )}
 
       <Section title="공개 설정">

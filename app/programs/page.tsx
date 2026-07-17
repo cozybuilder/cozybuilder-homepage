@@ -7,9 +7,17 @@ import { PageHeader, Card } from "@/components/ui";
 export const metadata: Metadata = { title: "Programs" };
 
 function ProgramCard({ p }: { p: Program }) {
-  // 모바일앱인데 스토어 링크가 하나도 없으면(=어느 플랫폼도 미출시) 카드에 준비 중 배지.
-  const preRelease =
-    p.type === "mobile" && !p.playStoreUrl && !p.appStoreUrl;
+  // 배포 상태 배지 (규칙: docs/platform/PROGRAM_OPERATING_MODEL.md §9)
+  // - preregistration → "사전신청" / preparing → "준비 중"
+  // - released/레거시(null) → 기존 규칙: 모바일앱인데 스토어 링크가 없으면 "출시 준비 중"
+  const badge =
+    p.deployStatus === "preregistration"
+      ? { label: "사전신청", accent: true }
+      : p.deployStatus === "preparing"
+        ? { label: "준비 중", accent: false }
+        : p.type === "mobile" && !p.playStoreUrl && !p.appStoreUrl
+          ? { label: "출시 준비 중", accent: false }
+          : null;
 
   return (
     <Card href={`/programs/${p.slug}`} hover>
@@ -21,9 +29,13 @@ function ProgramCard({ p }: { p: Program }) {
           className="object-cover"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
-        {preRelease && (
-          <span className="absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white backdrop-blur">
-            출시 준비 중
+        {badge && (
+          <span
+            className={`absolute right-2 top-2 rounded-full px-2.5 py-1 text-xs text-white backdrop-blur ${
+              badge.accent ? "bg-[var(--accent)]/90 font-semibold" : "bg-black/60"
+            }`}
+          >
+            {badge.label}
           </span>
         )}
       </div>

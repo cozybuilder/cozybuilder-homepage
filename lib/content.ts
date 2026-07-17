@@ -44,6 +44,8 @@ function asStringArray(v: any): string[] {
   return Array.isArray(v) ? v.filter((x) => typeof x === "string") : [];
 }
 
+const DEPLOY_STATUSES = ["preregistration", "released", "preparing"];
+
 function rowToProgram(r: any): Program {
   return {
     slug: r.slug,
@@ -57,6 +59,11 @@ function rowToProgram(r: any): Program {
     appUrl: r.app_url ?? "",
     playStoreUrl: r.play_store_url ?? "",
     appStoreUrl: r.app_store_url ?? "",
+    // 0014 미적용/레거시 행은 null → released 취급 (기존 동작 불변)
+    deployStatus: DEPLOY_STATUSES.includes(r.deploy_status) ? r.deploy_status : null,
+    preregUrl: r.prereg_url ?? "",
+    preregCtaLabel: r.prereg_cta_label ?? "",
+    preregBenefit: r.prereg_benefit ?? "",
     screenshots: asStringArray(r.screenshots),
     updates: Array.isArray(r.updates)
       ? (r.updates as ProgramUpdate[]).filter((u) => u && u.text)
