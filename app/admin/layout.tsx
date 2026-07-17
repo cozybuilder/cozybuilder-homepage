@@ -13,7 +13,7 @@ export default async function AdminLayout({
 
   return (
     <div className="container-page py-16">
-      <div className="mb-10 flex items-center gap-6 border-b border-[--border] pb-6 text-sm">
+      <div className="mb-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-[--border] pb-6 text-sm">
         <Link href="/admin" className="font-semibold tracking-[0.18em]">
           ADMIN
         </Link>
@@ -28,6 +28,9 @@ export default async function AdminLayout({
         </Link>
         <Link href="/admin/analytics" className="text-[--muted] hover:text-foreground">
           Analytics
+        </Link>
+        <Link href="/admin/cozyrent-prelaunch" className="text-[--muted] hover:text-foreground">
+          코지임대 사전신청
         </Link>
         <Link href="/" className="ml-auto text-[--muted-2] hover:text-foreground">
           사이트로 →

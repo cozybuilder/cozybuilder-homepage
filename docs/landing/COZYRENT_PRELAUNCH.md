@@ -99,3 +99,15 @@
 
 - `public/image/cozyrent/app-home.png` 외 기능 스크린샷 5종 — 실앱 화면 확보 시 교체(placeholder 자동 대체).
 - `public/image/cozyrent/og.png` — 임시 텍스트 기반 이미지. 브랜드 디자인 확정 시 교체.
+
+## 13. 관리자 화면 (1차: 조회 전용)
+
+- 경로: `/admin/cozyrent-prelaunch` (관리자 메뉴 "코지임대 사전신청")
+- 권한: 기존 관리자 체계 재사용 — admin layout `requireAdmin()` + **모든 서버 액션에서 `getAdminUser()` 재검증**(서버 액션은 직접 POST 가능하므로 이중 게이트). 별도 인증 체계 없음.
+- 조회: 관리자 쿠키 클라이언트(RLS `is_admin()` select 정책) — service_role 미사용.
+- 목록: 서버 측 pagination(기본 20건, 20/50/100 선택) · 최신순 · 표시 항목은 신청/동의 일시·이름·연락 방식·연락처·건물 유형·호실 수·불편 업무·유입 경로. `contact_normalized` 는 조회(select)·표시하지 않는다(검색 조건으로만 사용).
+- 검색·필터: 이름/연락처 검색 + 연락 방식·건물 유형·호실 수·유입 경로·기간(KST) 필터 + 초기화. **검색어·목록 데이터는 URL query 가 아니라 서버 액션 body 로만 전달**된다. localStorage 미사용.
+- 통계: 전체/오늘/최근 7일/전화/이메일 = DB count 쿼리. 건물 유형·유입 경로·호실 규모 분포 = 개인정보 없는 코드 컬럼만 서버에서 조회해 집계(상한 20,000행).
+- 캐시: 페이지 `force-dynamic` — 정적 캐시 금지.
+- CSV 내보내기: 서버 액션에서 관리자 검증 후 현재 필터 결과만(최대 5,000건) 생성. 파일명 `cozyrent-prelaunch-YYYYMMDD.csv`. `contact_normalized` 제외. 다운로드 전 개인정보 경고 확인.
+- 1차 범위 제외(후속 설계): 수정·삭제·포인트 지급·CozyRent 계정 연결·문자/이메일 발송·메모/상태 관리·일괄 처리.
