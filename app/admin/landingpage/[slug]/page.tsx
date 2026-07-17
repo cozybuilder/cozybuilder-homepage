@@ -1,19 +1,27 @@
+import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import CozyrentSignupsExplorer from "@/components/admin/CozyrentSignupsExplorer";
+import LandingSignupsExplorer from "@/components/admin/LandingSignupsExplorer";
+import { getLandingConfig } from "@/lib/landingpage/config";
 import {
   BUILDING_TYPE_LABELS,
   UNIT_COUNT_LABELS,
   sourceLabel,
 } from "@/lib/cozyrent-prelaunch-labels";
 
-// 코지임대 사전신청 관리자 (1차: 조회 전용). 설계: docs/landing/COZYRENT_PRELAUNCH.md §13
+// 공용 랜딩 신청 내역 관리자 (1차: 조회 전용). 설계: docs/landing/LANDINGPAGE_PLATFORM.md §3
 // - 권한: app/admin/layout.tsx 의 requireAdmin() + 각 서버 액션의 getAdminUser() 이중 검증.
 // - 조회: 관리자 쿠키 클라이언트(RLS admin select) — service_role 미사용.
 // - 개인정보 페이지 → 정적 캐시 금지(force-dynamic).
 export const dynamic = "force-dynamic";
-export const metadata = { title: "코지임대 사전신청" };
 
 const BREAKDOWN_SCAN_LIMIT = 20000;
+
+type Props = { params: Promise<{ slug: string }> };
+
+export async function generateMetadata({ params }: Props) {
+  const { slug } = await params;
+  return { title: getLandingConfig(slug)?.adminName ?? "랜딩페이지" };
+}
 
 function seoulToday(): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Seoul" }).format(new Date());
@@ -34,13 +42,7 @@ function KpiCard({ label, value }: { label: string; value: number }) {
   );
 }
 
-function BreakdownCard({
-  title,
-  entries,
-}: {
-  title: string;
-  entries: [string, number][];
-}) {
+function BreakdownCard({ title, entries }: { title: string; entries: [string, number][] }) {
   return (
     <div className="card p-4">
       <h3 className="mb-3 text-sm font-semibold">{title}</h3>
@@ -60,9 +62,13 @@ function BreakdownCard({
   );
 }
 
-export default async function AdminCozyrentPrelaunchPage() {
+export default async function AdminLandingDetailPage({ params }: Props) {
+  const { slug } = await params;
+  const config = getLandingConfig(slug);
+  if (!config) notFound();
+
   const supabase = await createClient();
-  const table = () => supabase.from("cozyrent_prelaunch_signups");
+  const table = () => supabase.from(config.signupsTable);
   const todayStart = `${seoulToday()}T00:00:00+09:00`;
   const weekStart = `${daysAgoKst(6)}T00:00:00+09:00`;
 
@@ -100,17 +106,16 @@ export default async function AdminCozyrentPrelaunchPage() {
   return (
     <div className="space-y-10">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">코지임대 사전신청</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{config.adminName}</h1>
         <p className="mt-2 text-sm text-[--muted]">
-          출시 전 사전신청 접수 현황 (조회 전용). 개인정보가 표시되는 화면입니다 — 업무 목적으로만
-          사용하세요.
+          {config.productName} 사전신청 접수 현황 (조회 전용). 개인정보가 표시되는 화면입니다 —
+          업무 목적으로만 사용하세요.
         </p>
       </header>
 
       {loadError && (
         <p className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-300">
-          집계를 불러오지 못했습니다. supabase/migrations/0013_cozyrent_prelaunch_v1.sql 적용 여부를
-          확인하세요.
+          집계를 불러오지 못했습니다. 신청 테이블({config.signupsTable}) 적용 여부를 확인하세요.
         </p>
       )}
 
@@ -132,7 +137,7 @@ export default async function AdminCozyrentPrelaunchPage() {
 
       {/* 목록 (검색·필터·페이지네이션·CSV) */}
       <section>
-        <CozyrentSignupsExplorer knownSources={[...sources].sort()} />
+        <LandingSignupsExplorer slug={config.slug} knownSources={[...sources].sort()} />
       </section>
     </div>
   );

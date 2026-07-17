@@ -5,7 +5,7 @@ import {
   fetchSignups,
   exportSignupsCsv,
   type SignupFilters,
-} from "@/app/admin/cozyrent-prelaunch/actions";
+} from "@/app/admin/landingpage/actions";
 import {
   BUILDING_TYPE_LABELS,
   CONTACT_TYPE_LABELS,
@@ -16,7 +16,7 @@ import {
   type SignupRow,
 } from "@/lib/cozyrent-prelaunch-labels";
 
-// 코지임대 사전신청 목록 탐색기 (조회 전용).
+// 공용 랜딩 신청 목록 탐색기 (조회 전용) — slug 로 랜딩을 지정한다.
 // - 데이터는 서버 액션 body 로만 오간다(연락처·검색어 URL 미노출, localStorage 미사용).
 // - 서버 측 pagination(기본 20건) — 전체 데이터 로딩 금지.
 
@@ -69,9 +69,11 @@ function SelectFilter({
   );
 }
 
-export default function CozyrentSignupsExplorer({
+export default function LandingSignupsExplorer({
+  slug,
   knownSources,
 }: {
+  slug: string;
   knownSources: string[];
 }) {
   const [draft, setDraft] = useState({ ...EMPTY_FILTERS });
@@ -92,7 +94,7 @@ export default function CozyrentSignupsExplorer({
       const seq = ++requestSeq.current;
       setStatus("loading");
       try {
-        const result = await fetchSignups({ ...f, page: p, perPage: per } as SignupFilters);
+        const result = await fetchSignups(slug, { ...f, page: p, perPage: per } as SignupFilters);
         if (seq !== requestSeq.current) return; // 오래된 응답 무시
         if (!result.ok) {
           setStatus(result.error === "unauthorized" ? "unauthorized" : "error");
@@ -105,7 +107,7 @@ export default function CozyrentSignupsExplorer({
         if (seq === requestSeq.current) setStatus("error");
       }
     },
-    []
+    [slug]
   );
 
   // 최초 1회 로드 — setState 를 effect 본문에서 직접 호출하지 않도록 매크로태스크로 미룬다.
@@ -157,7 +159,11 @@ export default function CozyrentSignupsExplorer({
     if (!warned) return;
     setExporting(true);
     try {
-      const result = await exportSignupsCsv({ ...applied, page: 1, perPage } as SignupFilters);
+      const result = await exportSignupsCsv(slug, {
+        ...applied,
+        page: 1,
+        perPage,
+      } as SignupFilters);
       if (!result.ok) {
         window.alert("내보내기에 실패했습니다. 잠시 후 다시 시도해주세요.");
         return;
@@ -169,7 +175,7 @@ export default function CozyrentSignupsExplorer({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `cozyrent-prelaunch-${today}.csv`;
+      a.download = `landingpage-${slug}-${today}.csv`;
       a.click();
       URL.revokeObjectURL(url);
       if (result.truncated) {

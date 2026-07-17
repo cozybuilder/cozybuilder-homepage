@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-// 모바일 하단 고정 CTA. 신청 폼(#apply)이 화면에 보이면 자동으로 숨긴다.
-export default function MobileCtaBar() {
+// 모바일 하단 고정 CTA (공용). 신청 폼(#apply)이 화면에 보이면 자동으로 숨긴다.
+export default function MobileCtaBar({ label }: { label: string }) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function MobileCtaBar() {
       }`}
     >
       <a href="#apply" className="btn btn-accent min-h-[52px] w-full text-base font-semibold">
-        사전신청하고 6,900P 받기
+        {label}
       </a>
     </div>
   );

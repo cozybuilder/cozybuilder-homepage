@@ -134,4 +134,15 @@ body {
   .label {
     @apply mb-2 block text-sm font-medium text-[--muted];
   }
+
+  /* 랜딩 히어로 제목 — 의미 단위 줄바꿈(nowrap 줄)과 함께 사용.
+     모바일: 뷰포트 폭 비례. md 이상: 2컬럼 그리드라 제목 폭이 화면의 ~55% → 계수 축소. */
+  .landing-hero-title {
+    font-size: clamp(1.375rem, 6.8vw, 2.875rem);
+  }
+  @media (min-width: 768px) {
+    .landing-hero-title {
+      font-size: clamp(1.5rem, 3.6vw, 2.875rem);
+    }
+  }
 }

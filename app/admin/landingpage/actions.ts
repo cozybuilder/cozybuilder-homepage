@@ -2,6 +2,7 @@
 
 import { getAdminUser } from "@/lib/admin";
 import { createClient } from "@/lib/supabase/server";
+import { getLandingConfig } from "@/lib/landingpage/config";
 import {
   BUILDING_TYPE_LABELS,
   CONTACT_TYPE_LABELS,
@@ -11,8 +12,9 @@ import {
   type SignupRow,
 } from "@/lib/cozyrent-prelaunch-labels";
 
-// 코지임대 사전신청 관리자 조회 액션. 설계: docs/landing/COZYRENT_PRELAUNCH.md §13
+// 공용 랜딩 신청 조회 액션. 설계: docs/landing/LANDINGPAGE_PLATFORM.md §3
 // - 서버 액션은 직접 POST 로도 호출될 수 있으므로 모든 액션에서 관리자 검증을 먼저 수행한다.
+// - slug 는 레지스트리(getLandingConfig)로 검증 후 조회 어댑터(테이블명)를 해석한다.
 // - 조회는 관리자 쿠키 클라이언트(RLS admin select) — service_role 미사용.
 // - 검색어(연락처 포함 가능)는 URL 이 아니라 액션 body 로만 전달된다.
 // - contact_normalized 는 select 하지 않는다(검색 조건으로만 사용).
@@ -78,21 +80,30 @@ function applyFilters(query: any, f: SignupFilters): any {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-export async function fetchSignups(filters: SignupFilters): Promise<FetchSignupsResult> {
+/** slug → 조회 테이블명 (레지스트리 미등록 slug 는 null). */
+function resolveTable(slug: string): string | null {
+  return getLandingConfig(slug)?.signupsTable ?? null;
+}
+
+export async function fetchSignups(
+  slug: string,
+  filters: SignupFilters
+): Promise<FetchSignupsResult> {
   const admin = await getAdminUser();
   if (!admin) return { ok: false, error: "unauthorized" };
+  const table = resolveTable(slug);
+  if (!table) return { ok: false, error: "server" };
 
   const perPage = PER_PAGE_OPTIONS.includes(Number(filters.perPage))
     ? Number(filters.perPage)
     : 20;
-  const page = Number.isInteger(Number(filters.page)) && Number(filters.page) >= 1
-    ? Number(filters.page)
-    : 1;
+  const page =
+    Number.isInteger(Number(filters.page)) && Number(filters.page) >= 1
+      ? Number(filters.page)
+      : 1;
 
   const supabase = await createClient();
-  let query = supabase
-    .from("cozyrent_prelaunch_signups")
-    .select(SELECT_COLUMNS, { count: "exact" });
+  let query = supabase.from(table).select(SELECT_COLUMNS, { count: "exact" });
   query = applyFilters(query, filters);
   query = query
     .order("created_at", { ascending: false })
@@ -101,7 +112,7 @@ export async function fetchSignups(filters: SignupFilters): Promise<FetchSignups
   const { data, count, error } = await query;
   if (error) {
     // 검색어·연락처는 로그에 남기지 않는다.
-    console.error("[admin/cozyrent-prelaunch] fetch failed:", error.code);
+    console.error("[admin/landingpage] fetch failed:", error.code);
     return { ok: false, error: "server" };
   }
   return { ok: true, rows: (data ?? []) as SignupRow[], total: count ?? 0, page, perPage };
@@ -112,18 +123,23 @@ export type ExportCsvResult =
   | { ok: false; error: "unauthorized" | "server" };
 
 /** 현재 필터 결과를 CSV 로 반환(개인정보 포함 — 호출부에서 경고 후 다운로드). contact_normalized 제외. */
-export async function exportSignupsCsv(filters: SignupFilters): Promise<ExportCsvResult> {
+export async function exportSignupsCsv(
+  slug: string,
+  filters: SignupFilters
+): Promise<ExportCsvResult> {
   const admin = await getAdminUser();
   if (!admin) return { ok: false, error: "unauthorized" };
+  const table = resolveTable(slug);
+  if (!table) return { ok: false, error: "server" };
 
   const supabase = await createClient();
-  let query = supabase.from("cozyrent_prelaunch_signups").select(SELECT_COLUMNS);
+  let query = supabase.from(table).select(SELECT_COLUMNS);
   query = applyFilters(query, filters);
   query = query.order("created_at", { ascending: false }).limit(CSV_MAX_ROWS + 1);
 
   const { data, error } = await query;
   if (error) {
-    console.error("[admin/cozyrent-prelaunch] export failed:", error.code);
+    console.error("[admin/landingpage] export failed:", error.code);
     return { ok: false, error: "server" };
   }
 

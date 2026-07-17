@@ -59,8 +59,8 @@ export default function Header() {
     return () => document.removeEventListener("mousedown", onClick);
   }, [menuOpen]);
 
-  // /cozyrent 광고 랜딩은 전용 상단 바 사용 — 전역 헤더 숨김 (docs/landing/COZYRENT_PRELAUNCH.md)
-  if (pathname.startsWith("/cozyrent")) return null;
+  // 광고 랜딩(/landingpage/*)은 전용 상단 바 사용 — 전역 헤더 숨김 (docs/landing/LANDINGPAGE_PLATFORM.md)
+  if (pathname.startsWith("/landingpage")) return null;
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);

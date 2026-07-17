@@ -29,8 +29,8 @@ export default async function AdminLayout({
         <Link href="/admin/analytics" className="text-[--muted] hover:text-foreground">
           Analytics
         </Link>
-        <Link href="/admin/cozyrent-prelaunch" className="text-[--muted] hover:text-foreground">
-          코지임대 사전신청
+        <Link href="/admin/landingpage" className="text-[--muted] hover:text-foreground">
+          랜딩페이지
         </Link>
         <Link href="/" className="ml-auto text-[--muted-2] hover:text-foreground">
           사이트로 →

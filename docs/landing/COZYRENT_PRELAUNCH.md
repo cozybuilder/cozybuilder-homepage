@@ -12,8 +12,9 @@
 
 ## 2. URL
 
-- 경로: `/cozyrent`
-- 공개 URL: `https://cozybuilder.co.kr/cozyrent`
+- 공식 경로: `/landingpage/cozyrent` (공용 랜딩 구조 — [LANDINGPAGE_PLATFORM.md](LANDINGPAGE_PLATFORM.md))
+- 공식 공개 URL: `https://cozybuilder.co.kr/landingpage/cozyrent`
+- 기존 URL `/cozyrent` 는 공식 경로로 308 redirect (query 유지 — 광고·공유 링크 호환)
 - 유입 출처: `?src=<출처>` query parameter (예: `?src=youtube`, `?src=naver_blog`).
   - 허용 형식 `^[a-z0-9_-]{1,40}$`. 형식 불일치·미지정 시 기본값 `landing_cozyrent`.
 
@@ -77,16 +78,16 @@
 - 섹션: 상단 바(코지임대 텍스트 로고 + 사전신청 버튼) → 히어로(앱 화면 슬롯) → 문제 공감 → 주요 기능(5) → 제작 신뢰 → 혜택(6,900P) → 사전신청 폼 → FAQ(5) → 마지막 CTA → 하단(전역 Footer 재사용: 사업자 정보·개인정보처리방침·홈페이지 연결).
 - `/cozyrent`에서는 전역 Header를 숨기고 랜딩 전용 상단 바를 사용한다(광고 착지 집중 — Footer는 전역 재사용).
 - 모바일 우선 · CTA 최소 높이 52px · 모바일 하단 고정 CTA(폼 보이면 자동 숨김) · 부드러운 스크롤 이동 · 인라인 오류 표시 · 제출 중 중복 클릭 방지 · 성공/중복/실패 상태 구분 표시 · 50~70대 가독성(큰 글자·높은 대비).
-- **실앱 이미지 슬롯**: 가짜 UI를 만들지 않는다. `public/image/cozyrent/` 아래 교체용 슬롯 경로만 준비하고, 자산이 없으면 placeholder 표시.
-  - 히어로 폰 목업: `public/image/cozyrent/app-home.png`
-  - 기능 이미지: `app-rent.png` / `app-building.png` / `app-repair.png` / `app-moveout.png` / `app-expense.png`
-- OG 이미지: `public/image/cozyrent/og.png` (1200×630, 교체 가능 전용 경로).
+- **실앱 이미지 슬롯**: 가짜 UI를 만들지 않는다. `public/image/landingpage/cozyrent/` 아래 교체용 슬롯 경로만 준비하고, 자산이 없으면 세로형(9:19) placeholder 표시. 기능 카드의 앱 화면은 카드 상단 중앙 세로형(9:19) 규격 5개 동일.
+  - 히어로 폰 목업: `hero.png`
+  - 기능 이미지: `rent.png` / `building.png` / `repair.png` / `moveout.png` / `expense.png`
+- OG 이미지: `public/image/landingpage/cozyrent/og.png` (1200×630, 교체 가능 전용 경로). 구 경로 `/image/cozyrent/*` 는 redirect 호환.
 
 ## 10. SEO·공유
 
 - title: `코지임대 사전신청 | 건물주를 위한 임대관리 앱` (absolute — 사이트 템플릿 미적용)
 - description: `월세, 관리비, 미납, 계약, 수선 기록까지 한곳에서. 코지임대 출시 전 사전신청하고 6,900P 혜택을 받아보세요.`
-- canonical: `https://cozybuilder.co.kr/cozyrent`
+- canonical: `https://cozybuilder.co.kr/landingpage/cozyrent` (공식 URL — OG url 동일)
 - Open Graph + Twitter card 설정. robots/index는 기존 홈페이지 기준(별도 차단 없음 = 색인 허용) 준수.
 
 ## 11. 구현·검증 범위
@@ -102,7 +103,7 @@
 
 ## 13. 관리자 화면 (1차: 조회 전용)
 
-- 경로: `/admin/cozyrent-prelaunch` (관리자 메뉴 "코지임대 사전신청")
+- 경로: `/admin/landingpage/cozyrent` (관리자 메뉴 "랜딩페이지" → 카드 "신청 내역 보기". 구 경로 `/admin/cozyrent-prelaunch` 는 308 redirect)
 - 권한: 기존 관리자 체계 재사용 — admin layout `requireAdmin()` + **모든 서버 액션에서 `getAdminUser()` 재검증**(서버 액션은 직접 POST 가능하므로 이중 게이트). 별도 인증 체계 없음.
 - 조회: 관리자 쿠키 클라이언트(RLS `is_admin()` select 정책) — service_role 미사용.
 - 목록: 서버 측 pagination(기본 20건, 20/50/100 선택) · 최신순 · 표시 항목은 신청/동의 일시·이름·연락 방식·연락처·건물 유형·호실 수·불편 업무·유입 경로. `contact_normalized` 는 조회(select)·표시하지 않는다(검색 조건으로만 사용).
