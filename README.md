@@ -24,6 +24,7 @@ CozyBuilder 홈페이지/플랫폼 저장소.
 | 공용 이용약관 | `/terms` (`app/terms/page.tsx`) — "결제/구독 미제공" 명시 | CozyBuilder 일반 | 공용 |
 | **코지임대 개인정보처리방침** | `/cozyrent/privacy` (`app/cozyrent/privacy/page.tsx`) | **코지임대(CozyRent) 앱 전용** | 코지임대 |
 | **코지임대 이용약관** | `/cozyrent/terms` (`app/cozyrent/terms/page.tsx`) — 40일 무료체험·Google Play 구독 반영 | **코지임대(CozyRent) 앱 전용** | 코지임대 |
+| **코지임대 계정 삭제** | `/cozyrent/delete-account` (`app/cozyrent/delete-account/page.tsx`) — Google Play 계정삭제 정책용(앱 내부 삭제 + 앱 없이 삭제 요청 절차) | **코지임대(CozyRent) 앱 전용** | 코지임대 |
 
 - 코지임대는 40일 무료체험 + 구독을 제공하므로 공용 약관(결제 미제공)이 적용되지 않으며, **전용 라우트로 분리**한다. 공용 문서를 코지임대 기준으로 덮어쓰지 않는다.
 - 공개 URL(Vercel 배포): `https://cozybuilder.co.kr/cozyrent/privacy` · `https://cozybuilder.co.kr/cozyrent/terms`. 코지임대 앱(`cozyrent`) 설정 화면의 개인정보처리방침·이용약관 링크가 이 URL을 사용한다.
