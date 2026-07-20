@@ -77,7 +77,7 @@ export default function CozyrentDeleteAccountPage() {
             <li><strong className="text-foreground">기기 내 임대관리 데이터:</strong> 앱에서 유지/삭제를 직접 선택합니다(웹 요청의 경우 기기 데이터는 앱에서 직접 삭제).</li>
             <li>
               <strong className="text-foreground">보존될 수 있는 기록:</strong> 결제·거래·환불 관련 기록 등 관련 법령상 보존이 필요한 최소 정보는, 개인 식별을 최소화한 형태로 법정 보존기간 동안 보관될 수 있습니다.
-              또한 무료체험 재지급 방지를 위한 최소한의 식별 불가능한 근거가 보존될 수 있습니다.
+              또한 무료체험 재지급 방지를 위한 최소한의 가명처리된 근거(원문 아님·재식별 가능성이 있어 개인정보에 해당할 수 있음)가 보존될 수 있습니다.
             </li>
           </ul>
         </section>
