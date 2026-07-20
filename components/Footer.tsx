@@ -7,6 +7,9 @@ const policyLinks = [
   { label: "개인정보처리방침", href: "/privacy" },
   { label: "청소년보호정책", href: "/youth-policy" },
   { label: "제휴문의", href: "/contact" },
+  // 코지임대(CozyRent) 전용 법적 페이지 — 공용 문서와 분리 소유.
+  { label: "코지임대 이용약관", href: "/cozyrent/terms" },
+  { label: "코지임대 개인정보처리방침", href: "/cozyrent/privacy" },
 ];
 
 export default function Footer() {
