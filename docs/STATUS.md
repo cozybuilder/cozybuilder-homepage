@@ -62,9 +62,12 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
 - migration `0014_program_deploy_status.sql` **운영 DB 적용 완료** (2026-07-18 · 코지 승인 후
   Supabase Dashboard SQL Editor 원문 실행). 적용 후 확인: 컬럼 4개 존재 ·
   programs_deploy_status_check 제약(3개 값+null) · 기존 4행 무변경(신규 컬럼 전부 null·스토어 URL 보존)
-- 코지렌트 프로그램 사전신청 전환 완료 (2026-07-18 · 관리자 화면에서 저장):
+- 코지임대 프로그램 사전신청 전환 완료 (2026-07-18 · 관리자 화면에서 저장):
   deploy_status=preregistration · prereg_url=/landingpage/cozyrent · 버튼 "사전신청하기" ·
-  혜택 "출시 전 사전신청 시 6,900P 지급" · 이름/slug/이미지/설명/정렬/공개 상태 유지 · 가짜 스토어 URL 없음
+  이름/slug/이미지/설명/정렬/공개 상태 유지 · 가짜 스토어 URL 없음
+- **`prereg_benefit` 현행 기준 = `사전신청자 30일 무료 이용 혜택`** (cozyrent `D-184` · 2026-08-28).
+  **OPEN — 운영 DB에는 아직 종전 값 `출시 전 사전신청 시 6,900P 지급`이 저장돼 있다.** 관리자 CMS 저장은
+  운영 데이터 변경이므로 코지 승인 후 외부에서 수행한다(이번 문구 작업에서 운영 DB 수정 0)
 - 운영 실측: 목록 카드 "사전신청" 배지 · 상세 배지+CTA→/landingpage/cozyrent 이동(같은 탭) ·
   스토어 버튼 미노출 · 혜택 문구 표시 · 감사일기 등 타 프로그램 회귀 0 · 관리자 수정 화면 값 정상
 
@@ -90,6 +93,12 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   요약 통계(DB count) · 건물/유입/호실 분포 · 서버 측 pagination(20/50/100) · 검색·필터(서버 액션 body — URL 미노출) ·
   CSV 내보내기(필터 결과만·contact_normalized 제외·경고 후 다운로드) · force-dynamic(정적 캐시 금지) /
   수정·삭제·발송 등은 범위 제외(후속 설계)
+- 사전신청 혜택 전환 (2026-08-28 · cozyrent `D-184`): 랜딩 공개 문구를 **사전신청자 30일 무료 이용 +
+  일반 가입 7일 무료체험**으로 교체(종전 `6,900P` + `15일 무료체험` 폐기 · 두 혜택은 별개이며 합산 표현 금지).
+  대상 = `lib/landingpage/config.ts`(히어로 CTA·sub·혜택 카드·FAQ·최종 CTA·메타 description) ·
+  `components/cozyrent/PreRegisterForm.tsx`(완료 화면·개인정보 수집 목적) · og.png · 설계 문서.
+  iPhone FAQ 를 cozyrent STATUS 기준으로 정합(Android 정식 출시 우선·iOS 일정 확정 후 안내).
+  **DB·API·폼 필드·migration·기존 신청 데이터 변경 0.**
 
 ### Platform Analytics v1
 - `analytics_events`

@@ -217,7 +217,7 @@ export default function PreRegisterForm() {
       <div className="card border-[--accent]/40 py-12 text-center">
         <p className="text-2xl font-semibold text-foreground">사전신청이 완료되었습니다.</p>
         <p className="mt-4 text-lg leading-relaxed text-[--muted]">
-          코지임대 출시 소식과 6,900P 혜택 적용 방법을
+          코지임대 출시 소식과 30일 무료 이용 혜택 적용 방법을
           <br />
           안내해드리겠습니다.
         </p>
@@ -350,8 +350,9 @@ export default function PreRegisterForm() {
             </span>
             <span className="mt-2 block text-sm leading-relaxed text-[--muted-2]">
               수집 항목: 이름 또는 닉네임, 연락처(휴대전화 또는 이메일), 건물 유형, (선택) 관리
-              호실 수·불편한 업무 · 수집 목적: 코지임대 출시 소식 안내, 사전신청 혜택(6,900P) 적용
-              안내 · 보유 기간: 목적 달성 후 지체 없이 파기하며, 삭제 요청 시 즉시 파기합니다.
+              호실 수·불편한 업무 · 수집 목적: 코지임대 출시 소식 안내, 사전신청자 30일 무료 이용
+              혜택 적용 안내 · 보유 기간: 목적 달성 후 지체 없이 파기하며, 삭제 요청 시 즉시
+              파기합니다.
             </span>
           </span>
         </label>

@@ -166,7 +166,7 @@ export default function ProgramAdminForm({
               key="prereg-benefit"
               name="prereg_benefit"
               defaultValue={initial?.prereg_benefit ?? ""}
-              placeholder="예: 출시 전 신청자 한정 6,900P"
+              placeholder="예: 사전신청자 30일 무료 이용 혜택"
             />
           </FormField>
         </Section>
