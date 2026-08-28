@@ -4,13 +4,14 @@ import { PageHeader } from "@/components/ui";
 import { siteConfig } from "@/lib/site";
 
 // 코지임대(CozyRent) 계정 삭제 안내 — Google Play 계정 삭제 정책용 영구 공개 URL.
-// 앱 내부 회원탈퇴(설정 > 계정 > 회원탈퇴)가 1차 경로이며, 앱을 쓸 수 없는 경우의 검증된 요청 절차를 함께 안내한다.
+// 앱 내부 회원탈퇴(설정 > 데이터 및 계정 삭제 > 회원탈퇴)가 1차 경로이며, 앱을 쓸 수 없는 경우의 검증된 요청 절차를 함께 안내한다.
+// 경로 문구는 앱 SettingsPage의 실제 섹션 제목과 일치해야 한다(cozyrent B-02).
 export const metadata: Metadata = {
   title: "코지임대 계정 삭제",
   description: "코지임대(CozyRent) 계정 삭제 방법과 처리되는 데이터 안내.",
 };
 
-const EFFECTIVE_DATE = "2026년 7월 21일";
+const EFFECTIVE_DATE = "2026년 8월 28일";
 const PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions";
 
 // 앱 없이 요청할 때 쓰는 메일 템플릿 — 민감정보(비밀번호·OTP·구매토큰·계약 데이터) 자동 첨부 없음.
@@ -38,7 +39,7 @@ export default function CozyrentDeleteAccountPage() {
         <section>
           <h2 className="text-xl font-semibold text-foreground">1. 앱에서 바로 삭제하기 (권장)</h2>
           <p className="mt-3">
-            코지임대 앱에서 <strong className="text-foreground">설정 &gt; 계정 &gt; 회원탈퇴</strong>를 선택하면 계정을 직접 삭제할 수 있습니다.
+            코지임대 앱에서 <strong className="text-foreground">설정 &gt; 데이터 및 계정 삭제 &gt; 회원탈퇴</strong>를 선택하면 계정을 직접 삭제할 수 있습니다.
             안내와 확인 단계를 거친 뒤 서버 계정과 관련 데이터가 삭제되며, 이 기기의 임대관리 데이터는 유지/삭제를 직접 선택할 수 있습니다.
           </p>
         </section>
