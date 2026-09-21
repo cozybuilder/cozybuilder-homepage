@@ -6,12 +6,13 @@ import { siteConfig } from "@/lib/site";
 // 코지임대(CozyRent) 계정 삭제 안내 — Google Play 계정 삭제 정책용 영구 공개 URL.
 // 앱 내부 회원탈퇴(설정 > 데이터 및 계정 삭제 > 회원탈퇴)가 1차 경로이며, 앱을 쓸 수 없는 경우의 검증된 요청 절차를 함께 안내한다.
 // 경로 문구는 앱 SettingsPage의 실제 섹션 제목과 일치해야 한다(cozyrent B-02).
+// 2026-09-22 개정: 서버 백업은 이용 선택이 아니라 로그인 계정에 자동으로 저장되는 것(D-159B)이므로 삭제 범위 문구를 실제 동작에 맞췄다.
 export const metadata: Metadata = {
   title: "코지임대 계정 삭제",
   description: "코지임대(CozyRent) 계정 삭제 방법과 처리되는 데이터 안내.",
 };
 
-const EFFECTIVE_DATE = "2026년 8월 28일";
+const EFFECTIVE_DATE = "2026년 9월 22일";
 const PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions";
 
 // 앱 없이 요청할 때 쓰는 메일 템플릿 — 민감정보(비밀번호·OTP·구매토큰·계약 데이터) 자동 첨부 없음.
@@ -40,7 +41,7 @@ export default function CozyrentDeleteAccountPage() {
           <h2 className="text-xl font-semibold text-foreground">1. 앱에서 바로 삭제하기 (권장)</h2>
           <p className="mt-3">
             코지임대 앱에서 <strong className="text-foreground">설정 &gt; 데이터 및 계정 삭제 &gt; 회원탈퇴</strong>를 선택하면 계정을 직접 삭제할 수 있습니다.
-            안내와 확인 단계를 거친 뒤 서버 계정과 관련 데이터가 삭제되며, 이 기기의 임대관리 데이터는 유지/삭제를 직접 선택할 수 있습니다.
+            안내와 확인 단계를 거친 뒤 서버 계정과 관련 데이터(서버에 자동 저장된 백업 데이터와 사진 포함)가 유예기간 없이 바로 삭제 처리되며, 이 기기의 임대관리 데이터는 유지/삭제를 직접 선택할 수 있습니다. 유료 구독이 진행 중이면 앱이 먼저 안내하고 재확인을 거칩니다.
           </p>
         </section>
 
@@ -74,7 +75,8 @@ export default function CozyrentDeleteAccountPage() {
           <h2 className="text-xl font-semibold text-foreground">3. 삭제되는 데이터와 보존되는 기록</h2>
           <p className="mt-3">계정 삭제 시 처리 내용:</p>
           <ul className="mt-3 list-disc space-y-1.5 pl-5">
-            <li><strong className="text-foreground">삭제:</strong> 서버에 저장된 계정 식별 정보, 로그인·세션 정보, 구독 이용권한(entitlement) 정보, 서버 백업(이용한 경우).</li>
+            <li><strong className="text-foreground">삭제:</strong> 서버에 저장된 계정 식별 정보, 로그인·세션 정보, 구독 이용권한(entitlement) 정보, 기기 등록 정보, 그리고 로그인 중 서버에 자동 저장된 백업 데이터(임대관리 데이터 스냅샷과 사진).</li>
+            <li><strong className="text-foreground">식별정보 제거 후 보존:</strong> 결제·구독 원장 등 회계·환불 대조에 필요한 최소 기록과 구매 토큰 등 스토어 구독 식별값은 계정 연결(식별자)을 제거한 형태로 남습니다.</li>
             <li><strong className="text-foreground">기기 내 임대관리 데이터:</strong> 앱에서 유지/삭제를 직접 선택합니다(웹 요청의 경우 기기 데이터는 앱에서 직접 삭제).</li>
             <li>
               <strong className="text-foreground">보존될 수 있는 기록:</strong> 결제·거래·환불 관련 기록 등 관련 법령상 보존이 필요한 최소 정보는, 개인 식별을 최소화한 형태로 법정 보존기간 동안 보관될 수 있습니다.
