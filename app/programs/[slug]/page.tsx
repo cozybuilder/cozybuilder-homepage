@@ -13,6 +13,7 @@ import {
 import BackButton from "@/components/BackButton";
 import ProgramAction from "@/components/ProgramAction";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
+import ProgramScreenStoryPrototype from "@/components/ProgramScreenStoryPrototype";
 import DownloadButton from "@/components/DownloadButton";
 import { DEFAULT_PREREG_CTA_LABEL, type Program } from "@/lib/site";
 import { parseYoutubeVideoId, youtubeEmbedUrl } from "@/lib/youtube";
@@ -29,6 +30,10 @@ export async function generateMetadata({
   const program = await getProgram(slug);
   return { title: program ? program.name : "프로그램" };
 }
+
+// ⚠ 실제 화면 섹션 디자인 프로토타입 — 코지 확인용으로 이 slug 에서만 새 UI 를 쓴다.
+// 승인 전이라 공통 정책으로 확정하지 않는다(다른 프로그램은 기존 ScreenshotGallery 유지).
+const SCREEN_STORY_PROTOTYPE_SLUG = "program-mr95apa5";
 
 // 스토어 버튼 공통 크기 — 두 버튼이 시각적으로 균형을 이루도록 height/padding/굵기/라운드 통일.
 const STORE_BTN_BASE =
@@ -455,11 +460,22 @@ export default async function ProgramDetailPage({
       )}
 
       {/* ── 실제 화면 (0장이면 섹션 자체 숨김) ── */}
-      {screenshots.length > 0 && (
-        <Band title="실제 화면">
-          <ScreenshotGallery images={screenshots} alt={program.name} />
-        </Band>
-      )}
+      {screenshots.length > 0 &&
+        (program.slug === SCREEN_STORY_PROTOTYPE_SLUG ? (
+          // 프로토타입: 세로 캡처를 원본 비율로 보여주는 스크롤 스토리(폭을 넓게 쓴다)
+          <section className="mx-auto mt-20 max-w-5xl md:mt-28">
+            <h2 className="break-keep text-2xl font-semibold tracking-tight sm:text-3xl">
+              실제 화면
+            </h2>
+            <div className="mt-10">
+              <ProgramScreenStoryPrototype images={screenshots} alt={program.name} />
+            </div>
+          </section>
+        ) : (
+          <Band title="실제 화면">
+            <ScreenshotGallery images={screenshots} alt={program.name} />
+          </Band>
+        ))}
 
       {/* ── 추천 대상 ── */}
       {L?.audiences?.length ? (
