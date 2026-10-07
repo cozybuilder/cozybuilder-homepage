@@ -45,19 +45,51 @@ const FRAME_W = `min(${FRAME_MAX_W}px, calc((100vh - ${
   HEADER_PX + 48 + BEZEL * 2
 }px) / ${SCREEN_ASPECT.toFixed(5)} + ${BEZEL * 2}px))`;
 
-/** 모션 최소화 환경: 변형을 없애고(= scale/translate 원위치) 거의 즉시 끝낸다. */
-const REDUCED =
+// 전환 길이는 레일과 폰이 똑같이 500ms 를 쓴다 — "같이 넘어간다" 는 느낌을 만들기 위해서다.
+
+/**
+ * 모션 최소화 환경 — 폰 화면용.
+ * 여기서 scale/translate 는 순전히 장식이라 원위치시키고 거의 즉시 끝낸다.
+ */
+const REDUCED_DECOR =
   "motion-reduce:scale-100 motion-reduce:translate-y-0 motion-reduce:duration-[1ms] motion-reduce:delay-0";
+/**
+ * 모션 최소화 환경 — 레일용.
+ * 레일의 translate 는 장식이 아니라 **배치**다(상·중·하 위치 그 자체).
+ * 원위치시키면 세 항목이 가운데 겹쳐 버리므로, 위치는 두고 전환만 즉시 끝낸다.
+ */
+const REDUCED_MOTION_ONLY = "motion-reduce:duration-[1ms] motion-reduce:delay-0";
 
 // 화면은 불투명하다. 두 장을 동시에 반투명하게 두면 교체 순간 프레임이 어두워지므로,
 // 들어오는 화면을 위에 쌓아 올리고 나가는 화면은 그게 덮인 뒤에 거둔다.
-const SCREEN_IN = `z-10 transition-[opacity,translate,scale] duration-[400ms] ease-out ${REDUCED}`;
-const SCREEN_OUT = `transition-[opacity,translate,scale] duration-[160ms] delay-[300ms] ease-out ${REDUCED}`;
+// 들어오는 쪽 길이는 레일과 같은 DUR — 카피가 가운데로 들어오는 것과 새 화면이
+// 자리잡는 것이 함께 끝난다.
+const SCREEN_IN = `z-10 transition-[opacity,translate,scale] duration-[500ms] ease-out ${REDUCED_DECOR}`;
+const SCREEN_OUT = `transition-[opacity,translate,scale] duration-[200ms] delay-[375ms] ease-out ${REDUCED_DECOR}`;
 
-// 글자는 투명하다. 두 벌이 겹쳐 보이면 읽을 수 없으므로 나가는 쪽을 더 빨리 지운다.
-// 들어오는 쪽은 화면과 같은 400ms — 폰과 카피가 같은 리듬으로 올라온다.
-const TEXT_IN = `transition-[opacity,translate] duration-[400ms] ease-out ${REDUCED}`;
-const TEXT_OUT = `transition-[opacity,translate] duration-[200ms] ease-out ${REDUCED}`;
+// ── 좌측 3단 레일 ─────────────────────────────────────────────────
+// 6개 카피를 전부 겹쳐 두고 i - active 로 슬롯만 바꾼다. DOM 을 유지해야
+// "중앙 → 상단", "하단 → 중앙" 이 실제 이동으로 보인다(교체 렌더면 그냥 깜빡인다).
+//
+// 슬롯 간격은 레일 컨테이너(= 무대) 높이의 26.5% 다. 백분율 translate 는 자기 높이를
+// 기준으로 하고 컨테이너가 무대 전체 높이라서, 각 슬롯의 세로 위치가 이렇게 된다:
+//   상단 23.5% · 중앙 50% · 하단 76.5%   (지시 범위 22~25 / 50 / 75~78 안)
+// 중앙 슬롯은 translate 0 이므로 폰 중심과 자동으로 같은 높이에 선다.
+const RAIL = `transition-[opacity,translate,scale,color] duration-[500ms] ease-out ${REDUCED_MOTION_ONLY}`;
+/** 색만 따로 전환하는 자식용(색 전환은 부모에서 상속되지 않는다). */
+const RAIL_COLOR = `transition-[color] duration-[500ms] ease-out ${REDUCED_MOTION_ONLY}`;
+
+/**
+ * i - active 를 5단계 슬롯으로 환원한다.
+ * 바깥(far)은 한 칸 더 나가 있고 투명하다 — 레일이 돌 때 거기서 들어오고 거기로 빠진다.
+ */
+function slot(rel: number): string {
+  if (rel === 0) return "translate-y-0 scale-100 opacity-100";
+  if (rel === -1) return "-translate-y-[26.5%] scale-[0.97] opacity-[0.32]";
+  if (rel === 1) return "translate-y-[26.5%] scale-[0.97] opacity-[0.32]";
+  if (rel < -1) return "-translate-y-[53%] scale-[0.97] opacity-0";
+  return "translate-y-[53%] scale-[0.97] opacity-0";
+}
 
 /** 프로토타입 설명 — 운영 screenshots 순서(home→rent→building→moveout→repair→expense)에 1:1 대응. */
 const STEPS: { title: string; description: string }[] = [
@@ -286,29 +318,42 @@ export default function ProgramScreenStoryPrototype({
           className="sticky flex items-center"
           style={{ top: `${HEADER_PX}px`, height: STAGE_H }}
         >
-          <div className="grid w-full grid-cols-[42fr_58fr] gap-12">
-            {/* 좌: 카피 한 장. 6개를 겹쳐 두고 활성만 보인다 → 글자가 스크롤로 밀리지 않는다. */}
-            <div className="relative">
+          {/* h-full 이라 좌측 레일 컨테이너가 무대 전체 높이를 갖는다.
+              슬롯 백분율(23.5/50/76.5%)이 곧 무대 기준 위치가 되고, 우측 폰은 그 안에서 가운데 선다. */}
+          <div className="grid h-full w-full grid-cols-[42fr_58fr] gap-12">
+            {/* 좌: 상·중·하 3단 레일. 이전/현재/다음만 보이고 나머지는 바깥에서 대기한다.
+                overflow-hidden 은 레일을 무대 높이로 잘라낸다 — 빠져나가는 항목이 아직
+                옅게 남은 채로 무대 위(반투명 헤더 뒤)까지 올라가 비치는 걸 막는다. */}
+            <div className="relative overflow-hidden">
               {images.map((src, i) => {
                 const step = stepOf(i);
-                const on = i === active;
+                const rel = i - active;
+                const center = rel === 0;
                 return (
                   <div
                     key={src}
-                    className={`absolute inset-0 flex flex-col justify-center ${
-                      on
-                        ? `${TEXT_IN} translate-y-0 opacity-100`
-                        : `${TEXT_OUT} pointer-events-none translate-y-[8px] opacity-0`
+                    className={`absolute inset-0 flex flex-col justify-center ${RAIL} ${slot(rel)} ${
+                      center ? "" : "pointer-events-none"
                     }`}
                   >
-                    <span className="font-mono text-sm tabular-nums text-[var(--accent)]">
+                    <span
+                      className={`font-mono text-sm tabular-nums ${RAIL_COLOR} ${
+                        center ? "text-[var(--accent)]" : "text-foreground"
+                      }`}
+                    >
                       {num(i)}
                     </span>
                     <h3 className="mt-3 break-keep text-2xl font-semibold text-foreground lg:text-3xl">
                       {step.title}
                     </h3>
                     {step.description && (
-                      <p className="mt-3 max-w-md break-keep leading-relaxed text-[var(--muted)]">
+                      // 위·아래 항목은 블록 opacity 가 0.32 라서, muted 색을 그대로 쓰면
+                      // 글자가 배경에 묻힌다. 흐려지는 쪽만 밝은 색을 밑에 깔아 읽을 수 있게 남긴다.
+                      <p
+                        className={`mt-3 max-w-md break-keep leading-relaxed ${RAIL_COLOR} ${
+                          center ? "text-[var(--muted)]" : "text-foreground"
+                        }`}
+                      >
                         {step.description}
                       </p>
                     )}
@@ -318,7 +363,7 @@ export default function ProgramScreenStoryPrototype({
             </div>
 
             {/* 우: 폰. 세로가 짧은 화면에서는 무대 안에 들어가도록 너비가 줄어든다. */}
-            <div className="flex justify-center">
+            <div className="flex items-center justify-center">
               <PhoneFrame style={{ width: FRAME_W }}>
                 {images.map((src, i) => {
                   const on = i === active;
