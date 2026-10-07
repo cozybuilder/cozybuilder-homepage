@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin";
 import { CACHE_TAGS } from "@/lib/content";
+import { canonicalYoutubeUrl, parseYoutubeVideoId } from "@/lib/youtube";
 
 function lines(v: FormDataEntryValue | null): string[] {
   return String(v ?? "")
@@ -74,6 +75,11 @@ export async function saveProgram(
   // slug 없으면 이름 기반 자동 생성 (한글 등으로 비면 신규는 랜덤 fallback)
   if (!slug) slug = slugify(name);
 
+  // YouTube 영상 URL(0015 · 선택) — 값이 있으면 YouTube URL 만 허용한다.
+  // 임의 외부 URL 을 iframe 에 넣지 않기 위해 여기서 video ID 로 환원되는 입력만 통과시킨다.
+  const youtubeRaw = str(formData.get("youtube_url"));
+  const youtubeVideoId = parseYoutubeVideoId(youtubeRaw);
+
   // 공통 필드 (slug 는 분기에서 처리)
   // platform=web 이면 모바일 필드, platform=mobile 이면 app_url 이 폼에서 렌더되지 않아
   // 자연스럽게 빈값으로 정리된다(플랫폼 전환 시 반대편 링크가 남지 않음).
@@ -95,6 +101,8 @@ export async function saveProgram(
     prereg_url: sanitizeCtaUrl(str(formData.get("prereg_url"))), // 사전신청 랜딩 URL
     prereg_cta_label: str(formData.get("prereg_cta_label")).slice(0, 40),
     prereg_benefit: str(formData.get("prereg_benefit")).slice(0, 120),
+    // 0015 — 검증 통과분만 canonical 형식으로 저장. 무효 입력은 아래에서 저장 실패 처리.
+    youtube_url: youtubeVideoId ? canonicalYoutubeUrl(youtubeVideoId) : "",
     status: str(formData.get("status")) === "published" ? "published" : "draft",
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
@@ -105,6 +113,23 @@ export async function saveProgram(
     return {
       error:
         "사전신청 랜딩 URL을 입력해주세요. 내부 경로(/landingpage/cozyrent) 또는 https:// URL만 허용됩니다.",
+    };
+  }
+
+  // 대표 이미지 칸에 YouTube 주소가 들어오면 저장하지 않는다.
+  // next/image 가 처리할 수 없는 값이라 목록·메인 카드 썸네일이 깨진다(영상은 youtube_url 이 소유).
+  if (parseYoutubeVideoId(base.image)) {
+    return {
+      error:
+        "대표 이미지에는 YouTube 주소를 넣을 수 없습니다. 영상은 'YouTube 영상 URL' 칸에 입력하고, 대표 이미지에는 이미지 파일 업로드 또는 이미지 URL을 넣어주세요.",
+    };
+  }
+
+  // 입력은 했는데 YouTube URL 로 해석되지 않으면 저장하지 않는다(조용한 유실·임의 iframe 방지).
+  if (youtubeRaw && !youtubeVideoId) {
+    return {
+      error:
+        "YouTube 영상 URL 형식을 확인해주세요. youtube.com/watch?v=... · youtu.be/... · youtube.com/shorts/... 만 사용할 수 있습니다.",
     };
   }
 
@@ -126,7 +151,10 @@ export async function saveProgram(
 
   let { data, error } = await writeProgram(payload);
   // 0011/0014 미적용(컬럼 부재) 환경에서도 저장이 깨지지 않도록 해당 필드 제외 후 재시도.
-  if (error && /play_store_url|app_store_url|deploy_status|prereg_/i.test(error.message)) {
+  if (
+    error &&
+    /play_store_url|app_store_url|deploy_status|prereg_|youtube_url/i.test(error.message)
+  ) {
     const legacy = { ...payload };
     delete legacy.play_store_url;
     delete legacy.app_store_url;
@@ -134,6 +162,7 @@ export async function saveProgram(
     delete legacy.prereg_url;
     delete legacy.prereg_cta_label;
     delete legacy.prereg_benefit;
+    delete legacy.youtube_url; // 0015 미적용 운영 DB 에서도 저장이 깨지지 않게 한다
     ({ data, error } = await writeProgram(legacy));
   }
 

@@ -71,6 +71,21 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
 - 운영 실측: 목록 카드 "사전신청" 배지 · 상세 배지+CTA→/landingpage/cozyrent 이동(같은 탭) ·
   스토어 버튼 미노출 · 혜택 문구 표시 · 감사일기 등 타 프로그램 회귀 0 · 관리자 수정 화면 값 정상
 
+### 프로그램 상세 YouTube 영상 (2026-10-07)
+- programs 에 선택 컬럼 `youtube_url` 추가 — **대표 이미지(`image`)와 분리된 별개 데이터**.
+  `image` 에 영상 URL 을 넣는 방식은 쓰지 않는다.
+- 상세페이지 상단 16:9 영역 표시 우선순위: **유효한 youtube_url → YouTube embed / 없거나 무효 → 기존 대표 이미지.**
+  목록·메인·카드 썸네일은 종전대로 `image` 만 사용한다(영상으로 대체 없음).
+- URL 검증·정규화 SSOT = `lib/youtube.ts` — `watch?v=` · `youtu.be/` · `shorts/`(+`embed`·`live`·`v`) ·
+  허용 호스트 고정 · video ID `[A-Za-z0-9_-]{11}` 강제. 저장은 canonical `watch?v=<ID>`,
+  **iframe src 는 검증된 ID 로만 조립**한다(임의 외부 URL 주입 차단). autoplay 없음 · allowFullScreen.
+- 관리자 저장 가드: 무효 YouTube URL → 저장 실패 / **대표 이미지 칸의 YouTube 주소도 저장 실패**(입력 위치 분리).
+- migration `0015_program_youtube_url.sql` — **운영 DB 미적용(BLOCKED · 코지 승인 영역)**.
+  미적용 상태에서도 컬럼 부재 fallback 으로 관리자 저장은 깨지지 않으며, 상세 상단은 기존 대표 이미지를 유지한다.
+- **현재 운영 결함(이번 작업 이전부터 존재)**: 코지임대 행의 `image` 에 YouTube watch URL 이 저장돼 있어
+  운영 `/`·`/programs` 카드와 상세 대표 이미지가 **깨진 이미지**로 표시된다(`next/image` 미허용 호스트).
+  0015 적용 + 관리자에서 영상 URL 을 `YouTube 영상 URL` 칸으로 옮기고 **대표 이미지를 정상 이미지로 교체**해야 해소된다.
+
 ### 코지임대 사전신청 랜딩 (2026-07-17)
 - `/landingpage/cozyrent` (구 `/cozyrent` — redirect 호환) — 출시 전 사전신청 랜딩페이지 (설계 SSOT: [docs/landing/COZYRENT_PRELAUNCH.md](landing/COZYRENT_PRELAUNCH.md))
 - `POST /api/cozyrent/preregister` — service_role 적재, 정규화 연락처(unique) 중복 차단, 연락처 로그 미출력

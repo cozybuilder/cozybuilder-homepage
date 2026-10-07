@@ -65,6 +65,9 @@ export type Program = {
   preregUrl?: string; // 사전신청 랜딩 URL (preregistration 상태에서 사용)
   preregCtaLabel?: string; // 사전신청 버튼 문구 (빈값 → 기본 "사전신청하기")
   preregBenefit?: string; // 혜택 문구 (선택)
+  // 상세페이지 상단 전용(0015). 값이 있으면 대표 이미지 대신 YouTube embed 를 렌더한다.
+  // 목록·메인·카드 썸네일은 종전대로 image 만 사용한다.
+  youtubeUrl?: string;
   screenshots?: string[]; // 여러 장 등록 가능 (좌우 슬라이드)
   updates?: ProgramUpdate[]; // 텍스트 기록형
 };

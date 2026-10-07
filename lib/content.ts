@@ -64,6 +64,8 @@ function rowToProgram(r: any): Program {
     preregUrl: r.prereg_url ?? "",
     preregCtaLabel: r.prereg_cta_label ?? "",
     preregBenefit: r.prereg_benefit ?? "",
+    // 0015 미적용/레거시 행은 undefined → "" → 상세 상단이 기존 대표 이미지 그대로
+    youtubeUrl: r.youtube_url ?? "",
     screenshots: asStringArray(r.screenshots),
     updates: Array.isArray(r.updates)
       ? (r.updates as ProgramUpdate[]).filter((u) => u && u.text)

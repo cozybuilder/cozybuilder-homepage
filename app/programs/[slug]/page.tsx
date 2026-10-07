@@ -16,6 +16,7 @@ import ProgramAction from "@/components/ProgramAction";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
 import DownloadButton from "@/components/DownloadButton";
 import { DEFAULT_PREREG_CTA_LABEL, type Program } from "@/lib/site";
+import { parseYoutubeVideoId, youtubeEmbedUrl } from "@/lib/youtube";
 
 // 구독 버튼이 현재 사용자 권한을 반영해야 하므로 동적 렌더(접근 판정은 매 요청).
 export const dynamic = "force-dynamic";
@@ -143,6 +144,10 @@ export default async function ProgramDetailPage({
   const program = await getProgram(slug);
   if (!program) notFound();
 
+  // 상단 영역 표시 판정(0015): 유효한 YouTube 영상이 있으면 영상, 없으면 기존 대표 이미지.
+  // 저장값을 신뢰하지 않고 렌더 시점에 다시 검증한다 — embed src 는 video ID 로만 조립한다.
+  const youtubeVideoId = parseYoutubeVideoId(program.youtubeUrl);
+
   const webApp = program.type === "web" ? findAppByProgramSlug(program.slug) : null;
   console.log("[programs/detail]", {
     slug: program.slug,
@@ -172,14 +177,26 @@ export default async function ProgramDetailPage({
       {/* 1. 대표 이미지 + 액션 (본문 폭에 맞춤) */}
       <section className="mx-auto mt-8 max-w-3xl">
         <div className="relative aspect-[16/9] w-full overflow-hidden rounded-3xl border border-[--border] bg-black">
-          <Image
-            src={program.image}
-            alt={program.name}
-            fill
-            priority
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 768px"
-          />
+          {youtubeVideoId ? (
+            <iframe
+              src={youtubeEmbedUrl(youtubeVideoId)}
+              title={`${program.name} 소개 영상`}
+              className="absolute inset-0 h-full w-full"
+              // autoplay 는 넣지 않는다 — 사용자가 재생을 시작한다.
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+            />
+          ) : (
+            <Image
+              src={program.image}
+              alt={program.name}
+              fill
+              priority
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+            />
+          )}
           {program.deployStatus === "preregistration" && (
             <span className="absolute right-3 top-3 rounded-full bg-[var(--accent)]/90 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur">
               사전신청

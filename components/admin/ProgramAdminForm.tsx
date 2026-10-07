@@ -27,6 +27,7 @@ export type ProgramInitial = {
   prereg_url?: string;
   prereg_cta_label?: string;
   prereg_benefit?: string;
+  youtube_url?: string;
   status?: string;
   sort_order?: number;
 };
@@ -72,8 +73,24 @@ export default function ProgramAdminForm({
       {!isNew && <input type="hidden" name="id" value={initial?.id} />}
       <input type="hidden" name="name" value={name} />
 
-      <Section title="대표 이미지">
+      <Section
+        title="대표 이미지"
+        desc="목록·메인 카드 썸네일과 상세페이지 상단에 쓰입니다. 영상 주소는 여기가 아니라 아래 'YouTube 영상'에 넣습니다."
+      >
         <ImageField name="image" folder="programs" initial={initial?.image ?? ""} />
+      </Section>
+
+      <Section
+        title="YouTube 영상 (선택)"
+        desc="값이 있으면 상세페이지 상단에 대표 이미지 대신 이 영상이 표시됩니다. 비우면 대표 이미지가 그대로 표시되고, 목록·메인 카드 썸네일은 항상 대표 이미지를 사용합니다."
+      >
+        <FormField label="YouTube 영상 URL">
+          <Input
+            name="youtube_url"
+            defaultValue={initial?.youtube_url ?? ""}
+            placeholder="https://www.youtube.com/watch?v=..."
+          />
+        </FormField>
       </Section>
 
       <Section title="스크린샷">

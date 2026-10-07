@@ -38,6 +38,7 @@ export default async function ProgramFormPage({
         prereg_url: r.prereg_url ?? "",
         prereg_cta_label: r.prereg_cta_label ?? "",
         prereg_benefit: r.prereg_benefit ?? "",
+        youtube_url: r.youtube_url ?? "",
         status: r.status ?? "draft",
         sort_order: r.sort_order ?? 0,
       };
