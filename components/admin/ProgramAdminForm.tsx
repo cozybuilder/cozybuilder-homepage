@@ -6,6 +6,8 @@ import ImageField from "@/components/admin/ImageField";
 import ImageListField from "@/components/admin/ImageListField";
 import StringListField from "@/components/admin/StringListField";
 import UpdatesField from "@/components/admin/UpdatesField";
+import ProgramLandingFields from "@/components/admin/ProgramLandingFields";
+import type { ProgramLandingContentV1 } from "@/lib/program-landing";
 import { Section, FormField, Input, Textarea, Select, Button } from "@/components/ui";
 
 export type ProgramInitial = {
@@ -28,6 +30,7 @@ export type ProgramInitial = {
   prereg_cta_label?: string;
   prereg_benefit?: string;
   youtube_url?: string;
+  landing_content?: ProgramLandingContentV1 | null;
   status?: string;
   sort_order?: number;
 };
@@ -257,6 +260,13 @@ export default function ProgramAdminForm({
             <Input name="sort_order" type="number" defaultValue={initial?.sort_order ?? 0} />
           </FormField>
         </div>
+      </Section>
+
+      <Section
+        title="제품 홍보 랜딩"
+        desc="상세페이지의 선택 홍보 섹션입니다. 비운 섹션은 공개 화면에 아예 표시되지 않습니다. 실제 근거가 있는 후기·수치만 입력하세요."
+      >
+        <ProgramLandingFields name="landing_content" initial={initial?.landing_content ?? null} />
       </Section>
 
       <Section title="업데이트 내역">

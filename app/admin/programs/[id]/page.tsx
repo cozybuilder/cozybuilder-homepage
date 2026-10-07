@@ -3,6 +3,7 @@ import ProgramAdminForm, {
   type ProgramInitial,
 } from "@/components/admin/ProgramAdminForm";
 import BackButton from "@/components/BackButton";
+import { normalizeProgramLandingContent } from "@/lib/program-landing";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export default async function ProgramFormPage({
@@ -39,6 +40,7 @@ export default async function ProgramFormPage({
         prereg_cta_label: r.prereg_cta_label ?? "",
         prereg_benefit: r.prereg_benefit ?? "",
         youtube_url: r.youtube_url ?? "",
+        landing_content: normalizeProgramLandingContent(r.landing_content),
         status: r.status ?? "draft",
         sort_order: r.sort_order ?? 0,
       };

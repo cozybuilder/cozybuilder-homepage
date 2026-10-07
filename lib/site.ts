@@ -1,6 +1,8 @@
 // Central site configuration & content data.
 // Pages read from here so the whole structure stays in one place.
 
+import type { ProgramLandingContentV1 } from "./program-landing";
+
 export const siteConfig = {
   name: "COZYBUILDER",
   tagline: "The AI Business Base",
@@ -68,6 +70,9 @@ export type Program = {
   // 상세페이지 상단 전용(0015). 값이 있으면 대표 이미지 대신 YouTube embed 를 렌더한다.
   // 목록·메인·카드 썸네일은 종전대로 image 만 사용한다.
   youtubeUrl?: string;
+  // 상세페이지 홍보 콘텐츠(0016 · 선택). 구조·검증은 lib/program-landing.ts 가 소유한다.
+  // null = 선택 섹션 없음 → 기존 데이터(summary/description/features/screenshots/updates)로 렌더.
+  landing?: ProgramLandingContentV1 | null;
   screenshots?: string[]; // 여러 장 등록 가능 (좌우 슬라이드)
   updates?: ProgramUpdate[]; // 텍스트 기록형
 };

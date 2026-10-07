@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin";
 import { CACHE_TAGS } from "@/lib/content";
 import { canonicalYoutubeUrl, parseYoutubeVideoId } from "@/lib/youtube";
+import { parseProgramLandingContent } from "@/lib/program-landing";
 
 function lines(v: FormDataEntryValue | null): string[] {
   return String(v ?? "")
@@ -80,6 +81,11 @@ export async function saveProgram(
   const youtubeRaw = str(formData.get("youtube_url"));
   const youtubeVideoId = parseYoutubeVideoId(youtubeRaw);
 
+  // 제품 홍보 랜딩(0016 · 선택) — 폼이 보낸 구조를 믿지 않고 서버에서 재검증·정규화한다.
+  // 내용이 하나도 없으면 null 이 되어 빈 껍데기를 저장하지 않는다.
+  const landingParsed = parseProgramLandingContent(str(formData.get("landing_content")));
+  const landingContent = landingParsed.ok ? landingParsed.content : null;
+
   // 공통 필드 (slug 는 분기에서 처리)
   // platform=web 이면 모바일 필드, platform=mobile 이면 app_url 이 폼에서 렌더되지 않아
   // 자연스럽게 빈값으로 정리된다(플랫폼 전환 시 반대편 링크가 남지 않음).
@@ -103,6 +109,8 @@ export async function saveProgram(
     prereg_benefit: str(formData.get("prereg_benefit")).slice(0, 120),
     // 0015 — 검증 통과분만 canonical 형식으로 저장. 무효 입력은 아래에서 저장 실패 처리.
     youtube_url: youtubeVideoId ? canonicalYoutubeUrl(youtubeVideoId) : "",
+    landing_content: landingContent, // 정규화 결과(또는 null) 만 저장한다
+
     status: str(formData.get("status")) === "published" ? "published" : "draft",
     sort_order: Number(str(formData.get("sort_order"))) || 0,
     updated_at: new Date().toISOString(),
@@ -133,6 +141,11 @@ export async function saveProgram(
     };
   }
 
+  // 폼이 보낸 홍보 콘텐츠가 JSON 으로 해석되지 않으면 저장하지 않는다.
+  if (!landingParsed.ok) {
+    return { error: "제품 홍보 랜딩 내용을 읽을 수 없습니다. 페이지를 새로고침한 뒤 다시 입력해주세요." };
+  }
+
   console.log("[saveProgram] keys:", [...formData.keys()].join(","), "| id:", id || "(new)", "| slug:", slug);
 
   // 0011 미실행(스토어 컬럼 없음) 환경에서도 저장이 깨지지 않도록, 컬럼 부재 오류면
@@ -153,8 +166,18 @@ export async function saveProgram(
   // 0011/0014 미적용(컬럼 부재) 환경에서도 저장이 깨지지 않도록 해당 필드 제외 후 재시도.
   if (
     error &&
-    /play_store_url|app_store_url|deploy_status|prereg_|youtube_url/i.test(error.message)
+    /play_store_url|app_store_url|deploy_status|prereg_|youtube_url|landing_content/i.test(
+      error.message
+    )
   ) {
+    // 홍보 콘텐츠를 실제로 입력했는데 컬럼이 없으면 **조용히 버리고 성공시키지 않는다.**
+    // (아래 재시도는 landing_content 를 떨어뜨리므로 여기서 먼저 막는다.)
+    if (landingContent) {
+      return {
+        error:
+          "landing_content migration(0016)이 적용되지 않아 제품 홍보 콘텐츠를 저장할 수 없습니다. 운영 DB에 0016 적용 후 다시 저장해주세요.",
+      };
+    }
     const legacy = { ...payload };
     delete legacy.play_store_url;
     delete legacy.app_store_url;
@@ -163,6 +186,7 @@ export async function saveProgram(
     delete legacy.prereg_cta_label;
     delete legacy.prereg_benefit;
     delete legacy.youtube_url; // 0015 미적용 운영 DB 에서도 저장이 깨지지 않게 한다
+    delete legacy.landing_content; // 0016 미적용 — 홍보 콘텐츠가 비어 있을 때만 여기 도달한다
     ({ data, error } = await writeProgram(legacy));
   }
 

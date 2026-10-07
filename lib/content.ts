@@ -1,6 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
 import { createClient as createPublicClient } from "@supabase/supabase-js";
+import { normalizeProgramLandingContent } from "./program-landing";
 import {
   programs as fallbackPrograms,
   products as fallbackProducts,
@@ -66,6 +67,8 @@ function rowToProgram(r: any): Program {
     preregBenefit: r.prereg_benefit ?? "",
     // 0015 미적용/레거시 행은 undefined → "" → 상세 상단이 기존 대표 이미지 그대로
     youtubeUrl: r.youtube_url ?? "",
+    // 0016 미적용/레거시/malformed 값이어도 normalize 가 null 로 환원한다(공개페이지 500 방지)
+    landing: normalizeProgramLandingContent(r.landing_content),
     screenshots: asStringArray(r.screenshots),
     updates: Array.isArray(r.updates)
       ? (r.updates as ProgramUpdate[]).filter((u) => u && u.text)
