@@ -41,6 +41,14 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
 - Marketing
 - Analytics
 
+### 프로그램 실제 화면 스토리 (2026-10-08)
+- 프로그램 상세 `실제 화면`은 이미지와 제목·설명을 한 세트로 보여주는 범용 story UI를 지원한다.
+- 데스크톱은 sticky 기기 프레임 + 상·중·하 3단 텍스트 레일, 모바일은 제목·설명·화면 순차형으로 표시한다.
+- 관리자 `/admin/programs/[id]`에서 이미지 업로드/교체/삭제, 제목·설명, ↑/↓ 순서를 한 행 단위로 관리한다.
+- 저장 소유: `programs.screenshots` = 이미지 URL/순서, `landing_content.screenStories` = 같은 순서의 제목/설명. 새 DB 컬럼·migration 없음.
+- screenStories를 쓰지 않는 기존 프로그램은 종전 `ScreenshotGallery`를 유지하며, 코지임대 기존 6장에는 승인된 legacy 설명 fallback을 적용한다.
+- 저장 서버는 이미지/설명 개수 1:1 및 제목 필수를 재검증하고, 기존 screenshot-only 프로그램 저장은 강제 전환하지 않는다.
+
 ### 공용 랜딩페이지 플랫폼 (2026-07-17)
 - 공용 구조 SSOT: [docs/landing/LANDINGPAGE_PLATFORM.md](landing/LANDINGPAGE_PLATFORM.md)
 - 공식 공개 URL: `/landingpage/[slug]` (설정 레지스트리 `lib/landingpage/config.ts` + 공용 렌더러 — 페이지 복사 금지)
