@@ -3,11 +3,12 @@
 import { useActionState, useState } from "react";
 import { saveProgram } from "@/app/admin/actions";
 import ImageField from "@/components/admin/ImageField";
-import ImageListField from "@/components/admin/ImageListField";
 import StringListField from "@/components/admin/StringListField";
 import UpdatesField from "@/components/admin/UpdatesField";
 import ProgramLandingFields from "@/components/admin/ProgramLandingFields";
+import ProgramScreenStoryFields from "@/components/admin/ProgramScreenStoryFields";
 import type { ProgramLandingContentV1 } from "@/lib/program-landing";
+import type { ScreenStory } from "@/lib/program-screen-story";
 import { Section, FormField, Input, Textarea, Select, Button } from "@/components/ui";
 
 export type ProgramInitial = {
@@ -21,6 +22,8 @@ export type ProgramInitial = {
   image?: string;
   features?: string[];
   screenshots?: string[];
+  /** 실제 화면 제목/설명 — landing_content.screenStories (없으면 레거시 fallback 이 채워져 온다). */
+  screen_stories?: ScreenStory[];
   updates?: { date: string; text: string }[];
   app_url?: string;
   play_store_url?: string;
@@ -96,11 +99,16 @@ export default function ProgramAdminForm({
         </FormField>
       </Section>
 
-      <Section title="스크린샷">
-        <ImageListField
-          name="screenshots"
+      <Section
+        title="실제 화면"
+        desc="상세페이지에서 보여줄 실제 앱 화면과 제목·설명을 순서대로 등록합니다."
+      >
+        <ProgramScreenStoryFields
+          imagesName="screenshots"
+          storiesName="screen_stories"
           folder="programs/screenshots"
-          initial={initial?.screenshots ?? []}
+          initialImages={initial?.screenshots ?? []}
+          initialStories={initial?.screen_stories ?? []}
         />
       </Section>
 

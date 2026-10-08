@@ -201,3 +201,51 @@ HERO → 문제 공감 → 해결·핵심 가치 → 실제 화면 → 추천 �
 - CTA의 실제 목적지는 종전대로 `play_store_url`·`app_store_url`·`app_url`·`prereg_url`·앱 접근 권한이 정한다.
 - 가격·체험 기간 등 정책 수치는 이 페이지가 SSOT가 아니다. 제품별 정책 문서가 소유한 값을 문구로 옮길 뿐이다.
 - 목록·메인 카드 썸네일은 종전대로 `image`만 사용한다.
+
+## 11. 실제 화면 (screen stories)
+
+프로그램 상세의 `실제 화면` 섹션 — 앱 캡처 한 장과 그 화면의 제목·설명을 한 세트로 보여준다.
+
+### 소유 구조
+
+새 컬럼·migration 없이 기존 두 값이 나눠 소유한다.
+
+| 소유 | 내용 |
+|---|---|
+| `programs.screenshots` | 실제 화면 이미지 URL 배열 **+ 표시 순서** |
+| `programs.landing_content.screenStories` | 같은 순서의 `{ title, description }` |
+
+- 두 배열은 **표시 순서로 1:1 대응**한다 — `screenshots[i]` ↔ `screenStories[i]`.
+- 이미지 URL을 `screenStories` 안에 **중복 저장하지 않는다.**
+- `landing_content`의 `version`은 **1 그대로**다. `screenStories`는 optional 이라 기존 데이터가 그대로 읽힌다.
+- 짝짓기·표시 판정·관리자 저장 검증의 SSOT는 `lib/program-screen-story.ts`다.
+
+### 관리자 입력
+
+- `/admin/programs/[id]`의 `실제 화면` 섹션에서 **하나의 행**으로 편집한다 — 이미지·제목·설명·순서.
+- 순서 이동(↑/↓)은 세 값이 **한 행 단위로 같이** 움직인다.
+- 제출은 두 hidden 으로 나뉜다: `screenshots`(URL 줄바꿈) · `screen_stories`(제목/설명 JSON).
+- 이미지가 없는 행은 저장 대상에서 제외한다.
+
+### 저장 규칙 — 조용한 불일치 금지
+
+- `screen_stories`가 비어 있으면 허용한다(기존 프로그램 호환 · 공개는 기존 gallery).
+- 사용한다면 `screenshots.length === screenStories.length` 이어야 하고, 각 행에 **제목이 필수**다.
+- 개수가 어긋나거나 제목이 빠지면 **조용히 저장하지 않고** 몇 번째가 문제인지 오류로 알린다.
+- 최종 `landing_content`는 기존 값과 검증된 `screenStories`를 합친 뒤 `normalizeProgramLandingContent()`
+  신뢰 경계를 다시 통과시킨다. 클라이언트 JSON을 그대로 저장하지 않는다.
+- 두 편집기(`ProgramLandingFields` · `ProgramScreenStoryFields`)가 같은 `landing_content`의 서로 다른
+  부분을 소유하므로, 한쪽만 수정해도 다른 쪽이 유실되지 않아야 한다.
+
+### 공개 표시 규칙
+
+1. 이미지가 있고 `screenStories`가 **1:1로 완전**하면 → `ProgramScreenStory`
+   (데스크톱: sticky 무대 + 상·중·하 3단 텍스트 레일 + 세로 기기 프레임 / 모바일: 순차형)
+2. 아직 정식 데이터가 없는 레거시 상태 → `lib/program-screen-story.ts`의 fallback 문구로 같은 UI
+3. 그 외 → 기존 `ScreenshotGallery`
+
+- 레거시 fallback은 **UI 초기값**일 뿐이다. 페이지를 여는 것만으로 DB에 쓰지 않는다.
+  관리자에서 저장하면 저장된 값이 항상 fallback보다 우선한다.
+- 화면 개수는 고정하지 않는다. 등록한 개수만큼 그대로 표시한다.
+- **실제 앱 화면만 사용한다.** 가짜 스크린샷을 만들거나 자동 생성하지 않는다.
+- 비어 있는 선택 데이터는 노출하지 않는다(§10 표시 규칙과 동일).

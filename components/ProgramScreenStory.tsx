@@ -3,26 +3,27 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-// ⚠ 디자인 프로토타입 (코지 확인용) — 승인 전까지 공통 컴포넌트로 승격하지 않는다.
-// 적용 범위: 코지임대 상세페이지 한 곳. 다른 프로그램은 기존 ScreenshotGallery 를 그대로 쓴다.
+import type { ScreenStory } from "@/lib/program-screen-story";
+
+// 실제 화면 스토리 — 프로그램 상세의 "실제 화면" 섹션.
+// 표시 규칙 SSOT: docs/platform/PROGRAM_OPERATING_MODEL.md §11
+// 짝짓기 규칙·레거시 판정 SSOT: lib/program-screen-story.ts
 //
-// 이 단계에서 하지 않는 것: 관리자 등록 · landing_content 확장 · DB 저장 구조.
-// 그래서 설명 문구는 **여기 코드 상수**로만 둔다. 운영 데이터는 건드리지 않는다.
+// 이 컴포넌트는 제품 문구를 소유하지 않는다. 이미지도 제목·설명도 전부 props 로 받는다
+// (이미지 = programs.screenshots · 제목/설명 = landing_content.screenStories).
 //
-// 이미지는 실제 앱 캡처(1080×2111 세로)다. 원본 비율 그대로 — crop 0 · 검은 여백 0.
+// 이미지는 실제 앱 캡처다. 원본 비율 그대로 보여준다 — crop 0 · 검은 여백 0.
 //
-// ── 3차 구조 (데스크톱) ─────────────────────────────────────────────
+// ── 데스크톱 구조 ───────────────────────────────────────────────
 // 좌우 모두 화면 중앙에 고정하고, 스크롤은 "보이지 않는 trigger" 가 담당한다.
 //
 //   container (relative · 높이 = n*STEP_VH + 무대 1장)
-//     ├─ stage    : sticky. 화면 중앙에 고정. 활성 1개의 카피 + 폰만 보여준다.
+//     ├─ stage    : sticky. 화면 중앙에 고정. 상·중·하 3단 카피 + 폰을 보여준다.
 //     └─ triggers : absolute. 눈에 안 보이지만 스크롤 길이를 만들고 active 를 바꾼다.
 //
-// 2차까지는 설명 6개가 실제 문서 흐름에 세로로 깔려 있었다. 그래서 스크롤하면 글자 자체가
-// 위로 밀려 올라갔고, 거기에 전환 애니메이션이 겹쳐 보였다. 그게 "삐그덕거림" 의 핵심이다.
-// 이제 보이는 글자는 스크롤과 함께 움직이지 않는다 — 제자리에서 내용만 바뀐다.
+// 보이는 글자는 스크롤과 함께 움직이지 않는다 — 제자리에서 내용만 바뀐다.
 //
-// 모바일은 바꾸지 않는다 — 번호·제목·설명·폰 캡처가 순차로 반복되는 기존 구조 그대로.
+// 모바일은 순차형이다 — 번호·제목·설명·폰 캡처가 세로로 반복된다.
 
 const SCREEN_RATIO = "1080 / 2111";
 /** 세로 캡처 비율. 폰 크기를 뷰포트 높이에 맞춰 줄일 때 쓴다. */
@@ -91,36 +92,7 @@ function slot(rel: number): string {
   return "translate-y-[53%] scale-[0.97] opacity-0";
 }
 
-/** 프로토타입 설명 — 운영 screenshots 순서(home→rent→building→moveout→repair→expense)에 1:1 대응. */
-const STEPS: { title: string; description: string }[] = [
-  {
-    title: "홈 화면",
-    description: "건물 현황과 이번 달 받을 돈을 한 화면에서 확인합니다.",
-  },
-  {
-    title: "이번 달 돈 흐름",
-    description: "받을 돈과 나갈 돈, 오늘 확인할 일을 함께 봅니다.",
-  },
-  {
-    title: "호실 관리",
-    description: "층별 호실과 계약 기간, 계약이 끝나가는 호실을 한눈에 봅니다.",
-  },
-  {
-    title: "계약·퇴실 관리",
-    description: "계약 내용과 만료 시점을 확인하고 갱신·퇴실로 이어갑니다.",
-  },
-  {
-    title: "건물·시설 관리",
-    description: "지출과 시설, 하자·수선 기록을 건물 단위로 모아 봅니다.",
-  },
-  {
-    title: "지출 관리",
-    description: "고정지출과 월별 납부 내역으로 나가는 돈을 관리합니다.",
-  },
-];
-
 const num = (i: number) => String(i + 1).padStart(2, "0");
-const stepOf = (i: number) => STEPS[i] ?? { title: `화면 ${num(i)}`, description: "" };
 
 /**
  * CSS 전용 기기 프레임.
@@ -165,13 +137,21 @@ function Shot({ src, alt, sizes }: { src: string; alt: string; sizes: string }) 
   return <Image src={src} alt={alt} fill className="object-contain" sizes={sizes} />;
 }
 
-export default function ProgramScreenStoryPrototype({
+export default function ProgramScreenStory({
   images,
+  stories,
   alt,
 }: {
+  /** 실제 화면 이미지 URL — `programs.screenshots` 순서 그대로. */
   images: string[];
+  /** 같은 순서의 제목·설명 — `landing_content.screenStories`. images 와 1:1 이어야 한다. */
+  stories: ScreenStory[];
   alt: string;
 }) {
+  // 호출부가 1:1 을 보장하지만, 어긋난 값이 와도 섹션이 죽지 않게 빈 자리는 번호로 메운다.
+  const stepOf = (i: number): ScreenStory =>
+    stories[i] ?? { title: `화면 ${num(i)}`, description: "" };
+
   const [active, setActive] = useState(0);
   /** 데스크톱: 보이지 않는 스크롤 trigger. */
   const triggerRefs = useRef<(HTMLLIElement | null)[]>([]);

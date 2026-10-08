@@ -6,7 +6,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/admin";
 import { CACHE_TAGS } from "@/lib/content";
 import { canonicalYoutubeUrl, parseYoutubeVideoId } from "@/lib/youtube";
-import { parseProgramLandingContent } from "@/lib/program-landing";
+import { normalizeProgramLandingContent, parseProgramLandingContent } from "@/lib/program-landing";
+import { parseScreenStoriesField } from "@/lib/program-screen-story";
 
 function lines(v: FormDataEntryValue | null): string[] {
   return String(v ?? "")
@@ -84,7 +85,27 @@ export async function saveProgram(
   // 제품 홍보 랜딩(0016 · 선택) — 폼이 보낸 구조를 믿지 않고 서버에서 재검증·정규화한다.
   // 내용이 하나도 없으면 null 이 되어 빈 껍데기를 저장하지 않는다.
   const landingParsed = parseProgramLandingContent(str(formData.get("landing_content")));
-  const landingContent = landingParsed.ok ? landingParsed.content : null;
+
+  // 실제 화면(screenshots ↔ screenStories) — 두 입력은 서로 다른 hidden 으로 오고
+  // 편집은 한 행이었다. 여기서 다시 맞춰 보고, 어긋나면 조용히 저장하지 않는다.
+  const screenshots = lines(formData.get("screenshots"));
+  const storiesParsed = parseScreenStoriesField(
+    str(formData.get("screen_stories")),
+    screenshots.length
+  );
+
+  // landing_content 는 두 편집기가 서로 다른 부분을 소유한다.
+  //   ProgramLandingFields        → hero/problems/benefits/.../finalCta
+  //   ProgramScreenStoryFields    → screenStories
+  // 한쪽만 수정해도 다른 쪽이 유실되지 않도록 여기서 합친 뒤, 신뢰 경계를 다시 통과시킨다.
+  // (클라이언트 JSON 을 그대로 저장하지 않는다.)
+  const landingContent = storiesParsed.ok
+    ? normalizeProgramLandingContent({
+        ...(landingParsed.ok ? landingParsed.content ?? {} : {}),
+        version: 1,
+        screenStories: storiesParsed.stories,
+      })
+    : null;
 
   // 공통 필드 (slug 는 분기에서 처리)
   // platform=web 이면 모바일 필드, platform=mobile 이면 app_url 이 폼에서 렌더되지 않아
@@ -98,7 +119,7 @@ export async function saveProgram(
     description: str(formData.get("description")),
     image: str(formData.get("image")),
     features: lines(formData.get("features")),
-    screenshots: lines(formData.get("screenshots")),
+    screenshots,
     updates: updatesFrom(formData.get("updates")),
     app_url: str(formData.get("app_url")), // web 실행 URL (web_url 역할)
     play_store_url: str(formData.get("play_store_url")), // mobile — Android 출시 여부
@@ -139,6 +160,11 @@ export async function saveProgram(
       error:
         "YouTube 영상 URL 형식을 확인해주세요. youtube.com/watch?v=... · youtu.be/... · youtube.com/shorts/... 만 사용할 수 있습니다.",
     };
+  }
+
+  // 실제 화면 입력이 개수·제목 조건을 어기면 저장하지 않고 어디가 문제인지 알려준다.
+  if (!storiesParsed.ok) {
+    return { error: storiesParsed.error };
   }
 
   // 폼이 보낸 홍보 콘텐츠가 JSON 으로 해석되지 않으면 저장하지 않는다.

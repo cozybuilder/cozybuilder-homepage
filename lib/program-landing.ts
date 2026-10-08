@@ -23,6 +23,8 @@ export type LandingTitleBody = { title: string; description: string };
 export type LandingProofStat = { value: string; label: string };
 export type LandingTestimonial = { quote: string; displayName: string; meta?: string };
 export type LandingFaq = { question: string; answer: string };
+/** 실제 화면 한 장의 제목·설명. 이미지는 여기 담지 않는다(`programs.screenshots` 가 소유). */
+export type LandingScreenStory = { title: string; description: string };
 
 export type ProgramLandingContentV1 = {
   version: typeof PROGRAM_LANDING_VERSION;
@@ -36,6 +38,12 @@ export type ProgramLandingContentV1 = {
   offer?: { title?: string; headline?: string; body?: string; lines?: string[] };
   faqs?: LandingFaq[];
   finalCta?: { title?: string; body?: string };
+  /**
+   * 실제 화면 설명 — `programs.screenshots` 와 **표시 순서 1:1 로 대응**한다.
+   * 이미지 URL 은 여기 중복 저장하지 않는다. screenshots[i] 와 screenStories[i] 가 한 세트다.
+   * optional 이라 기존 v1 데이터는 그대로 읽힌다(version 올리지 않음 · migration 없음).
+   */
+  screenStories?: LandingScreenStory[];
 };
 
 /* ── 원시 값 정규화 ───────────────────────────────────────────── */
@@ -125,6 +133,19 @@ function normTestimonials(v: unknown): LandingTestimonial[] {
   );
 }
 
+function normScreenStories(v: unknown): LandingScreenStory[] {
+  return compact(
+    list(v).map((raw) => {
+      if (!isRecord(raw)) return null;
+      const title = text(raw.title, LIMITS.short);
+      // 제목이 없으면 화면으로 세지 않는다 — 공개 UI 가 제목을 중심으로 구성되고,
+      // 제목 없는 항목을 끼워 두면 screenshots 와의 1:1 대응이 조용히 어긋난다.
+      if (!title) return null;
+      return { title, description: text(raw.description, LIMITS.medium) };
+    })
+  );
+}
+
 function normFaqs(v: unknown): LandingFaq[] {
   return compact(
     list(v).map((raw) => {
@@ -193,6 +214,7 @@ export function normalizeProgramLandingContent(
       finalCta: finalCta
         ? (prune(finalCta) as ProgramLandingContentV1["finalCta"])
         : undefined,
+      screenStories: normScreenStories(raw.screenStories),
     }),
   };
 
