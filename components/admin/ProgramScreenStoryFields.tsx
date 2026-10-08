@@ -4,6 +4,8 @@ import { useMemo, useRef, useState } from "react";
 import { uploadImage } from "@/components/admin/uploadImage";
 import {
   firstMissingTitleIndex,
+  keptScreenStoryRows,
+  MAX_SCREEN_STORIES,
   serializeScreenStoryRows,
   type ScreenStory,
   type ScreenStoryRow,
@@ -71,11 +73,18 @@ export default function ProgramScreenStoryFields({
   initialStories?: ScreenStory[];
 }) {
   const [rows, setRows] = useState<ScreenStoryRow[]>(() =>
-    initialImages.map((image, i) => ({
-      image,
-      title: initialStories[i]?.title ?? "",
-      description: initialStories[i]?.description ?? "",
-    }))
+    initialImages.map((image, i) => {
+      const st = initialStories[i];
+      return {
+        image,
+        title: st?.title ?? "",
+        description: st?.description ?? "",
+        // 저장된 story 가 있으면 그 값(없으면 노출), 없으면 undefined 로 둔다.
+        // undefined 는 "아직 story metadata 가 아님" 이라 레거시 프로그램을
+        // 체크박스 기본값만으로 story 사용 상태로 만들지 않는다.
+        visible: st ? st.visible !== false : undefined,
+      };
+    })
   );
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -106,6 +115,13 @@ export default function ProgramScreenStoryFields({
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
     if (files.length === 0) return;
+    // 업로드를 **시작하기 전에** 막는다 — 일부만 Storage 에 올라가고 실패하는 걸 피한다.
+    if (files.length > remaining) {
+      setErr(
+        `실제 화면은 최대 ${MAX_SCREEN_STORIES}개까지 등록할 수 있습니다. 현재 ${rows.length}개가 등록되어 있어 ${remaining}개만 더 추가할 수 있습니다.`
+      );
+      return;
+    }
     setBusy(true);
     setErr(null);
     try {
@@ -146,6 +162,10 @@ export default function ProgramScreenStoryFields({
   const addManual = () => {
     const v = manual.trim();
     if (!v) return;
+    if (atMax) {
+      setErr(`실제 화면은 최대 ${MAX_SCREEN_STORIES}개까지 등록할 수 있습니다.`);
+      return;
+    }
     setRows((prev) => [...prev, { image: v, title: "", description: "" }]);
     setManual("");
   };
@@ -155,6 +175,9 @@ export default function ProgramScreenStoryFields({
   // 기존 screenshots 만 쓰던 프로그램은 제목을 채우지 않아도 그대로 저장된다.
   const serialized = useMemo(() => serializeScreenStoryRows(rows), [rows]);
   const missingTitle = useMemo(() => firstMissingTitleIndex(rows), [rows]);
+  const keptCount = useMemo(() => keptScreenStoryRows(rows).length, [rows]);
+  const remaining = Math.max(0, MAX_SCREEN_STORIES - rows.length);
+  const atMax = remaining === 0;
 
   return (
     <div className="space-y-3">
@@ -195,13 +218,30 @@ export default function ProgramScreenStoryFields({
           {rows.map((row, i) => (
             <li
               key={i}
-              className="rounded-2xl border border-white/10 bg-white/[0.02] p-3 sm:flex sm:gap-4"
+              className={`rounded-2xl border border-white/10 bg-white/[0.02] p-3 transition-opacity sm:flex sm:gap-4 ${
+                row.visible === false ? "opacity-60" : ""
+              }`}
             >
-              {/* 왼쪽: 순번 + 세로 미리보기 (원본 비율 — 16:9 로 자르지 않는다) */}
+              {/* 왼쪽: 순번 + 노출 체크 + 세로 미리보기 (원본 비율 — 16:9 로 자르지 않는다) */}
               <div className="flex shrink-0 gap-3 sm:block">
-                <span className="font-mono text-xs tabular-nums text-[--muted-2] sm:mb-2 sm:block">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
+                <div className="sm:mb-2">
+                  <span className="font-mono text-xs tabular-nums text-[--muted-2]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <label className="mt-1 flex cursor-pointer items-center gap-1.5 text-xs text-[--muted]">
+                    <input
+                      type="checkbox"
+                      checked={row.visible !== false}
+                      onChange={(e) =>
+                        // 체크를 되돌리면 undefined 로 돌아간다 — 이미지만 있던 레거시 행이
+                        // 껐다 켰다는 이유만으로 story 사용 상태로 굳지 않게 한다.
+                        setAt(i, { visible: e.target.checked ? undefined : false })
+                      }
+                      className="h-3.5 w-3.5 accent-violet-400"
+                    />
+                    노출
+                  </label>
+                </div>
                 {row.image ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -270,13 +310,24 @@ export default function ProgramScreenStoryFields({
       )}
 
       {rows.length > 0 && (
-        <button
-          type="button"
-          onClick={() => addRef.current?.click()}
-          className="text-sm text-[--muted] transition-colors hover:text-foreground"
-        >
-          + {busy ? "업로드 중…" : "실제 화면 추가"}
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => addRef.current?.click()}
+            disabled={atMax}
+            className="text-sm text-[--muted] transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[--muted]"
+          >
+            + {busy ? "업로드 중…" : "실제 화면 추가"}
+          </button>
+          <span className="font-mono text-xs tabular-nums text-[--muted-2]">
+            실제 화면 {keptCount} / {MAX_SCREEN_STORIES}
+          </span>
+          {atMax && (
+            <span className="text-xs text-[--muted-2]">
+              최대 {MAX_SCREEN_STORIES}개까지 등록할 수 있습니다.
+            </span>
+          )}
+        </div>
       )}
 
       {err && <p className="text-xs text-red-300">{err}</p>}

@@ -9,6 +9,9 @@
 // - malformed 값 때문에 공개페이지가 깨지지 않는다 — 어떤 입력이든 유효 구조 또는 null 을 돌려준다.
 // - 내용이 하나도 없으면 null 을 돌려준다(빈 껍데기를 DB 에 저장하지 않기 위해).
 
+// .ts 확장자를 명시한다 — node 내장 테스트 러너(ESM)는 확장자를 생략할 수 없다.
+import { MAX_SCREEN_STORIES, type ScreenStory } from "./program-screen-story.ts";
+
 export const PROGRAM_LANDING_VERSION = 1 as const;
 
 /** 길이 상한 — 과도한 입력이 레이아웃·저장소를 망가뜨리지 않게 한다. */
@@ -23,8 +26,11 @@ export type LandingTitleBody = { title: string; description: string };
 export type LandingProofStat = { value: string; label: string };
 export type LandingTestimonial = { quote: string; displayName: string; meta?: string };
 export type LandingFaq = { question: string; answer: string };
-/** 실제 화면 한 장의 제목·설명. 이미지는 여기 담지 않는다(`programs.screenshots` 가 소유). */
-export type LandingScreenStory = { title: string; description: string };
+/**
+ * 실제 화면 한 장의 제목·설명·노출 여부. 이미지는 여기 담지 않는다(`programs.screenshots` 가 소유).
+ * 타입 소유는 `lib/program-screen-story.ts` — 상한·판정과 같은 곳에 둔다.
+ */
+export type LandingScreenStory = ScreenStory;
 
 export type ProgramLandingContentV1 = {
   version: typeof PROGRAM_LANDING_VERSION;
@@ -135,13 +141,17 @@ function normTestimonials(v: unknown): LandingTestimonial[] {
 
 function normScreenStories(v: unknown): LandingScreenStory[] {
   return compact(
-    list(v).map((raw) => {
+    (Array.isArray(v) ? v.slice(0, MAX_SCREEN_STORIES) : []).map((raw) => {
       if (!isRecord(raw)) return null;
       const title = text(raw.title, LIMITS.short);
       // 제목이 없으면 화면으로 세지 않는다 — 공개 UI 가 제목을 중심으로 구성되고,
       // 제목 없는 항목을 끼워 두면 screenshots 와의 1:1 대응이 조용히 어긋난다.
       if (!title) return null;
-      return { title, description: text(raw.description, LIMITS.medium) };
+      const description = text(raw.description, LIMITS.medium);
+      // visible 은 false 만 의미가 있다. true·누락은 노출이 기본이라 적지 않는다.
+      return raw.visible === false
+        ? { title, description, visible: false }
+        : { title, description };
     })
   );
 }

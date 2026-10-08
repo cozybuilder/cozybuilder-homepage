@@ -12,9 +12,20 @@
 //   3) 관리자 저장 시 폼 입력 재검증 (서버가 쓰는 순수 함수)
 // 공개페이지와 관리자가 서로 다른 하드코딩을 갖지 않게 하기 위해 전부 여기 모은다.
 
-import type { LandingScreenStory } from "./program-landing";
+/**
+ * 실제 화면 한 장의 제목·설명과 노출 여부.
+ *
+ * `visible` 은 optional 이고 **없으면 노출(true)** 로 본다. 기존에 저장된 데이터에는
+ * 이 값이 없으므로, 배포만으로 이미 보이던 화면이 사라지지 않는다.
+ * 저장은 `visible === false` 만 남긴다(기본값인 true·누락은 적지 않는다).
+ *
+ * 타입을 여기서 소유한다. program-landing 이 이 모듈을 가져다 쓰는 한 방향이라
+ * 순환 의존이 생기지 않는다.
+ */
+export type ScreenStory = { title: string; description: string; visible?: boolean };
 
-export type ScreenStory = LandingScreenStory;
+/** 실제 화면 등록 상한. 관리자 UI·서버 저장·정규화가 전부 이 값을 쓴다. */
+export const MAX_SCREEN_STORIES = 20;
 
 /**
  * 코지임대 레거시 문구.
@@ -81,10 +92,12 @@ export function resolveScreenStories({
 }): ScreenStory[] | null {
   if (images.length === 0) return null;
   if (isComplete(images, stories ?? undefined)) {
-    return (stories as ScreenStory[]).map((s) => ({
-      title: s.title,
-      description: s.description,
-    }));
+    // visible 을 떨어뜨리면 노출 필터가 작동하지 않는다 — 그대로 옮긴다.
+    return (stories as ScreenStory[]).map((s) =>
+      s.visible === false
+        ? { title: s.title, description: s.description, visible: false as const }
+        : { title: s.title, description: s.description }
+    );
   }
   if (slug === COZYRENT_LEGACY_SLUG && images.length === COZYRENT_LEGACY_SCREEN_STORIES.length) {
     return COZYRENT_LEGACY_SCREEN_STORIES.map((s) => ({ ...s }));
@@ -92,10 +105,58 @@ export function resolveScreenStories({
   return null;
 }
 
+/** 공개 렌더가 실제로 그리는 한 장 — 이미지와 문구를 짝으로 묶은 값. */
+export type ScreenStoryItem = { image: string; title: string; description: string };
+
+/**
+ * 공개 표시 결과 — 세 상태를 호출부가 분명히 구분할 수 있게 한다.
+ *   gallery : story 미사용 → 기존 ScreenshotGallery
+ *   story   : 노출 1개 이상 → ProgramScreenStory
+ *   hidden  : story 는 쓰는데 전부 체크 해제 → 섹션 자체를 숨긴다
+ *             (gallery 로 떨어뜨리면 숨기려던 이미지가 도로 다 보인다)
+ */
+export type ScreenStoryResolution =
+  | { mode: "gallery" }
+  | { mode: "story"; items: ScreenStoryItem[] }
+  | { mode: "hidden" };
+
+/**
+ * 저장 배열은 끝까지 1:1 로 둔 채, **짝을 지은 뒤에** 노출만 거른다.
+ * 저장 쪽에서 거르면 다시 체크했을 때 이미지와 문구의 짝이 어긋난다.
+ * 노출 순서대로 담아 돌려주므로 공개 번호는 자연히 01 부터 다시 매겨진다.
+ */
+export function resolveScreenStoryItems(args: {
+  slug?: string | null;
+  images: string[];
+  stories?: readonly ScreenStory[] | null;
+}): ScreenStoryResolution {
+  const resolved = resolveScreenStories(args);
+  if (!resolved) return { mode: "gallery" };
+
+  const items: ScreenStoryItem[] = [];
+  resolved.forEach((s, i) => {
+    if (s.visible === false) return;
+    items.push({ image: args.images[i], title: s.title, description: s.description });
+  });
+  return items.length > 0 ? { mode: "story", items } : { mode: "hidden" };
+}
+
 /* ── 관리자 편집기 직렬화 ─────────────────────────────────────── */
 
-/** 관리자 편집기가 한 행으로 다루는 값. 저장 때 두 hidden 으로 나뉜다. */
-export type ScreenStoryRow = { image: string; title: string; description: string };
+/**
+ * 관리자 편집기가 한 행으로 다루는 값. 저장 때 두 hidden 으로 나뉜다.
+ *
+ * `visible` 의 세 상태를 구분한다.
+ *   undefined — 아직 story metadata 가 아니다(이미지만 있는 레거시 행). UI 에서는 체크로 보인다.
+ *   true      — 사용자가 명시적으로 노출로 둔 상태.
+ *   false     — 사용자가 노출을 껐다.
+ */
+export type ScreenStoryRow = {
+  image: string;
+  title: string;
+  description: string;
+  visible?: boolean;
+};
 
 /** 이미지가 없는 행은 저장 대상이 아니다 — 두 배열의 길이를 항상 같게 유지한다. */
 export function keptScreenStoryRows(rows: ScreenStoryRow[]): ScreenStoryRow[] {
@@ -111,7 +172,11 @@ export function keptScreenStoryRows(rows: ScreenStoryRow[]): ScreenStoryRow[] {
  * 그 레거시 저장을 막지 않기 위한 판정이다.
  */
 export function isScreenStoryUsed(rows: ScreenStoryRow[]): boolean {
-  return keptScreenStoryRows(rows).some((r) => r.title.trim() || r.description.trim());
+  return keptScreenStoryRows(rows).some(
+    // 체크박스가 기본 체크로 **보이는** 것만으로는 사용 상태가 되지 않는다.
+    // 노출을 실제로 끈 경우(false)만 story metadata 를 설정한 것으로 본다.
+    (r) => r.title.trim() || r.description.trim() || r.visible === false
+  );
 }
 
 /**
@@ -137,7 +202,14 @@ export function serializeScreenStoryRows(rows: ScreenStoryRow[]): {
   return {
     images: kept.map((r) => r.image.trim()).join(String.fromCharCode(10)),
     stories: isScreenStoryUsed(rows)
-      ? JSON.stringify(kept.map((r) => ({ title: r.title, description: r.description })))
+      ? JSON.stringify(
+          kept.map((r) => ({
+            title: r.title,
+            description: r.description,
+            // 기본값인 노출은 적지 않는다 — false 만 저장한다.
+            ...(r.visible === false ? { visible: false } : {}),
+          }))
+        )
       : "",
   };
 }
@@ -178,6 +250,13 @@ export function parseScreenStoriesField(raw: string, imageCount: number): Screen
   }
   if (parsed.length === 0) return { ok: true, stories: [] };
 
+  if (parsed.length > MAX_SCREEN_STORIES || imageCount > MAX_SCREEN_STORIES) {
+    return {
+      ok: false,
+      error: `실제 화면은 최대 ${MAX_SCREEN_STORIES}개까지 등록할 수 있습니다. (현재 이미지 ${imageCount}개 / 설명 ${parsed.length}개)`,
+    };
+  }
+
   if (parsed.length !== imageCount) {
     return {
       ok: false,
@@ -194,7 +273,7 @@ export function parseScreenStoriesField(raw: string, imageCount: number): Screen
     if (!title) {
       return { ok: false, error: `실제 화면 ${i + 1}번의 제목을 입력해주세요.` };
     }
-    stories.push({ title, description });
+    stories.push(rec.visible === false ? { title, description, visible: false } : { title, description });
   }
   return { ok: true, stories };
 }
