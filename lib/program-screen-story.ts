@@ -92,6 +92,56 @@ export function resolveScreenStories({
   return null;
 }
 
+/* ── 관리자 편집기 직렬화 ─────────────────────────────────────── */
+
+/** 관리자 편집기가 한 행으로 다루는 값. 저장 때 두 hidden 으로 나뉜다. */
+export type ScreenStoryRow = { image: string; title: string; description: string };
+
+/** 이미지가 없는 행은 저장 대상이 아니다 — 두 배열의 길이를 항상 같게 유지한다. */
+export function keptScreenStoryRows(rows: ScreenStoryRow[]): ScreenStoryRow[] {
+  return rows.filter((r) => r.image.trim());
+}
+
+/**
+ * story 기능을 "쓰기 시작했는가".
+ *
+ * 이미지만 있고 제목·설명이 전부 비어 있으면 **미사용**으로 본다.
+ * 기존에 screenshots 만 쓰던 프로그램은 관리자에 들어오면 이미지 수만큼 행이 생기는데,
+ * 이걸 사용 중으로 보면 다른 필드 하나 고치려다 화면 제목을 전부 입력해야 저장된다.
+ * 그 레거시 저장을 막지 않기 위한 판정이다.
+ */
+export function isScreenStoryUsed(rows: ScreenStoryRow[]): boolean {
+  return keptScreenStoryRows(rows).some((r) => r.title.trim() || r.description.trim());
+}
+
+/**
+ * 제목이 비어 있는 첫 행의 index. story 미사용이면 -1 (경고하지 않는다).
+ * UI 경고와 서버 차단이 같은 기준을 쓰도록 여기서 한 번만 정의한다.
+ */
+export function firstMissingTitleIndex(rows: ScreenStoryRow[]): number {
+  if (!isScreenStoryUsed(rows)) return -1;
+  return keptScreenStoryRows(rows).findIndex((r) => !r.title.trim());
+}
+
+/**
+ * 편집기 상태 → 폼이 보낼 두 hidden 값.
+ *
+ * story 미사용이면 `stories` 는 빈 문자열이다. 서버는 이걸 "story 미사용" 으로 받아
+ * screenshots 만 저장하고, 공개페이지는 기존 ScreenshotGallery 를 유지한다.
+ */
+export function serializeScreenStoryRows(rows: ScreenStoryRow[]): {
+  images: string;
+  stories: string;
+} {
+  const kept = keptScreenStoryRows(rows);
+  return {
+    images: kept.map((r) => r.image.trim()).join(String.fromCharCode(10)),
+    stories: isScreenStoryUsed(rows)
+      ? JSON.stringify(kept.map((r) => ({ title: r.title, description: r.description })))
+      : "",
+  };
+}
+
 /* ── 관리자 저장 검증 ──────────────────────────────────────────── */
 
 export type ScreenStoriesParse =

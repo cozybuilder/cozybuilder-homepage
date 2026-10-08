@@ -2,7 +2,12 @@
 
 import { useMemo, useRef, useState } from "react";
 import { uploadImage } from "@/components/admin/uploadImage";
-import type { ScreenStory } from "@/lib/program-screen-story";
+import {
+  firstMissingTitleIndex,
+  serializeScreenStoryRows,
+  type ScreenStory,
+  type ScreenStoryRow,
+} from "@/lib/program-screen-story";
 
 // 실제 화면 편집기 — 이미지 · 제목 · 설명 · 순서를 한 행으로 묶어 편집한다.
 // 설계: docs/platform/PROGRAM_OPERATING_MODEL.md §11
@@ -20,8 +25,6 @@ const DESC_MAX = 300;
 
 const INPUT =
   "w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-foreground placeholder:text-white/40 outline-none transition-colors hover:bg-white/10 focus:border-violet-400/40";
-
-type Row = { image: string; title: string; description: string };
 
 function IconButton({
   onClick,
@@ -67,7 +70,7 @@ export default function ProgramScreenStoryFields({
   initialImages?: string[];
   initialStories?: ScreenStory[];
 }) {
-  const [rows, setRows] = useState<Row[]>(() =>
+  const [rows, setRows] = useState<ScreenStoryRow[]>(() =>
     initialImages.map((image, i) => ({
       image,
       title: initialStories[i]?.title ?? "",
@@ -84,7 +87,7 @@ export default function ProgramScreenStoryFields({
   const replaceRef = useRef<HTMLInputElement>(null);
   const replaceAt = useRef<number | null>(null);
 
-  const setAt = (i: number, patch: Partial<Row>) =>
+  const setAt = (i: number, patch: Partial<ScreenStoryRow>) =>
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
 
   const removeAt = (i: number) => setRows((prev) => prev.filter((_, idx) => idx !== i));
@@ -107,7 +110,7 @@ export default function ProgramScreenStoryFields({
     setErr(null);
     try {
       // 선택 순서대로 행을 추가한다. 제목·설명은 비워 두고 사용자가 채운다.
-      const added: Row[] = [];
+      const added: ScreenStoryRow[] = [];
       for (const f of files) {
         added.push({ image: await uploadImage(f, folder, "thumb"), title: "", description: "" });
       }
@@ -147,23 +150,16 @@ export default function ProgramScreenStoryFields({
     setManual("");
   };
 
-  // 이미지가 없는 행은 저장 대상에서 제외한다 — 두 hidden 값이 항상 같은 길이가 되도록.
-  const kept = useMemo(() => rows.filter((r) => r.image.trim()), [rows]);
-  const serializedImages = useMemo(() => kept.map((r) => r.image.trim()).join("\n"), [kept]);
-  const serializedStories = useMemo(
-    () =>
-      kept.length
-        ? JSON.stringify(kept.map((r) => ({ title: r.title, description: r.description })))
-        : "",
-    [kept]
-  );
-
-  const missingTitle = kept.findIndex((r) => !r.title.trim());
+  // 직렬화·사용 판정은 lib/program-screen-story 가 소유한다(서버 검증과 같은 기준을 쓰기 위해).
+  // 제목·설명이 전부 비어 있으면 story 미사용 → stories 는 빈 문자열이 되고,
+  // 기존 screenshots 만 쓰던 프로그램은 제목을 채우지 않아도 그대로 저장된다.
+  const serialized = useMemo(() => serializeScreenStoryRows(rows), [rows]);
+  const missingTitle = useMemo(() => firstMissingTitleIndex(rows), [rows]);
 
   return (
     <div className="space-y-3">
-      <input type="hidden" name={imagesName} value={serializedImages} />
-      <input type="hidden" name={storiesName} value={serializedStories} />
+      <input type="hidden" name={imagesName} value={serialized.images} />
+      <input type="hidden" name={storiesName} value={serialized.stories} />
       <input
         ref={addRef}
         type="file"

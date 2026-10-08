@@ -7,9 +7,13 @@ import assert from "node:assert/strict";
 import {
   COZYRENT_LEGACY_SCREEN_STORIES,
   COZYRENT_LEGACY_SLUG,
+  firstMissingTitleIndex,
+  isScreenStoryUsed,
   parseScreenStoriesField,
   resolveScreenStories,
+  serializeScreenStoryRows,
   type ScreenStory,
+  type ScreenStoryRow,
 } from "../lib/program-screen-story.ts";
 
 const img = (n: number) => Array.from({ length: n }, (_, i) => `/image/s${i}.jpg`);
@@ -146,4 +150,104 @@ test("저장 후 공개 판정으로 이어진다: 8개 저장 → 8 step story 
     resolved?.map((s) => s.title),
     story(8).map((s) => s.title)
   );
+});
+
+/* ── 레거시 저장 회귀 (검수 지적) ─────────────────────────────── */
+// 기존에 screenshots 만 쓰던 프로그램이 관리자에 들어오면 이미지 수만큼 행이 생긴다.
+// 이걸 "story 사용 중" 으로 보면 다른 필드 하나 고치려다 제목을 전부 입력해야 저장된다.
+
+const rowsOf = (n: number, titles: string[] = [], descs: string[] = []): ScreenStoryRow[] =>
+  Array.from({ length: n }, (_, i) => ({
+    image: `/image/g${i}.jpg`,
+    title: titles[i] ?? "",
+    description: descs[i] ?? "",
+  }));
+
+test("회귀1: 이미지 5장 + 제목·설명 전부 비어 있으면 story 미사용 → 저장 허용", () => {
+  const rows = rowsOf(5);
+  assert.equal(isScreenStoryUsed(rows), false);
+
+  const out = serializeScreenStoryRows(rows);
+  assert.equal(out.stories, "", "hidden screen_stories 는 빈 문자열이어야 한다");
+  assert.equal(out.images.split("\n").length, 5, "이미지는 그대로 저장된다");
+
+  // 서버도 통과해야 한다 — 기존 ScreenshotGallery 프로그램이 막히지 않는다.
+  const r = parseScreenStoriesField(out.stories, 5);
+  assert.equal(r.ok, true);
+  assert.deepEqual(r.ok && r.stories, []);
+
+  // 경고도 뜨지 않는다.
+  assert.equal(firstMissingTitleIndex(rows), -1);
+});
+
+test("회귀2: 첫 행에 제목만 넣으면 story 사용 → 나머지 빈 제목 때문에 저장 차단", () => {
+  const rows = rowsOf(5, ["홈"]);
+  assert.equal(isScreenStoryUsed(rows), true);
+  assert.equal(firstMissingTitleIndex(rows), 1, "2번째 행부터 제목이 없다");
+
+  const out = serializeScreenStoryRows(rows);
+  assert.notEqual(out.stories, "");
+  const r = parseScreenStoriesField(out.stories, 5);
+  assert.equal(r.ok, false);
+  assert.equal(r.ok ? "" : r.error, "실제 화면 2번의 제목을 입력해주세요.");
+});
+
+test("회귀2-b: 설명만 입력해도 story 사용으로 본다", () => {
+  const rows = rowsOf(3, [], ["설명만 있음"]);
+  assert.equal(isScreenStoryUsed(rows), true);
+  assert.equal(firstMissingTitleIndex(rows), 0);
+});
+
+test("회귀3: 이미지 5장 + 제목 5개 → 저장 PASS", () => {
+  const rows = rowsOf(5, ["a", "b", "c", "d", "e"]);
+  const out = serializeScreenStoryRows(rows);
+  const r = parseScreenStoriesField(out.stories, out.images.split("\n").length);
+  assert.equal(r.ok, true);
+  assert.equal(r.ok && r.stories.length, 5);
+  assert.equal(firstMissingTitleIndex(rows), -1);
+});
+
+test("회귀4: 코지임대 legacy fallback 6개는 story 사용 상태로 그대로 저장된다", () => {
+  const rows: ScreenStoryRow[] = COZYRENT_LEGACY_SCREEN_STORIES.map((s, i) => ({
+    image: `/image/landingpage/cozyrent/${i}.jpg`,
+    title: s.title,
+    description: s.description,
+  }));
+  assert.equal(isScreenStoryUsed(rows), true, "fallback 이 채워져 오므로 사용 상태다");
+  assert.equal(firstMissingTitleIndex(rows), -1);
+
+  const out = serializeScreenStoryRows(rows);
+  const r = parseScreenStoriesField(out.stories, 6);
+  assert.equal(r.ok, true);
+  assert.equal(r.ok && r.stories.length, 6);
+  assert.equal(r.ok && r.stories[0].title, "홈 화면");
+  assert.equal(r.ok && r.stories[5].title, "지출 관리");
+});
+
+test("회귀5: 이미지만 바꾼 기존 프로그램은 제목 입력을 강요받지 않는다", () => {
+  const before = rowsOf(3);
+  const after = [...before, { image: "/image/new.jpg", title: "", description: "" }];
+  const out = serializeScreenStoryRows(after);
+  assert.equal(out.stories, "");
+  assert.equal(out.images.split("\n").length, 4);
+  assert.equal(parseScreenStoriesField(out.stories, 4).ok, true);
+});
+
+test("이미지가 없는 행은 양쪽 직렬화에서 함께 제외된다", () => {
+  const rows: ScreenStoryRow[] = [
+    { image: "/a.jpg", title: "A", description: "" },
+    { image: "   ", title: "버려질 제목", description: "버려질 설명" },
+    { image: "/b.jpg", title: "B", description: "" },
+  ];
+  const out = serializeScreenStoryRows(rows);
+  assert.deepEqual(out.images.split("\n"), ["/a.jpg", "/b.jpg"]);
+  assert.deepEqual(JSON.parse(out.stories).map((s: ScreenStory) => s.title), ["A", "B"]);
+  assert.equal(parseScreenStoriesField(out.stories, 2).ok, true);
+});
+
+test("행이 하나도 없으면 두 값 모두 비어 있다", () => {
+  const out = serializeScreenStoryRows([]);
+  assert.equal(out.images, "");
+  assert.equal(out.stories, "");
+  assert.equal(parseScreenStoriesField(out.stories, 0).ok, true);
 });
