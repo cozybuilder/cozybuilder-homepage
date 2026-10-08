@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/admin";
 import { CACHE_TAGS } from "@/lib/content";
 import { canonicalYoutubeUrl, parseYoutubeVideoId } from "@/lib/youtube";
 import { normalizeProgramLandingContent, parseProgramLandingContent } from "@/lib/program-landing";
-import { parseScreenStoriesField } from "@/lib/program-screen-story";
+import { MAX_SCREEN_STORIES, parseScreenStoriesField } from "@/lib/program-screen-story";
 
 function lines(v: FormDataEntryValue | null): string[] {
   return String(v ?? "")
@@ -159,6 +159,13 @@ export async function saveProgram(
     return {
       error:
         "YouTube 영상 URL 형식을 확인해주세요. youtube.com/watch?v=... · youtu.be/... · youtube.com/shorts/... 만 사용할 수 있습니다.",
+    };
+  }
+
+  // UI 를 우회해 더 많이 보내도 서버에서 막는다(정규화가 조용히 잘라내 1:1 이 깨지는 걸 방지).
+  if (screenshots.length > MAX_SCREEN_STORIES) {
+    return {
+      error: `실제 화면은 최대 ${MAX_SCREEN_STORIES}개까지 등록할 수 있습니다. (현재 ${screenshots.length}개)`,
     };
   }
 

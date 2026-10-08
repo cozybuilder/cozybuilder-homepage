@@ -213,36 +213,62 @@ HERO → 문제 공감 → 해결·핵심 가치 → 실제 화면 → 추천 �
 | 소유 | 내용 |
 |---|---|
 | `programs.screenshots` | 실제 화면 이미지 URL 배열 **+ 표시 순서** |
-| `programs.landing_content.screenStories` | 같은 순서의 `{ title, description }` |
+| `programs.landing_content.screenStories` | 같은 순서의 `{ title, description, visible? }` |
 
 - 두 배열은 **표시 순서로 1:1 대응**한다 — `screenshots[i]` ↔ `screenStories[i]`.
+  노출을 끈 화면도 저장 배열에서 빼지 않는다(빼면 다시 켤 때 짝이 깨진다).
 - 이미지 URL을 `screenStories` 안에 **중복 저장하지 않는다.**
+- **최대 20개**(`MAX_SCREEN_STORIES`). 상한은 `lib/program-screen-story.ts`가 단독 소유하고
+  관리자 UI·서버 저장·정규화가 같은 값을 쓴다.
 - `landing_content`의 `version`은 **1 그대로**다. `screenStories`는 optional 이라 기존 데이터가 그대로 읽힌다.
 - 짝짓기·표시 판정·관리자 저장 검증의 SSOT는 `lib/program-screen-story.ts`다.
 
 ### 관리자 입력
 
-- `/admin/programs/[id]`의 `실제 화면` 섹션에서 **하나의 행**으로 편집한다 — 이미지·제목·설명·순서.
-- 순서 이동(↑/↓)은 세 값이 **한 행 단위로 같이** 움직인다.
+- `/admin/programs/[id]`의 `실제 화면` 섹션에서 **하나의 행**으로 편집한다 —
+  노출·이미지·제목·설명·순서.
+- 순서 이동(↑/↓)은 네 값이 **한 행 단위로 같이** 움직인다.
+- 행마다 `노출` 체크박스가 있다. **체크 해제는 삭제가 아니다** — 이미지·제목·설명은
+  그대로 저장되고 공개페이지에서만 숨는다. 다시 체크하면 원래 자리로 돌아온다.
+- 현재 개수를 `8 / 20` 으로 표시하고, 20개에 도달하면 추가를 막는다.
+  여러 장을 한 번에 올릴 때 남은 자리보다 많이 고르면 **업로드를 시작하기 전에** 막는다
+  (일부만 Storage 에 올라가는 일이 없도록).
 - 제출은 두 hidden 으로 나뉜다: `screenshots`(URL 줄바꿈) · `screen_stories`(제목/설명 JSON).
 - 이미지가 없는 행은 저장 대상에서 제외한다.
 
 ### 저장 규칙 — 조용한 불일치 금지
 
 - `screen_stories`가 비어 있으면 허용한다(기존 프로그램 호환 · 공개는 기존 gallery).
+  이미지만 있고 제목·설명이 전부 비어 있으면 **story 미사용**으로 본다. 노출 체크박스가
+  기본 체크로 보인다는 이유만으로 사용 상태가 되지는 않는다.
 - 사용한다면 `screenshots.length === screenStories.length` 이어야 하고, 각 행에 **제목이 필수**다.
+- 이미지·설명 모두 **20개를 넘으면 저장하지 않는다.** UI 를 우회한 FormData 도 서버에서 막는다.
 - 개수가 어긋나거나 제목이 빠지면 **조용히 저장하지 않고** 몇 번째가 문제인지 오류로 알린다.
 - 최종 `landing_content`는 기존 값과 검증된 `screenStories`를 합친 뒤 `normalizeProgramLandingContent()`
   신뢰 경계를 다시 통과시킨다. 클라이언트 JSON을 그대로 저장하지 않는다.
 - 두 편집기(`ProgramLandingFields` · `ProgramScreenStoryFields`)가 같은 `landing_content`의 서로 다른
   부분을 소유하므로, 한쪽만 수정해도 다른 쪽이 유실되지 않아야 한다.
 
+### 노출 선택 — `visible`
+
+- `screenStories[i].visible` 은 **optional** 이다. 값이 없으면 **노출(true)** 로 본다.
+  기존에 저장된 데이터에는 이 값이 없으므로, 배포만으로 화면이 사라지지 않는다.
+- 저장은 `visible === false` 만 남긴다(true·누락은 기본값이라 적지 않는다).
+- 공개는 **이미지와 story 를 짝으로 묶은 뒤** `visible !== false` 인 짝만 거른다.
+  저장 배열에서 거르지 않는다 — 거르면 index 1:1 이 깨진다.
+- 공개 번호는 관리자 번호를 따르지 않고 **실제 노출되는 순서로 01부터 다시 매긴다.**
+  스크롤 길이도 노출된 개수만으로 계산한다.
+
 ### 공개 표시 규칙
 
-1. 이미지가 있고 `screenStories`가 **1:1로 완전**하면 → `ProgramScreenStory`
+`lib/program-screen-story.ts`의 resolver 가 세 상태를 구분한다.
+
+1. **story 사용 + 노출 1개 이상** → `ProgramScreenStory`
    (데스크톱: sticky 무대 + 상·중·하 3단 텍스트 레일 + 세로 기기 프레임 / 모바일: 순차형)
-2. 아직 정식 데이터가 없는 레거시 상태 → `lib/program-screen-story.ts`의 fallback 문구로 같은 UI
-3. 그 외 → 기존 `ScreenshotGallery`
+   - 아직 정식 데이터가 없는 레거시 상태는 fallback 문구로 같은 UI 를 쓴다(전부 노출).
+2. **story 사용 + 노출 0개** → `실제 화면` **섹션 자체를 숨긴다.**
+   체크를 모두 해제한 이미지를 기존 gallery 로 다시 보여주지 않는다.
+3. **story 미사용** → 기존 `ScreenshotGallery`
 
 - 레거시 fallback은 **UI 초기값**일 뿐이다. 페이지를 여는 것만으로 DB에 쓰지 않는다.
   관리자에서 저장하면 저장된 값이 항상 fallback보다 우선한다.

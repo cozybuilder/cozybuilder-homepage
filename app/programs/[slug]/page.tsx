@@ -14,7 +14,7 @@ import BackButton from "@/components/BackButton";
 import ProgramAction from "@/components/ProgramAction";
 import ScreenshotGallery from "@/components/ScreenshotGallery";
 import ProgramScreenStory from "@/components/ProgramScreenStory";
-import { resolveScreenStories } from "@/lib/program-screen-story";
+import { resolveScreenStoryItems } from "@/lib/program-screen-story";
 import DownloadButton from "@/components/DownloadButton";
 import { DEFAULT_PREREG_CTA_LABEL, type Program } from "@/lib/site";
 import { parseYoutubeVideoId, youtubeEmbedUrl } from "@/lib/youtube";
@@ -341,9 +341,9 @@ export default async function ProgramDetailPage({
   const benefits = L?.benefits ?? [];
   const features = program.features ?? [];
   const screenshots = program.screenshots ?? [];
-  // 제목·설명이 이미지와 1:1 로 갖춰졌을 때만 story UI 를 쓴다.
-  // 아직 등록하지 않은 프로그램은 null 이 되어 기존 ScreenshotGallery 그대로다.
-  const screenStories = resolveScreenStories({
+  // 세 갈래다: story(노출 1개 이상) · hidden(전부 체크 해제) · gallery(story 미사용).
+  // 노출 필터는 이미지와 문구를 짝지은 뒤에 적용된다(저장 배열은 1:1 그대로).
+  const screen = resolveScreenStoryItems({
     slug: program.slug,
     images: screenshots,
     stories: L?.screenStories,
@@ -465,26 +465,27 @@ export default async function ProgramDetailPage({
       )}
 
       {/* ── 실제 화면 (0장이면 섹션 자체 숨김) ── */}
-      {screenshots.length > 0 &&
-        (screenStories ? (
-          // 제목·설명이 갖춰진 경우: 세로 캡처를 원본 비율로 보여주는 스크롤 스토리(폭을 넓게 쓴다)
-          <section className="mx-auto mt-20 max-w-5xl md:mt-28">
-            <h2 className="break-keep text-2xl font-semibold tracking-tight sm:text-3xl">
-              실제 화면
-            </h2>
-            <div className="mt-10">
-              <ProgramScreenStory
-                images={screenshots}
-                stories={screenStories}
-                alt={program.name}
-              />
-            </div>
-          </section>
-        ) : (
-          <Band title="실제 화면">
-            <ScreenshotGallery images={screenshots} alt={program.name} />
-          </Band>
-        ))}
+      {screenshots.length > 0 && screen.mode === "story" && (
+        // 노출로 둔 화면만: 세로 캡처를 원본 비율로 보여주는 스크롤 스토리(폭을 넓게 쓴다)
+        <section className="mx-auto mt-20 max-w-5xl md:mt-28">
+          <h2 className="break-keep text-2xl font-semibold tracking-tight sm:text-3xl">
+            실제 화면
+          </h2>
+          <div className="mt-10">
+            <ProgramScreenStory
+              images={screen.items.map((it) => it.image)}
+              stories={screen.items}
+              alt={program.name}
+            />
+          </div>
+        </section>
+      )}
+      {screenshots.length > 0 && screen.mode === "gallery" && (
+        <Band title="실제 화면">
+          <ScreenshotGallery images={screenshots} alt={program.name} />
+        </Band>
+      )}
+      {/* mode === "hidden": 전부 체크 해제 — 섹션 자체를 그리지 않는다. */}
 
       {/* ── 추천 대상 ── */}
       {L?.audiences?.length ? (

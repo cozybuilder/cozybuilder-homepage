@@ -9,12 +9,15 @@ import {
   COZYRENT_LEGACY_SLUG,
   firstMissingTitleIndex,
   isScreenStoryUsed,
+  MAX_SCREEN_STORIES,
   parseScreenStoriesField,
   resolveScreenStories,
+  resolveScreenStoryItems,
   serializeScreenStoryRows,
   type ScreenStory,
   type ScreenStoryRow,
 } from "../lib/program-screen-story.ts";
+import { normalizeProgramLandingContent } from "../lib/program-landing.ts";
 
 const img = (n: number) => Array.from({ length: n }, (_, i) => `/image/s${i}.jpg`);
 const story = (n: number): ScreenStory[] =>
@@ -250,4 +253,191 @@ test("행이 하나도 없으면 두 값 모두 비어 있다", () => {
   assert.equal(out.images, "");
   assert.equal(out.stories, "");
   assert.equal(parseScreenStoriesField(out.stories, 0).ok, true);
+});
+
+/* ── 노출(visible) + 20개 상한 ────────────────────────────────── */
+
+const vStory = (n: number, hidden: number[] = []): ScreenStory[] =>
+  Array.from({ length: n }, (_, i) => ({
+    title: `화면 ${i + 1}`,
+    description: `설명 ${i + 1}`,
+    ...(hidden.includes(i) ? { visible: false as const } : {}),
+  }));
+
+test("상한: MAX_SCREEN_STORIES 는 20 이다", () => {
+  assert.equal(MAX_SCREEN_STORIES, 20);
+});
+
+test("1. 이미지 20 + 설명 20 → 저장 PASS", () => {
+  const rows = Array.from({ length: 20 }, (_, i) => ({
+    image: `/i${i}.jpg`,
+    title: `화면 ${i + 1}`,
+    description: "",
+  }));
+  const out = serializeScreenStoryRows(rows);
+  const r = parseScreenStoriesField(out.stories, 20);
+  assert.equal(r.ok, true);
+  assert.equal(r.ok && r.stories.length, 20);
+  const norm = normalizeProgramLandingContent({ screenStories: r.ok ? r.stories : [] });
+  assert.equal(norm?.screenStories?.length, 20);
+});
+
+test("2. 21개는 서버에서 막는다 (조용히 20개로 깎지 않는다)", () => {
+  const r = parseScreenStoriesField(JSON.stringify(vStory(21)), 21);
+  assert.equal(r.ok, false);
+  assert.match(r.ok ? "" : r.error, /최대 20개/);
+  assert.equal(parseScreenStoriesField(JSON.stringify(vStory(20)), 21).ok, false);
+});
+
+test("3. visible 이 없는 기존 데이터는 전부 노출로 취급한다", () => {
+  const stories = vStory(5);
+  assert.ok(stories.every((s) => s.visible === undefined));
+  const r = resolveScreenStoryItems({ slug: "x", images: img(5), stories });
+  assert.equal(r.mode, "story");
+  assert.equal(r.mode === "story" && r.items.length, 5);
+});
+
+test("4. visible false 3개 / true 5개 → 공개는 5개만", () => {
+  const r = resolveScreenStoryItems({ slug: "x", images: img(8), stories: vStory(8, [1, 3, 6]) });
+  assert.equal(r.mode, "story");
+  assert.deepEqual(r.mode === "story" ? r.items.map((i) => i.title) : [], [
+    "화면 1",
+    "화면 3",
+    "화면 5",
+    "화면 6",
+    "화면 8",
+  ]);
+});
+
+test("5. 노출 결과는 원본 순서를 유지하고 이미지 짝이 정확하다", () => {
+  const r = resolveScreenStoryItems({ slug: "x", images: img(8), stories: vStory(8, [1, 3, 6]) });
+  assert.equal(r.mode, "story");
+  assert.deepEqual(r.mode === "story" ? r.items.map((i) => i.image) : [], [
+    "/image/s0.jpg",
+    "/image/s2.jpg",
+    "/image/s4.jpg",
+    "/image/s5.jpg",
+    "/image/s7.jpg",
+  ]);
+});
+
+test("6. 20개 중 10개만 체크 → 공개 10개", () => {
+  const hidden = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+  const r = resolveScreenStoryItems({ slug: "x", images: img(20), stories: vStory(20, hidden) });
+  assert.equal(r.mode, "story");
+  assert.equal(r.mode === "story" && r.items.length, 10);
+  assert.deepEqual(
+    r.mode === "story" ? r.items.map((i) => i.title) : [],
+    [1, 3, 5, 7, 9, 11, 13, 15, 17, 19].map((n) => `화면 ${n}`)
+  );
+});
+
+test("7. 정식 stories 8개가 모두 unchecked 면 섹션을 숨긴다 (gallery 로 떨어지지 않는다)", () => {
+  const r = resolveScreenStoryItems({
+    slug: "x",
+    images: img(8),
+    stories: vStory(8, [0, 1, 2, 3, 4, 5, 6, 7]),
+  });
+  assert.equal(r.mode, "hidden");
+});
+
+test("8. screenshots-only 레거시는 체크박스 기본값 때문에 story 로 전환되지 않는다", () => {
+  const rows: ScreenStoryRow[] = Array.from({ length: 5 }, (_, i) => ({
+    image: `/g${i}.jpg`,
+    title: "",
+    description: "",
+    visible: undefined,
+  }));
+  assert.equal(isScreenStoryUsed(rows), false);
+  assert.equal(serializeScreenStoryRows(rows).stories, "");
+  assert.equal(parseScreenStoriesField("", 5).ok, true);
+  assert.equal(resolveScreenStoryItems({ slug: "g", images: img(5), stories: [] }).mode, "gallery");
+});
+
+test("8-b. 레거시 행의 노출을 실제로 끄면 story 설정으로 본다", () => {
+  const rows: ScreenStoryRow[] = Array.from({ length: 3 }, (_, i) => ({
+    image: `/g${i}.jpg`,
+    title: "",
+    description: "",
+  }));
+  rows[1].visible = false;
+  assert.equal(isScreenStoryUsed(rows), true);
+  assert.equal(firstMissingTitleIndex(rows), 0, "제목이 없으니 저장 전에 알려준다");
+  rows[1].visible = undefined;
+  assert.equal(isScreenStoryUsed(rows), false);
+});
+
+test("9. 코지임대 fallback 6개는 전부 노출로 취급한다", () => {
+  const r = resolveScreenStoryItems({ slug: COZYRENT_LEGACY_SLUG, images: img(6), stories: [] });
+  assert.equal(r.mode, "story");
+  assert.equal(r.mode === "story" && r.items.length, 6);
+  assert.ok(COZYRENT_LEGACY_SCREEN_STORIES.every((s) => s.visible === undefined));
+});
+
+test("10. visible=false 행도 이미지·제목·설명이 보존되고 관리자에서 복원된다", () => {
+  const rows: ScreenStoryRow[] = [
+    { image: "/a.jpg", title: "A", description: "설명 A" },
+    { image: "/b.jpg", title: "B", description: "설명 B", visible: false },
+    { image: "/c.jpg", title: "C", description: "설명 C" },
+  ];
+  const out = serializeScreenStoryRows(rows);
+  assert.deepEqual(out.images.split(String.fromCharCode(10)), ["/a.jpg", "/b.jpg", "/c.jpg"]);
+  const parsed = parseScreenStoriesField(out.stories, 3);
+  assert.equal(parsed.ok, true);
+  const saved = normalizeProgramLandingContent({
+    screenStories: parsed.ok ? parsed.stories : [],
+  })?.screenStories;
+  assert.equal(saved?.length, 3);
+  assert.deepEqual(saved?.[1], { title: "B", description: "설명 B", visible: false });
+  assert.equal(saved?.[0].visible, undefined);
+  const r = resolveScreenStoryItems({
+    slug: "x",
+    images: ["/a.jpg", "/b.jpg", "/c.jpg"],
+    stories: saved,
+  });
+  assert.equal(r.mode === "story" && r.items.length, 2);
+});
+
+test("11. ↑↓ 이동은 image/title/description/visible 네 값을 한 행으로 옮긴다", () => {
+  const move = (rows: ScreenStoryRow[], i: number, dir: -1 | 1) => {
+    const j = i + dir;
+    const next = [...rows];
+    [next[i], next[j]] = [next[j], next[i]];
+    return next;
+  };
+  const rows: ScreenStoryRow[] = [
+    { image: "/a.jpg", title: "A", description: "da", visible: false },
+    { image: "/b.jpg", title: "B", description: "db" },
+  ];
+  const moved = move(rows, 0, 1);
+  assert.deepEqual(moved[1], { image: "/a.jpg", title: "A", description: "da", visible: false });
+  assert.deepEqual(moved[0], { image: "/b.jpg", title: "B", description: "db" });
+  const out = serializeScreenStoryRows(moved);
+  assert.deepEqual(out.images.split(String.fromCharCode(10)), ["/b.jpg", "/a.jpg"]);
+  assert.deepEqual(JSON.parse(out.stories), [
+    { title: "B", description: "db" },
+    { title: "A", description: "da", visible: false },
+  ]);
+});
+
+test("정규화: 21개를 넣어도 20개로 자른다(서버가 먼저 막지만 마지막 방어선)", () => {
+  const c = normalizeProgramLandingContent({ screenStories: vStory(21) });
+  assert.equal(c?.screenStories?.length, 20);
+});
+
+test("정규화: visible 은 false 만 보존하고 true/누락은 적지 않는다", () => {
+  const c = normalizeProgramLandingContent({
+    screenStories: [
+      { title: "a", description: "", visible: true },
+      { title: "b", description: "", visible: false },
+      { title: "c", description: "" },
+      { title: "d", description: "", visible: "no" },
+    ],
+  });
+  assert.deepEqual(c?.screenStories, [
+    { title: "a", description: "" },
+    { title: "b", description: "", visible: false },
+    { title: "c", description: "" },
+    { title: "d", description: "" },
+  ]);
 });
