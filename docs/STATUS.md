@@ -48,6 +48,9 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
 - 저장 소유: `programs.screenshots` = 이미지 URL/순서, `landing_content.screenStories` = 같은 순서의 제목/설명. 새 DB 컬럼·migration 없음.
 - screenStories를 쓰지 않는 기존 프로그램은 종전 `ScreenshotGallery`를 유지하며, 코지임대 기존 6장에는 승인된 legacy 설명 fallback을 적용한다.
 - 저장 서버는 이미지/설명 개수 1:1 및 제목 필수를 재검증하고, 기존 screenshot-only 프로그램 저장은 강제 전환하지 않는다.
+- 실제 화면은 최대 **20개**까지 등록 가능하며 UI와 서버가 함께 20개 상한을 검증한다.
+- 각 화면은 관리자에서 `노출` 체크로 공개 여부를 선택한다. 체크 해제는 삭제가 아니며 데이터는 보존되고 공개 렌더에서만 제외된다.
+- 모든 화면을 비노출하면 `실제 화면` 섹션 전체를 숨기며 기존 gallery로 되살리지 않는다.
 
 ### 공용 랜딩페이지 플랫폼 (2026-07-17)
 - 공용 구조 SSOT: [docs/landing/LANDINGPAGE_PLATFORM.md](landing/LANDINGPAGE_PLATFORM.md)
