@@ -7,12 +7,13 @@ import { siteConfig } from "@/lib/site";
 // 앱 내부 회원탈퇴(설정 > 데이터 및 계정 삭제 > 회원탈퇴)가 1차 경로이며, 앱을 쓸 수 없는 경우의 검증된 요청 절차를 함께 안내한다.
 // 경로 문구는 앱 SettingsPage의 실제 섹션 제목과 일치해야 한다(cozyrent B-02).
 // 2026-09-22 개정: 서버 백업은 이용 선택이 아니라 로그인 계정에 자동으로 저장되는 것(D-159B)이므로 삭제 범위 문구를 실제 동작에 맞췄다.
+// 2026-10-09 개정(코지 승인 2026-10-09): 앱이 휴대폰 연락처에 저장한 항목은 계정 삭제 후에도 남는다는 안내를 추가했다(cozyrent D-195 §2 · VC76).
 export const metadata: Metadata = {
   title: "코지임대 계정 삭제",
   description: "코지임대(CozyRent) 계정 삭제 방법과 처리되는 데이터 안내.",
 };
 
-const EFFECTIVE_DATE = "2026년 9월 22일";
+const EFFECTIVE_DATE = "2026년 10월 9일";
 const PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions";
 
 // 앱 없이 요청할 때 쓰는 메일 템플릿 — 민감정보(비밀번호·OTP·구매토큰·계약 데이터) 자동 첨부 없음.
@@ -78,6 +79,7 @@ export default function CozyrentDeleteAccountPage() {
             <li><strong className="text-foreground">삭제:</strong> 서버에 저장된 계정 식별 정보, 로그인·세션 정보, 구독 이용권한(entitlement) 정보, 기기 등록 정보, 그리고 로그인 중 서버에 자동 저장된 백업 데이터(임대관리 데이터 스냅샷과 사진).</li>
             <li><strong className="text-foreground">식별정보 제거 후 보존:</strong> 결제·구독 원장 등 회계·환불 대조에 필요한 최소 기록과 구매 토큰 등 스토어 구독 식별값은 계정 연결(식별자)을 제거한 형태로 남습니다.</li>
             <li><strong className="text-foreground">기기 내 임대관리 데이터:</strong> 앱에서 유지/삭제를 직접 선택합니다(웹 요청의 경우 기기 데이터는 앱에서 직접 삭제).</li>
+            <li><strong className="text-foreground">휴대폰 연락처(Android):</strong> 앱이 휴대폰 연락처에 저장한 임차인·공동거주자·거래처 항목은 계정 삭제 후에도 휴대폰에 남으며, 필요하면 휴대폰의 연락처 앱에서 직접 삭제할 수 있습니다.</li>
             <li>
               <strong className="text-foreground">보존될 수 있는 기록:</strong> 결제·거래·환불 관련 기록 등 관련 법령상 보존이 필요한 최소 정보는, 개인 식별을 최소화한 형태로 법정 보존기간 동안 보관될 수 있습니다.
               또한 무료체험 재지급 방지를 위한 최소한의 가명처리된 근거(원문 아님·재식별 가능성이 있어 개인정보에 해당할 수 있음)가 보존될 수 있습니다.
