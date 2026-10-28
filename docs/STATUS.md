@@ -136,25 +136,18 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   iPhone FAQ 를 cozyrent STATUS 기준으로 정합(Android 정식 출시 우선·iOS 일정 확정 후 안내).
   **DB·API·폼 필드·migration·기존 신청 데이터 변경 0.**
 
-- 사용자 매뉴얼 진입 (2026-10-28 · 브랜치 `feat/cozyrent-manual-vc79` · **Preview 검수 대기 · main 미병합**):
-  `/landingpage/cozyrent`에 「사용자 매뉴얼 보기 / PDF 다운로드」 카드(`LandingConfig.manual` · 렌더러 `#manual`) 추가.
-  산출물 `public/manual/cozyrent/`(웹 보기 HTML + WebP 359장 + PDF 26.4MB) = cozyrent `docs/manual` `eb6b5571`(Play VC79) 생성본.
-  `tests/landing-manual.test.mts`(경로 존재·PDF 크기 표기 = 실제 크기·그림 링크·외부 자원 0·내부 표식 0).
-  **코지 후속 결정(2026-10-28 · Preview 구현 대기)**: 광고용 `/landingpage/cozyrent`는 구조·내용을 유지하되
-  **사전신청 종료**(상단·히어로·하단·모바일 CTA 비활성, 입력 폼 중지, API 신규 접수 거절)로 정리한다.
-  전체 랜딩을 Google Play 출시 안내로 전환한다는 이전 §15 지시는 **§16으로 대체**했다.
-  이미 정리된 **코지임대 프로그램 상세**의 Play/설명은 그대로 두고, 상단 「← 프로그램 목록」 행 오른쪽에
-  **웹 매뉴얼 「사용 설명서 보기」 보조 버튼 1개만** 둔다(Play 아래 카드 제거 · [PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
-  **PDF 공개 다운로드 금지**: 모든 공개 CTA·다운로드 링크를 제거하고 `public/manual/cozyrent/*.pdf` 정적 파일도
-  배포에서 제외한다(직접 PDF URL 404 확인). 기존 PDF 2종은 로컬 내부 보관. 모바일 전용 스크린샷 간편 안내서는 후속.
-  기존 신청자·30일 혜택·운영 DB 보존. 운영 DB 미변경.
-  **구현(클로 2026-10-28 · 이 브랜치)**: `public/manual/cozyrent/*.pdf` 삭제·PDF 링크 0 · 웹 사본 표지 「검토용」 행 제거(cozyrent `48f9f99c`) ·
-  랜딩 `closed` 설정(상단·히어로·마지막·모바일 CTA = 클릭 불가 「사전신청 종료」 · 폼 자리 종료 안내 · 최소 문구 정리) ·
-  `POST /api/cozyrent/preregister` 본문 미열람 410 `closed` · 프로그램 상세 상단 뒤로가기 행 오른쪽 책 아이콘 + 「사용 설명서 보기」 버튼 · Play 버튼 → 기존 안내문 묶음 유지 · Play 아래 카드 0
-  (`lib/program-manual.ts` — Play 패키지 `com.cozybuilder.cozyrent`·released 모바일만 · 「사용 설명서 보기」 1개 · 새 탭).
-  테스트 66/66 · eslint 0 · `next build` · 로컬 `next start` 360/390/1366 종단(웹 매뉴얼 200 · PDF 404 · API 410 · 다른 프로그램 버튼 0).
-  **최종 마감(코비 #74 최종 · 코지 Preview 실화면 확인·본서버 반영 승인 2026-10-28)**: 상단 버튼 대비 강조(강조색 옅은 배경 · ring-1 외곽선 ·
-  굵은 글자 · 강조색 아이콘 · hover/키보드 focus 링 — 크기·위치·문구·링크 그대로) 후 `main` 병합 → Vercel 프로덕션 배포.
+- **코지임대 웹 매뉴얼·사전신청 종료 (Issue #74 · 2026-10-28 운영 배포 완료)**: `main` `baecca8` → Vercel Production · https://cozybuilder.co.kr
+  - **웹 매뉴얼만 공개**: `/manual/cozyrent/index.html` + `img/*.webp`. 원본은 cozyrent `docs/manual`(브랜치 `docs/manual-vc79-20261028`)이며, 생성기 `--web`으로 만든 사본만 둔다.
+    **공개 PDF 없음**: `public/manual/cozyrent/*.pdf` 0 · 직접 URL 404 · PDF/다운로드 링크 0. 내부 PDF 2종은 cozyrent 쪽에 보관한다.
+  - **프로그램 상세** `/programs/program-mr95apa5`: 상단 「← 프로그램 목록」 행 오른쪽에 책 아이콘 + 「사용 설명서 보기」 보조 버튼 1개(강조색 · 새 탭).
+    Google Play 버튼과 7일 안내문은 그대로이고, Play 아래 카드는 없으며, 다른 프로그램에는 0개다([PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
+  - **광고 랜딩** `/landingpage/cozyrent`: 사전신청 종료 상태다.
+    - 상단·히어로·마지막·모바일 CTA = 클릭 불가 「사전신청 종료」 · 폼 대신 종료 안내 · `POST /api/cozyrent/preregister` 410 `closed`(본문 미열람).
+    - 기존 신청자·30일 혜택·운영 DB는 보존한다. 매뉴얼은 웹 보기 1개다([COZYRENT_PRELAUNCH.md §16](landing/COZYRENT_PRELAUNCH.md)).
+  - 결정 경과(PDF 공개안 → 웹 전용 · 카드 → 상단 버튼 → 강조)는 위 두 문서가 소유한다. 검증 기록은 cozyrent `docs/qa/MANUAL_VC79_HOMEPAGE_2026-10-28.md`가 소유한다.
+  - **임시 안내(VC80 Play 배포 전까지)**: Play 운영 앱 VC79에서는 앱 안 회원탈퇴가 끝나지 않을 수 있다(cozyrent Issue #79 · VC80에서 교정).
+    - 웹 매뉴얼 §18.5와 `/cozyrent/delete-account`가 같은 문구로, 「회원탈퇴를 처리하지 못했어요」가 나오면 이메일 삭제 요청을 쓰도록 안내한다.
+    - VC80 배포 뒤 두 곳을 함께 정리한다. 제거 조건은 cozyrent `docs/manual/README.md` 「임시 안내」에 있다.
 
 ### Platform Analytics v1
 - `analytics_events`
