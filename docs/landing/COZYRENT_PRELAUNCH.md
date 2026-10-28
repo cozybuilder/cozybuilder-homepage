@@ -115,11 +115,11 @@
 - CSV 내보내기: 서버 액션에서 관리자 검증 후 현재 필터 결과만(최대 5,000건) 생성. 파일명 `cozyrent-prelaunch-YYYYMMDD.csv`. `contact_normalized` 제외. 다운로드 전 개인정보 경고 확인.
 - 1차 범위 제외(후속 설계): 수정·삭제·포인트 지급·CozyRent 계정 연결·문자/이메일 발송·메모/상태 관리·일괄 처리.
 
-## 14. 사용자 매뉴얼 진입 (2026-10-28 · Preview 검수 대기)
+## 14. 사용자 매뉴얼 진입 (2026-10-28 · Preview 검수 대기 · §16 웹 전용으로 갱신)
 
-- 위치: 주요 기능 섹션 아래 `#manual` 카드 — 「사용자 매뉴얼 보기」(새 탭 `/manual/cozyrent/index.html`) · 「PDF 다운로드 (26.4MB)」(`/manual/cozyrent/cozyrent-user-manual.pdf`).
-- 산출물 원본: `cozybuilder/cozyrent` `docs/manual`(브랜치 `docs/manual-vc79-20261028` · 커밋 `eb6b5571` · Play VC79 기준). 홈페이지에는 확정 산출물만 둔다(웹 보기 HTML 1개 + WebP 그림 359장 + 휴대폰 공유용 PDF). 원본 수정은 cozyrent에서 하고 다시 생성해 교체한다.
-- 매뉴얼 표지 상태는 「검토용·공개 전」이다. 프로덕션 공개(`main` 병합)는 코비 독립검수·코지 공개 승인 뒤에만 한다.
+- 위치: 주요 기능 섹션 아래 `#manual` 카드 — 「사용자 매뉴얼 보기」(새 탭 `/manual/cozyrent/index.html`) **하나만**. PDF 다운로드 버튼·공개 PDF 파일 없음(§16 · 직접 URL 404).
+- 산출물 원본: `cozybuilder/cozyrent` `docs/manual`(브랜치 `docs/manual-vc79-20261028` · 본문 `eb6b5571` · 웹 사본 생성기 `48f9f99c` · Play VC79 기준). 홈페이지에는 웹 사본만 둔다(HTML 1개 + WebP 그림 359장). 원본 수정은 cozyrent에서 하고 다시 생성해 교체한다.
+- 공개 웹 사본의 표지에는 「검토용·공개 전」 행이 없다(생성기 `--web`이 뺀다 · 내부 PDF 2종은 그대로 보관). 프로덕션 공개(`main` 병합)는 코비 독립검수·코지 공개 승인 뒤에만 한다.
 - 문구: 매뉴얼 카드는 출시 여부를 말하지 않는다(이 문서 §3 금지 표현 유지). 사전신청 히어로·FAQ의 「출시 전」 문구와 실제 Google Play 공개 상태의 차이는 별도 승인 대상이라 이번 변경에 넣지 않았다(STATUS 참고).
 
 ## 15. 출시 전환 후속 승인 — 코지 2026-10-28 (Preview 구현 단계)

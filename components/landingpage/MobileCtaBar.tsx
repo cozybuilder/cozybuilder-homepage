@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 
 // 모바일 하단 고정 CTA (공용). 신청 폼(#apply)이 화면에 보이면 자동으로 숨긴다.
-export default function MobileCtaBar({ label }: { label: string }) {
+// closed: 신청 접수 종료 — 클릭·포커스되지 않는 종료 표시만 보인다(COZYRENT_PRELAUNCH §16).
+export default function MobileCtaBar({ label, closed = false }: { label: string; closed?: boolean }) {
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
@@ -23,9 +24,21 @@ export default function MobileCtaBar({ label }: { label: string }) {
         hidden ? "translate-y-full" : "translate-y-0"
       }`}
     >
-      <a href="#apply" className="btn btn-accent min-h-[52px] w-full text-base font-semibold">
-        {label}
-      </a>
+      {closed ? (
+        <button
+          type="button"
+          disabled
+          aria-disabled="true"
+          data-cta-closed=""
+          className="btn min-h-[52px] w-full cursor-not-allowed border border-[--border-strong] bg-transparent text-base font-semibold text-[--muted-2]"
+        >
+          {label}
+        </button>
+      ) : (
+        <a href="#apply" className="btn btn-accent min-h-[52px] w-full text-base font-semibold">
+          {label}
+        </a>
+      )}
     </div>
   );
 }

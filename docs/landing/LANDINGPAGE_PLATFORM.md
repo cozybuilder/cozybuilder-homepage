@@ -54,9 +54,10 @@
 - 기존 `public/image/cozyrent/` 는 파일을 신규 경로로 이전하고 redirect 로 호환한다(§1).
 - 실앱 화면 미확보 슬롯은 설정에서 `null` — 렌더러가 세로형(9:19) 중립 placeholder 표시.
   **가짜 앱 UI 제작 금지.**
-- 사용자 매뉴얼(선택 `manual` 설정): `public/manual/[slug]/` — 웹 보기 `index.html` + 그림 `img/*.webp` + PDF.
+- 사용자 매뉴얼(선택 `manual` 설정): `public/manual/[slug]/` — 웹 보기 `index.html` + 그림 `img/*.webp`만(**PDF는 공개 폴더에 두지 않는다** · 코지 2026-10-28).
   원본은 각 제품 저장소가 소유하고 홈페이지는 **확정 산출물만** 둔다(직접 편집 금지 · 교체는 제품 저장소에서 다시 생성).
-  PDF 크기 표기는 실제 파일 크기와 같아야 한다(`tests/landing-manual.test.mts`).
+  `tests/landing-manual.test.mts`가 공개 폴더 PDF 0개·PDF 링크 0개·그림/내부 링크 정합·검토 표기 0을 강제한다.
+- 신청 접수 종료(선택 `closed` 설정): 상단·히어로·마지막·모바일 CTA를 클릭 불가 종료 표시로, 폼 자리를 종료 안내로 바꾼다. 서버 접수 차단은 제품별 API 라우트가 소유한다.
 
 ## 5. DB 정책
 

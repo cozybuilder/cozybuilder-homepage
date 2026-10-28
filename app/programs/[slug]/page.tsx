@@ -18,6 +18,7 @@ import { resolveScreenStoryItems } from "@/lib/program-screen-story";
 import DownloadButton from "@/components/DownloadButton";
 import { DEFAULT_PREREG_CTA_LABEL, type Program } from "@/lib/site";
 import { parseYoutubeVideoId, youtubeEmbedUrl } from "@/lib/youtube";
+import { programManualFor, type ProgramManualCard } from "@/lib/program-manual";
 
 // 구독 버튼이 현재 사용자 권한을 반영해야 하므로 동적 렌더(접근 판정은 매 요청).
 export const dynamic = "force-dynamic";
@@ -260,6 +261,32 @@ function ProgramPrimaryAction({
   return <ProgramAction slug={program.slug} appUrl={program.appUrl} />;
 }
 
+/**
+ * 사용 설명서 보조 카드 — Google Play 버튼 바로 아래(코지임대만 · PROGRAM_OPERATING_MODEL.md §10).
+ * 공개 행동은 웹 매뉴얼 「사용 설명서 보기」 하나(새 탭). PDF 다운로드·인쇄 버튼은 두지 않는다.
+ */
+function ProgramManualCardView({ manual }: { manual: ProgramManualCard }) {
+  return (
+    <div
+      data-program-manual=""
+      className="mx-auto mt-5 flex w-full max-w-md flex-col items-center gap-3 rounded-2xl border border-[--border] px-5 py-4 text-center sm:flex-row sm:text-left"
+    >
+      <div className="min-w-0 flex-1">
+        <p className="break-keep text-base font-semibold text-foreground">{manual.title}</p>
+        <p className="mt-1 break-keep text-sm leading-relaxed text-[--muted]">{manual.description}</p>
+      </div>
+      <a
+        href={manual.href}
+        target="_blank"
+        rel="noopener"
+        className="btn btn-ghost min-h-[44px] w-full shrink-0 px-5 text-sm font-semibold sm:w-auto"
+      >
+        {manual.label}
+      </a>
+    </div>
+  );
+}
+
 /** 무료 구독 안내 — 기존 문구·조건 그대로(히어로에서만 노출). */
 function WebSubscribeNote({ allowed }: { allowed: boolean }) {
   return (
@@ -349,6 +376,7 @@ export default async function ProgramDetailPage({
     stories: L?.screenStories,
   });
   const updates = program.updates ?? [];
+  const manual = programManualFor(program);
 
   return (
     <div className="container-page py-12">
@@ -402,6 +430,7 @@ export default async function ProgramDetailPage({
         <div className="mt-7 flex justify-center">
           <ProgramPrimaryAction ctx={ctx} variant="full" />
         </div>
+        {manual && <ProgramManualCardView manual={manual} />}
         {webApp && user && <WebSubscribeNote allowed={ctx.allowed} />}
         {L?.hero?.note && (
           <p className="mx-auto mt-3 max-w-md break-keep text-center text-sm text-[--muted-2]">
