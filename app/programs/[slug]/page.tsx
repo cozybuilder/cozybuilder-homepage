@@ -18,7 +18,7 @@ import { resolveScreenStoryItems } from "@/lib/program-screen-story";
 import DownloadButton from "@/components/DownloadButton";
 import { DEFAULT_PREREG_CTA_LABEL, type Program } from "@/lib/site";
 import { parseYoutubeVideoId, youtubeEmbedUrl } from "@/lib/youtube";
-import { programManualFor, type ProgramManualCard } from "@/lib/program-manual";
+import { programManualFor, type ProgramManualLink } from "@/lib/program-manual";
 
 // 구독 버튼이 현재 사용자 권한을 반영해야 하므로 동적 렌더(접근 판정은 매 요청).
 export const dynamic = "force-dynamic";
@@ -262,28 +262,36 @@ function ProgramPrimaryAction({
 }
 
 /**
- * 사용 설명서 보조 카드 — Google Play 버튼과 그 안내문 묶음 바로 다음(코지임대만 · PROGRAM_OPERATING_MODEL.md §10).
- * 공개 행동은 웹 매뉴얼 「사용 설명서 보기」 하나(새 탭). PDF 다운로드·인쇄 버튼은 두지 않는다.
+ * 사용 설명서 보조 버튼 — 상단 「← 프로그램 목록」 뒤로가기와 같은 행의 오른쪽(코지임대만 · PROGRAM_OPERATING_MODEL.md §10).
+ * 책 아이콘 + 「사용 설명서 보기」 하나(새 탭 웹 매뉴얼). 뒤로가기 버튼과 같은 높이·테두리의 작은 보조 버튼이다.
+ * PDF 다운로드·인쇄 버튼은 두지 않는다. Google Play 버튼 아래에는 더 이상 아무것도 붙이지 않는다(중복 노출 0).
  */
-function ProgramManualCardView({ manual }: { manual: ProgramManualCard }) {
+function ProgramManualButton({ manual }: { manual: ProgramManualLink }) {
   return (
-    <div
+    <a
+      href={manual.href}
+      target="_blank"
+      rel="noopener"
+      title={manual.title}
       data-program-manual=""
-      className="mx-auto mt-5 flex w-full max-w-md flex-col items-center gap-3 rounded-2xl border border-[--border] px-5 py-4 text-center sm:flex-row sm:text-left"
+      className="inline-flex h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-foreground transition-colors hover:border-white/20 hover:bg-white/10"
     >
-      <div className="min-w-0 flex-1">
-        <p className="break-keep text-base font-semibold text-foreground">{manual.title}</p>
-        <p className="mt-1 break-keep text-sm leading-relaxed text-[--muted]">{manual.description}</p>
-      </div>
-      <a
-        href={manual.href}
-        target="_blank"
-        rel="noopener"
-        className="btn btn-ghost min-h-[44px] w-full shrink-0 px-5 text-sm font-semibold sm:w-auto"
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
       >
-        {manual.label}
-      </a>
-    </div>
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+      {manual.label}
+    </a>
   );
 }
 
@@ -380,7 +388,15 @@ export default async function ProgramDetailPage({
 
   return (
     <div className="container-page py-12">
-      <BackButton href="/programs" label="프로그램 목록" />
+      {/* 사용 설명서는 뒤로가기와 같은 행 오른쪽(코비 #74 배치 후속). 대상이 아니면 종전 그대로 뒤로가기만 그린다. */}
+      {manual ? (
+        <div className="flex items-center justify-between gap-3">
+          <BackButton href="/programs" label="프로그램 목록" />
+          <ProgramManualButton manual={manual} />
+        </div>
+      ) : (
+        <BackButton href="/programs" label="프로그램 목록" />
+      )}
 
       {/* ── HERO: 제품명 → headline → subheadline → 미디어 → CTA → note ── */}
       <section className="mx-auto mt-8 max-w-3xl">
@@ -436,8 +452,6 @@ export default async function ProgramDetailPage({
             {L.hero.note}
           </p>
         )}
-        {/* 설치 버튼과 기존 안내문을 한 묶음으로 두고, 그 다음에 사용 설명서 카드(코비 #74 검수 후속). */}
-        {manual && <ProgramManualCardView manual={manual} />}
       </section>
 
       {/* ── 문제 공감 ── */}

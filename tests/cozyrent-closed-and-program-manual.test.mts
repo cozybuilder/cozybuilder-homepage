@@ -1,4 +1,4 @@
-// 코지임대 사전신청 종료(COZYRENT_PRELAUNCH §16) · 프로그램 상세 사용 설명서 카드(PROGRAM_OPERATING_MODEL §10).
+// 코지임대 사전신청 종료(COZYRENT_PRELAUNCH §16) · 프로그램 상세 사용 설명서 버튼(PROGRAM_OPERATING_MODEL §10).
 // 실행: npm test  (node 내장 테스트 러너 · 별도 의존성 없음)
 
 import { test } from "node:test";
@@ -43,19 +43,18 @@ test("종료 상태 렌더러는 모든 신청 CTA를 클릭 불가 표시로 �
   assert.match(r, /<MobileCtaBar label=\{closed \? closed\.label : config\.hero\.cta\} closed=\{Boolean\(closed\)\} \/>/);
 });
 
-test("사용 설명서 카드는 코지임대 Play 패키지에만 붙고 웹 보기 하나다", () => {
+test("사용 설명서 버튼은 코지임대 Play 패키지에만 붙고 웹 보기 하나다", () => {
   assert.equal(androidPackageOf(PLAY), "com.cozybuilder.cozyrent");
   const card = programManualFor({ type: "mobile", playStoreUrl: PLAY, deployStatus: "released" });
   assert.deepEqual(card, {
     title: "코지임대 사용 설명서",
-    description: "첫 건물 등록부터 입금·지출·수리·퇴실까지 화면으로 따라 해보세요.",
     label: "사용 설명서 보기",
     href: "/manual/cozyrent/index.html",
   });
   assert.ok(programManualFor({ type: "mobile", playStoreUrl: PLAY, deployStatus: null }));
 });
 
-test("다른 프로그램·Play 버튼이 없는 상태에는 카드가 없다", () => {
+test("다른 프로그램·Play 버튼이 없는 상태에는 버튼이 없다", () => {
   const other = "https://play.google.com/store/apps/details?id=com.example.gratitude";
   assert.equal(programManualFor({ type: "mobile", playStoreUrl: other }), null);
   assert.equal(programManualFor({ type: "web", playStoreUrl: PLAY }), null);
@@ -66,15 +65,27 @@ test("다른 프로그램·Play 버튼이 없는 상태에는 카드가 없다",
   assert.equal(androidPackageOf("not a url"), null);
 });
 
-test("프로그램 상세 순서: Google Play 버튼 → 기존 안내문 → 사용 설명서 카드", () => {
+test("프로그램 상세: 사용 설명서는 뒤로가기 행 오른쪽 하나 · Play 버튼 아래 카드 없음", () => {
   const page = readFileSync(join(ROOT, "app/programs/[slug]/page.tsx"), "utf8");
+  // 상단 행 — 대상이면 뒤로가기 → 사용 설명서 버튼(같은 flex 행 · 양 끝 정렬), 아니면 종전 그대로 뒤로가기만.
+  assert.match(
+    page,
+    /\{manual \? \(\s*<div className="flex items-center justify-between gap-3">\s*<BackButton href="\/programs" label="프로그램 목록" \/>\s*<ProgramManualButton manual=\{manual\} \/>\s*<\/div>\s*\) : \(\s*<BackButton href="\/programs" label="프로그램 목록" \/>\s*\)\}/,
+  );
+  assert.equal((page.match(/<ProgramManualButton/g) ?? []).length, 1);
+  assert.doesNotMatch(page, /ProgramManualCardView/);
+  // 버튼: 책 아이콘 + 라벨 · 새 탭 · 다운로드 속성 없음.
+  const btn = page.slice(page.indexOf("function ProgramManualButton"), page.indexOf("/** 무료 구독 안내"));
+  assert.match(btn, /target="_blank"/);
+  assert.match(btn, /rel="noopener"/);
+  assert.match(btn, /<svg[\s\S]*aria-hidden[\s\S]*<\/svg>\s*\{manual\.label\}\s*<\/a>/);
+  assert.doesNotMatch(btn, /download/);
+  // 히어로: Google Play 버튼 → 기존 안내문이 그대로 한 묶음이고, 그 뒤에 사용 설명서가 없다.
   const hero = page.slice(page.indexOf("── HERO"), page.indexOf("── 문제 공감"));
   const iBtn = hero.indexOf("<ProgramPrimaryAction ctx={ctx} variant=\"full\" />");
   const iSub = hero.indexOf("<WebSubscribeNote");
   const iNote = hero.indexOf("{L.hero.note}");
-  const iCard = hero.indexOf("<ProgramManualCardView manual={manual} />");
-  assert.ok(iBtn > 0 && iSub > iBtn && iNote > iSub && iCard > iNote, JSON.stringify({ iBtn, iSub, iNote, iCard }));
-  // 카드 뒤에는 히어로가 바로 끝난다(카드가 안내문과 버튼 사이에 끼지 않음).
-  assert.match(hero.slice(iCard), /^<ProgramManualCardView manual=\{manual\} \/>\}\s*<\/section>/);
-  assert.equal((page.match(/<ProgramManualCardView/g) ?? []).length, 1);
+  assert.ok(iBtn > 0 && iSub > iBtn && iNote > iSub, JSON.stringify({ iBtn, iSub, iNote }));
+  assert.doesNotMatch(hero, /manual/);
+  assert.match(hero.slice(iNote), /^\{L\.hero\.note\}\s*<\/p>\s*\)\}\s*<\/section>/);
 });
