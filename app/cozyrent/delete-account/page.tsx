@@ -8,12 +8,15 @@ import { siteConfig } from "@/lib/site";
 // 경로 문구는 앱 SettingsPage의 실제 섹션 제목과 일치해야 한다(cozyrent B-02).
 // 2026-09-22 개정: 서버 백업은 이용 선택이 아니라 로그인 계정에 자동으로 저장되는 것(D-159B)이므로 삭제 범위 문구를 실제 동작에 맞췄다.
 // 2026-10-09 개정(코지 승인 2026-10-09): 앱이 휴대폰 연락처에 저장한 항목과 이미 예약된 휴대폰 알림은 계정 삭제 후에도 남을 수 있다는 안내를 추가했다(cozyrent D-195 §2 · VC76 · 알림 잔존은 알려진 결함 N-6).
+// 2026-10-28 개정(코비 #74 잔여 마감 · 임시): 현재 Play 버전 앱에서 회원탈퇴가 끝나지 않는 경우(cozyrent Issue #79 · VC80에서 교정 · 미배포)에도
+//  2번 이메일 요청을 쓸 수 있다고 안내한다. 삭제 범위·보존 정책·본인 확인 절차는 바꾸지 않는다. VC80이 Play에 배포되면 이 임시 문장을 정리한다
+//  (매뉴얼 §18.5 임시 안내와 함께 · cozyrent docs/manual/README.md 「임시 안내」).
 export const metadata: Metadata = {
   title: "코지임대 계정 삭제",
   description: "코지임대(CozyRent) 계정 삭제 방법과 처리되는 데이터 안내.",
 };
 
-const EFFECTIVE_DATE = "2026년 10월 9일";
+const EFFECTIVE_DATE = "2026년 10월 28일";
 const PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions";
 
 // 앱 없이 요청할 때 쓰는 메일 템플릿 — 민감정보(비밀번호·OTP·구매토큰·계약 데이터) 자동 첨부 없음.
@@ -44,12 +47,19 @@ export default function CozyrentDeleteAccountPage() {
             코지임대 앱에서 <strong className="text-foreground">설정 &gt; 데이터 및 계정 삭제 &gt; 회원탈퇴</strong>를 선택하면 계정을 직접 삭제할 수 있습니다.
             안내와 확인 단계를 거친 뒤 서버 계정과 관련 데이터(서버에 자동 저장된 백업 데이터와 사진 포함)가 유예기간 없이 바로 삭제 처리되며, 이 기기의 임대관리 데이터는 유지/삭제를 직접 선택할 수 있습니다. 유료 구독이 진행 중이면 앱이 먼저 안내하고 재확인을 거칩니다.
           </p>
+          <p className="mt-3">
+            탈퇴가 정상으로 끝나면 앱이 다시 시작되어 로그인 화면이 나타나며, 따로 요청할 필요가 없습니다.
+          </p>
+          <p className="mt-3 rounded-lg border border-[--border] bg-[--surface]/40 px-4 py-3 text-sm" data-delete-temp-notice="">
+            <strong className="text-foreground">현재 앱 버전 안내:</strong> 지금 Google Play에 배포된 앱 버전에서는 회원탈퇴를 진행해도 「회원탈퇴를 처리하지 못했어요」 안내가 나오고 탈퇴가 끝나지 않을 수 있습니다.
+            이 안내가 나왔다면 계정은 아직 삭제되지 않은 상태입니다. 여러 번 다시 시도하지 말고 아래 <strong className="text-foreground">2번의 이메일 요청</strong>으로 삭제를 요청해 주세요.
+          </p>
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold text-foreground">2. 앱을 사용할 수 없는 경우</h2>
+          <h2 className="text-xl font-semibold text-foreground">2. 앱을 사용할 수 없거나 앱에서 탈퇴가 끝나지 않는 경우</h2>
           <p className="mt-3">
-            앱을 설치·실행할 수 없다면 아래 방법으로 삭제를 요청할 수 있습니다.
+            앱을 설치·실행할 수 없거나, 앱에서 회원탈퇴를 진행했는데 「회원탈퇴를 처리하지 못했어요」 안내가 나오고 탈퇴가 끝나지 않았다면 아래 방법으로 삭제를 요청할 수 있습니다.
           </p>
           <p className="mt-3">
             <a
