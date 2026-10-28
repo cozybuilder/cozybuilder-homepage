@@ -136,6 +136,14 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   iPhone FAQ 를 cozyrent STATUS 기준으로 정합(Android 정식 출시 우선·iOS 일정 확정 후 안내).
   **DB·API·폼 필드·migration·기존 신청 데이터 변경 0.**
 
+- 사용자 매뉴얼 진입 (2026-10-28 · 브랜치 `feat/cozyrent-manual-vc79` · **Preview 검수 대기 · main 미병합**):
+  `/landingpage/cozyrent`에 「사용자 매뉴얼 보기 / PDF 다운로드」 카드(`LandingConfig.manual` · 렌더러 `#manual`) 추가.
+  산출물 `public/manual/cozyrent/`(웹 보기 HTML + WebP 359장 + PDF 26.4MB) = cozyrent `docs/manual` `eb6b5571`(Play VC79) 생성본.
+  `tests/landing-manual.test.mts`(경로 존재·PDF 크기 표기 = 실제 크기·그림 링크·외부 자원 0·내부 표식 0).
+  **OPEN(코지 결정)**: 랜딩 히어로 「출시 전 사전신청 진행 중」·FAQ 「지금 Android 앱을 우선 개발하고 있습니다」는
+  Google Play 공개 등록 페이지(설치 가능 · 업데이트 2026-10-28)·`/programs` 코지임대 상세(「Google Play에서 받기」)와 맞지 않는다.
+  출시 문구·스토어 CTA 전환은 승인 전 보류(DB·운영 공개 변경 0).
+
 ### Platform Analytics v1
 - `analytics_events`
 - `analytics_daily_stats`

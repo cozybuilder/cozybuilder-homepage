@@ -199,6 +199,47 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
         </div>
       </section>
 
+      {/* 사용자 매뉴얼(선택) — 웹 보기 + PDF 내려받기. 산출물은 public 정적 파일이다. */}
+      {config.manual && (
+        <section id="manual" className="container-page mt-28 scroll-mt-20 md:mt-36">
+          <div className="card mx-auto max-w-3xl p-8 text-center sm:p-12">
+            <p className="eyebrow">{config.manual.eyebrow}</p>
+            <h2 className="mt-4 break-keep text-2xl font-bold leading-snug text-foreground sm:text-3xl">
+              {config.manual.title}
+            </h2>
+            <p className="mt-5 break-keep text-base leading-relaxed text-[--muted] sm:text-lg">
+              <Lines lines={config.manual.description} />
+            </p>
+            <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center">
+              <a
+                href={config.manual.web.href}
+                target="_blank"
+                rel="noopener"
+                className="btn btn-accent min-h-[52px] px-6 text-base font-semibold"
+              >
+                {config.manual.web.label}
+              </a>
+              {config.manual.pdfs.map((p) => (
+                <a
+                  key={p.href}
+                  href={p.href}
+                  download
+                  className="btn btn-ghost min-h-[52px] px-6 text-base font-semibold"
+                >
+                  {p.label}
+                  <span className="text-sm font-normal text-[--muted-2]">({p.size})</span>
+                </a>
+              ))}
+            </div>
+            {config.manual.note && (
+              <p className="mt-6 break-keep text-sm leading-relaxed text-[--muted-2]">
+                {config.manual.note}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 제작 신뢰 */}
       <section className="container-page mt-28 md:mt-36">
         <div className="card mx-auto max-w-3xl p-8 sm:p-12">

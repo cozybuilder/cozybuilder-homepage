@@ -54,6 +54,9 @@
 - 기존 `public/image/cozyrent/` 는 파일을 신규 경로로 이전하고 redirect 로 호환한다(§1).
 - 실앱 화면 미확보 슬롯은 설정에서 `null` — 렌더러가 세로형(9:19) 중립 placeholder 표시.
   **가짜 앱 UI 제작 금지.**
+- 사용자 매뉴얼(선택 `manual` 설정): `public/manual/[slug]/` — 웹 보기 `index.html` + 그림 `img/*.webp` + PDF.
+  원본은 각 제품 저장소가 소유하고 홈페이지는 **확정 산출물만** 둔다(직접 편집 금지 · 교체는 제품 저장소에서 다시 생성).
+  PDF 크기 표기는 실제 파일 크기와 같아야 한다(`tests/landing-manual.test.mts`).
 
 ## 5. DB 정책
 

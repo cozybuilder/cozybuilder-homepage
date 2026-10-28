@@ -5,6 +5,21 @@
 export type LandingFeature = { key: string; title: string; desc: string };
 export type LandingFaq = { q: string; a: string };
 
+/**
+ * 사용자 매뉴얼 진입(선택). 원본은 각 제품 저장소가 소유하고 홈페이지는 확정 산출물만 서비스한다
+ * (경로: public/manual/[slug]/ · 정책: docs/landing/LANDINGPAGE_PLATFORM.md §4).
+ */
+export type LandingManual = {
+  eyebrow: string;
+  title: string;
+  description: string[];
+  /** 웹으로 보기 — public 기준 경로의 정적 HTML. */
+  web: { label: string; href: string };
+  /** PDF 내려받기 — 파일 크기는 실제 산출물 기준으로 적는다. */
+  pdfs: { label: string; href: string; size: string }[];
+  note?: string;
+};
+
 /** 폼 종류 — 렌더러의 폼 컴포넌트 맵과 연결된다. */
 export type LandingFormKind = "cozyrent-preregister";
 
@@ -39,6 +54,7 @@ export type LandingConfig = {
   };
   problems: { title: string[]; items: string[]; closing: string[] };
   features: { eyebrow: string; title: string; items: LandingFeature[] };
+  manual?: LandingManual;
   trust: { titleLines: string[]; paragraphs: string[] };
   benefit: {
     title: string;
@@ -150,6 +166,18 @@ const cozyrent: LandingConfig = {
         desc: "공용 전기, 청소비처럼 매달 나가는 고정지출을 한곳에 정리합니다.",
       },
     ],
+  },
+  // 매뉴얼 원본: cozyrent/docs/manual (19장 · 실제 앱 화면 + 가상 예시). 산출물 교체 시 크기도 함께 고친다.
+  manual: {
+    eyebrow: "사용자 매뉴얼",
+    title: "화면을 보며 따라 하는 사용 설명서",
+    description: [
+      "첫 건물 등록부터 입금·지출·수리·퇴실 정산까지",
+      "실제 앱 화면과 함께 단계별로 안내합니다.",
+    ],
+    web: { label: "사용자 매뉴얼 보기", href: "/manual/cozyrent/index.html" },
+    pdfs: [{ label: "PDF 다운로드", href: "/manual/cozyrent/cozyrent-user-manual.pdf", size: "26.4MB" }],
+    note: "매뉴얼의 건물·임차인·업체와 전화번호는 모두 연습용 가상 자료입니다.",
   },
   trust: {
     titleLines: ["다가구주택을 직접 관리하는", "건물주가 만들었습니다"],
