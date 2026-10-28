@@ -140,9 +140,13 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   `/landingpage/cozyrent`에 「사용자 매뉴얼 보기 / PDF 다운로드」 카드(`LandingConfig.manual` · 렌더러 `#manual`) 추가.
   산출물 `public/manual/cozyrent/`(웹 보기 HTML + WebP 359장 + PDF 26.4MB) = cozyrent `docs/manual` `eb6b5571`(Play VC79) 생성본.
   `tests/landing-manual.test.mts`(경로 존재·PDF 크기 표기 = 실제 크기·그림 링크·외부 자원 0·내부 표식 0).
-  **OPEN(코지 결정)**: 랜딩 히어로 「출시 전 사전신청 진행 중」·FAQ 「지금 Android 앱을 우선 개발하고 있습니다」는
-  Google Play 공개 등록 페이지(설치 가능 · 업데이트 2026-10-28)·`/programs` 코지임대 상세(「Google Play에서 받기」)와 맞지 않는다.
-  출시 문구·스토어 CTA 전환은 승인 전 보류(DB·운영 공개 변경 0).
+  **코지 후속 결정(2026-10-28 · Preview 구현 미착수)**: 광고용 `/landingpage/cozyrent`는 구조·내용을 유지하되
+  **사전신청 종료**(상단·히어로·하단·모바일 CTA 비활성, 입력 폼 중지, API 신규 접수 거절)로 정리한다.
+  전체 랜딩을 Google Play 출시 안내로 전환한다는 이전 §15 지시는 **§16으로 대체**했다.
+  이미 정리된 **코지임대 프로그램 상세**의 Play/설명은 그대로 두고, Google Play 버튼 아래에
+  **매뉴얼 웹보기/공유 PDF 보조 카드**만 추가한다([PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
+  기존 신청자·30일 혜택·운영 DB 보존. **OPEN: 클로 코드/테스트/Preview 실제 접속/코비 독립검수**,
+  홈페이지 main·운영 DB 미변경. 최종 공개는 코지 별도 승인.
 
 ### Platform Analytics v1
 - `analytics_events`
