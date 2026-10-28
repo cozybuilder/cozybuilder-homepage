@@ -140,11 +140,13 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   `/landingpage/cozyrent`에 「사용자 매뉴얼 보기 / PDF 다운로드」 카드(`LandingConfig.manual` · 렌더러 `#manual`) 추가.
   산출물 `public/manual/cozyrent/`(웹 보기 HTML + WebP 359장 + PDF 26.4MB) = cozyrent `docs/manual` `eb6b5571`(Play VC79) 생성본.
   `tests/landing-manual.test.mts`(경로 존재·PDF 크기 표기 = 실제 크기·그림 링크·외부 자원 0·내부 표식 0).
-  **코지 후속 결정(2026-10-28 · Preview 구현 미착수)**: 광고용 `/landingpage/cozyrent`는 구조·내용을 유지하되
+  **코지 후속 결정(2026-10-28 · Preview 구현 대기)**: 광고용 `/landingpage/cozyrent`는 구조·내용을 유지하되
   **사전신청 종료**(상단·히어로·하단·모바일 CTA 비활성, 입력 폼 중지, API 신규 접수 거절)로 정리한다.
   전체 랜딩을 Google Play 출시 안내로 전환한다는 이전 §15 지시는 **§16으로 대체**했다.
   이미 정리된 **코지임대 프로그램 상세**의 Play/설명은 그대로 두고, Google Play 버튼 아래에
-  **매뉴얼 웹보기/공유 PDF 보조 카드**만 추가한다([PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
+  **웹 매뉴얼 「사용 설명서 보기」 보조 카드 1개만** 추가한다([PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
+  **PDF 공개 다운로드 금지**: 모든 공개 CTA·다운로드 링크를 제거하고 `public/manual/cozyrent/*.pdf` 정적 파일도
+  배포에서 제외한다(직접 PDF URL 404 확인). 기존 PDF 2종은 로컬 내부 보관. 모바일 전용 스크린샷 간편 안내서는 후속.
   기존 신청자·30일 혜택·운영 DB 보존. **OPEN: 클로 코드/테스트/Preview 실제 접속/코비 독립검수**,
   홈페이지 main·운영 DB 미변경. 최종 공개는 코지 별도 승인.
 
