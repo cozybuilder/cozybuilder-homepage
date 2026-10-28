@@ -12,6 +12,21 @@ const FORM_COMPONENTS: Record<LandingFormKind, ComponentType> = {
   "cozyrent-preregister": CozyrentPreRegisterForm,
 };
 
+/** 신청 접수 종료 표시 — 버튼 자리를 지키되 클릭·포커스되지 않는다(COZYRENT_PRELAUNCH §16). */
+function ClosedCta({ label, className }: { label: string; className: string }) {
+  return (
+    <button
+      type="button"
+      disabled
+      aria-disabled="true"
+      data-cta-closed=""
+      className={`${className} cursor-not-allowed border border-[--border-strong] bg-transparent text-[--muted-2]`}
+    >
+      {label}
+    </button>
+  );
+}
+
 function Lines({ lines }: { lines: string[] }) {
   return (
     <>
@@ -94,6 +109,7 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
   const screens = config.images.appScreens;
   const heroRatio = config.images.heroRatio ?? "9 / 19";
   const screenRatio = config.images.screenRatio ?? "9 / 19";
+  const closed = config.closed ?? null;
 
   return (
     <div className="pb-24 md:pb-0">
@@ -103,9 +119,13 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
           <span className="text-lg font-bold tracking-tight text-foreground">
             {config.productName}
           </span>
-          <a href="#apply" className="btn btn-accent min-h-[44px] px-5 text-sm font-semibold">
-            사전신청
-          </a>
+          {closed ? (
+            <ClosedCta label={closed.label} className="btn min-h-[44px] px-5 text-sm font-semibold" />
+          ) : (
+            <a href="#apply" className="btn btn-accent min-h-[44px] px-5 text-sm font-semibold">
+              사전신청
+            </a>
+          )}
         </div>
       </div>
 
@@ -135,12 +155,19 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
               ))}
             </p>
             <div className="mt-9">
-              <a
-                href="#apply"
-                className="btn btn-accent min-h-[56px] w-full whitespace-nowrap px-6 text-base font-semibold sm:w-auto sm:px-8 sm:text-lg"
-              >
-                {config.hero.cta}
-              </a>
+              {closed ? (
+                <ClosedCta
+                  label={closed.label}
+                  className="btn min-h-[56px] w-full whitespace-nowrap px-6 text-base font-semibold sm:w-auto sm:px-8 sm:text-lg"
+                />
+              ) : (
+                <a
+                  href="#apply"
+                  className="btn btn-accent min-h-[56px] w-full whitespace-nowrap px-6 text-base font-semibold sm:w-auto sm:px-8 sm:text-lg"
+                >
+                  {config.hero.cta}
+                </a>
+              )}
               <p className="mt-4 break-keep text-base text-[--muted-2]">{config.hero.sub}</p>
             </div>
           </div>
@@ -199,6 +226,36 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
         </div>
       </section>
 
+      {/* 사용자 매뉴얼(선택) — 웹 보기만(PDF 비공개). 산출물은 public 정적 파일이다. */}
+      {config.manual && (
+        <section id="manual" className="container-page mt-28 scroll-mt-20 md:mt-36">
+          <div className="card mx-auto max-w-3xl p-8 text-center sm:p-12">
+            <p className="eyebrow">{config.manual.eyebrow}</p>
+            <h2 className="mt-4 break-keep text-2xl font-bold leading-snug text-foreground sm:text-3xl">
+              {config.manual.title}
+            </h2>
+            <p className="mt-5 break-keep text-base leading-relaxed text-[--muted] sm:text-lg">
+              <Lines lines={config.manual.description} />
+            </p>
+            <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row sm:justify-center">
+              <a
+                href={config.manual.web.href}
+                target="_blank"
+                rel="noopener"
+                className="btn btn-accent min-h-[52px] px-6 text-base font-semibold"
+              >
+                {config.manual.web.label}
+              </a>
+            </div>
+            {config.manual.note && (
+              <p className="mt-6 break-keep text-sm leading-relaxed text-[--muted-2]">
+                {config.manual.note}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* 제작 신뢰 */}
       <section className="container-page mt-28 md:mt-36">
         <div className="card mx-auto max-w-3xl p-8 sm:p-12">
@@ -243,10 +300,20 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
       <section id="apply" className="container-page mt-28 scroll-mt-20 md:mt-36">
         <p className="eyebrow text-center">{config.applySection.eyebrow}</p>
         <h2 className="mt-4 break-keep text-center text-2xl font-bold text-foreground sm:text-3xl">
-          {config.applySection.title}
+          {closed ? closed.title : config.applySection.title}
         </h2>
         <div className="mx-auto mt-10 max-w-xl">
-          <ApplyForm />
+          {closed ? (
+            <div className="card p-8 text-center sm:p-10" data-apply-closed="">
+              <div className="space-y-2 break-keep text-base leading-relaxed text-[--muted]">
+                {closed.lines.map((l) => (
+                  <p key={l}>{l}</p>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <ApplyForm />
+          )}
         </div>
       </section>
 
@@ -282,17 +349,24 @@ export default function LandingRenderer({ config }: { config: LandingConfig }) {
           <p className="mt-5 break-keep text-lg leading-relaxed text-[--muted]">
             <Lines lines={config.finalCta.descLines} />
           </p>
-          <a
-            href="#apply"
-            className="btn btn-accent mt-9 min-h-[56px] w-full whitespace-nowrap px-6 text-base font-semibold sm:w-auto sm:px-10 sm:text-lg"
-          >
-            {config.finalCta.button}
-          </a>
+          {closed ? (
+            <ClosedCta
+              label={closed.label}
+              className="btn mt-9 min-h-[56px] w-full whitespace-nowrap px-6 text-base font-semibold sm:w-auto sm:px-10 sm:text-lg"
+            />
+          ) : (
+            <a
+              href="#apply"
+              className="btn btn-accent mt-9 min-h-[56px] w-full whitespace-nowrap px-6 text-base font-semibold sm:w-auto sm:px-10 sm:text-lg"
+            >
+              {config.finalCta.button}
+            </a>
+          )}
         </div>
       </section>
 
       {/* 모바일 하단 고정 CTA */}
-      <MobileCtaBar label={config.hero.cta} />
+      <MobileCtaBar label={closed ? closed.label : config.hero.cta} closed={Boolean(closed)} />
     </div>
   );
 }

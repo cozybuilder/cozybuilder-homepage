@@ -18,6 +18,7 @@ import { resolveScreenStoryItems } from "@/lib/program-screen-story";
 import DownloadButton from "@/components/DownloadButton";
 import { DEFAULT_PREREG_CTA_LABEL, type Program } from "@/lib/site";
 import { parseYoutubeVideoId, youtubeEmbedUrl } from "@/lib/youtube";
+import { programManualFor, type ProgramManualLink } from "@/lib/program-manual";
 
 // 구독 버튼이 현재 사용자 권한을 반영해야 하므로 동적 렌더(접근 판정은 매 요청).
 export const dynamic = "force-dynamic";
@@ -260,6 +261,44 @@ function ProgramPrimaryAction({
   return <ProgramAction slug={program.slug} appUrl={program.appUrl} />;
 }
 
+/**
+ * 사용 설명서 보조 버튼 — 상단 「← 프로그램 목록」 뒤로가기와 같은 행의 오른쪽(코지임대만 · PROGRAM_OPERATING_MODEL.md §10).
+ * 책 아이콘 + 「사용 설명서 보기」 하나(새 탭 웹 매뉴얼). 뒤로가기 버튼과 같은 높이의 작은 보조 버튼이다.
+ * 대비 강조(코비 #74 최종 · 코지 승인): 사이트 강조색(--accent)을 옅게 깐 배경·테두리·아이콘으로 첫눈에 보이게 하되
+ * 크기·위치·문구는 그대로 둔다(Google Play 주 버튼보다 앞서지 않는 보조 버튼 성격 유지). hover·키보드 focus도 분명하게.
+ * 테두리는 border가 아니라 ring-1로 그린다 — globals.css의 레이어 밖 `* { border-color }`가 Tailwind 테두리 색 유틸리티를 이긴다.
+ * PDF 다운로드·인쇄 버튼은 두지 않는다. Google Play 버튼 아래에는 더 이상 아무것도 붙이지 않는다(중복 노출 0).
+ */
+function ProgramManualButton({ manual }: { manual: ProgramManualLink }) {
+  return (
+    <a
+      href={manual.href}
+      target="_blank"
+      rel="noopener"
+      title={manual.title}
+      data-program-manual=""
+      className="inline-flex h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--accent)]/15 px-4 text-sm font-semibold text-foreground ring-1 ring-[var(--accent)]/60 transition-all duration-200 hover:bg-[var(--accent)]/25 hover:shadow-[0_8px_28px_-10px_var(--accent-glow)] hover:ring-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
+    >
+      <svg
+        className="text-[#aab4ff]"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+      </svg>
+      {manual.label}
+    </a>
+  );
+}
+
 /** 무료 구독 안내 — 기존 문구·조건 그대로(히어로에서만 노출). */
 function WebSubscribeNote({ allowed }: { allowed: boolean }) {
   return (
@@ -349,10 +388,19 @@ export default async function ProgramDetailPage({
     stories: L?.screenStories,
   });
   const updates = program.updates ?? [];
+  const manual = programManualFor(program);
 
   return (
     <div className="container-page py-12">
-      <BackButton href="/programs" label="프로그램 목록" />
+      {/* 사용 설명서는 뒤로가기와 같은 행 오른쪽(코비 #74 배치 후속). 대상이 아니면 종전 그대로 뒤로가기만 그린다. */}
+      {manual ? (
+        <div className="flex items-center justify-between gap-3">
+          <BackButton href="/programs" label="프로그램 목록" />
+          <ProgramManualButton manual={manual} />
+        </div>
+      ) : (
+        <BackButton href="/programs" label="프로그램 목록" />
+      )}
 
       {/* ── HERO: 제품명 → headline → subheadline → 미디어 → CTA → note ── */}
       <section className="mx-auto mt-8 max-w-3xl">

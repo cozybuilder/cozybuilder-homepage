@@ -44,7 +44,7 @@ function normalizePhone(raw: string): string {
   return digits;
 }
 
-type Status = "idle" | "submitting" | "success" | "duplicate" | "server_error";
+type Status = "idle" | "submitting" | "success" | "duplicate" | "server_error" | "closed";
 
 function ChipGroup({
   options,
@@ -196,6 +196,11 @@ export default function PreRegisterForm() {
         setStatus("duplicate");
         return;
       }
+      // 접수 종료(410 · COZYRENT_PRELAUNCH §16) — 이미 열려 있던 옛 화면에서 제출한 경우.
+      if (res.status === 410) {
+        setStatus("closed");
+        return;
+      }
       if (res.status === 400) {
         const data = (await res.json().catch(() => null)) as {
           fields?: Record<string, string>;
@@ -211,6 +216,15 @@ export default function PreRegisterForm() {
       submittingRef.current = false;
     }
   };
+
+  if (status === "closed") {
+    return (
+      <div className="card py-12 text-center" role="status">
+        <p className="text-2xl font-semibold text-foreground">사전신청이 종료되었습니다.</p>
+        <p className="mt-4 text-lg leading-relaxed text-[--muted]">새로운 사전신청은 받지 않습니다.</p>
+      </div>
+    );
+  }
 
   if (status === "success") {
     return (

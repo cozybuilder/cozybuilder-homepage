@@ -5,6 +5,30 @@
 export type LandingFeature = { key: string; title: string; desc: string };
 export type LandingFaq = { q: string; a: string };
 
+/**
+ * 사용자 매뉴얼 진입(선택). 원본은 각 제품 저장소가 소유하고 홈페이지는 확정 산출물만 서비스한다
+ * (경로: public/manual/[slug]/ · 정책: docs/landing/LANDINGPAGE_PLATFORM.md §4).
+ * **웹 보기만** 둔다 — PDF 다운로드 링크·공개 PDF 파일은 두지 않는다(코지 2026-10-28 · COZYRENT_PRELAUNCH §16).
+ */
+export type LandingManual = {
+  eyebrow: string;
+  title: string;
+  description: string[];
+  /** 웹으로 보기 — public 기준 경로의 정적 HTML. */
+  web: { label: string; href: string };
+  note?: string;
+};
+
+/**
+ * 신청 접수 종료(선택). 있으면 상단·히어로·마지막·모바일 고정 CTA를 클릭할 수 없는 종료 표시로 바꾸고
+ * 신청 폼 자리에 종료 안내를 둔다. 서버 접수 차단은 해당 API 라우트가 소유한다(COZYRENT_PRELAUNCH §16).
+ */
+export type LandingClosed = {
+  label: string; // 버튼 자리에 보이는 종료 표시(클릭 불가)
+  title: string; // 신청 폼 자리 안내 제목
+  lines: string[]; // 안내 본문(줄)
+};
+
 /** 폼 종류 — 렌더러의 폼 컴포넌트 맵과 연결된다. */
 export type LandingFormKind = "cozyrent-preregister";
 
@@ -39,6 +63,8 @@ export type LandingConfig = {
   };
   problems: { title: string[]; items: string[]; closing: string[] };
   features: { eyebrow: string; title: string; items: LandingFeature[] };
+  manual?: LandingManual;
+  closed?: LandingClosed;
   trust: { titleLines: string[]; paragraphs: string[] };
   benefit: {
     title: string;
@@ -71,7 +97,7 @@ const cozyrent: LandingConfig = {
   meta: {
     title: "코지임대 사전신청 | 건물주를 위한 임대관리 앱",
     description:
-      "월세, 관리비, 미납, 계약, 수선 기록까지 한곳에서. 코지임대 출시 전 사전신청하고 30일 무료 이용 혜택을 받아보세요.",
+      "월세, 관리비, 미납, 계약, 수선 기록까지 한곳에서. 코지임대 사전신청은 종료되었습니다.",
   },
   images: {
     dir: "/image/landingpage/cozyrent",
@@ -92,7 +118,7 @@ const cozyrent: LandingConfig = {
     screenDims: { w: 1080, h: 2111 },
   },
   hero: {
-    eyebrow: "출시 전 사전신청 진행 중",
+    eyebrow: "사전신청 종료",
     titleLines: ["임대관리의 새로운 기준,", "코지임대"],
     description: [
       "월세, 관리비, 미납, 계약, 수선 기록까지",
@@ -101,7 +127,7 @@ const cozyrent: LandingConfig = {
     // 320px 히어로 CTA 는 whitespace-nowrap 이라 컨테이너 content box(272px)를 넘으면 좌우 여백이 깨진다.
     // "사전신청하고 30일 무료 이용 받기" = 292px(초과) → 같은 뜻으로 272px 에 맞는 어순을 쓴다.
     cta: "30일 무료 이용 사전신청하기",
-    sub: "사전신청자 한정 · 30일 무료 이용 혜택",
+    sub: "기존 사전신청자의 30일 무료 이용 혜택은 그대로 유지됩니다",
     heroScreenAlt: "코지임대 앱 홈 화면",
   },
   problems: {
@@ -151,6 +177,26 @@ const cozyrent: LandingConfig = {
       },
     ],
   },
+  // 매뉴얼 원본: cozyrent/docs/manual (19장 · 실제 앱 화면 + 가상 예시). 홈페이지에는 웹 사본만 둔다(PDF 비공개).
+  manual: {
+    eyebrow: "사용자 매뉴얼",
+    title: "화면을 보며 따라 하는 사용 설명서",
+    description: [
+      "첫 건물 등록부터 입금·지출·수리·퇴실 정산까지",
+      "실제 앱 화면과 함께 단계별로 안내합니다.",
+    ],
+    web: { label: "사용자 매뉴얼 보기", href: "/manual/cozyrent/index.html" },
+    note: "매뉴얼의 건물·임차인·업체와 전화번호는 모두 연습용 가상 자료입니다.",
+  },
+  // 사전신청 종료(코지 2026-10-28 · COZYRENT_PRELAUNCH §16) — 신규 접수 없음 · 기존 신청자 혜택·자료 보존.
+  closed: {
+    label: "사전신청 종료",
+    title: "사전신청이 종료되었습니다",
+    lines: [
+      "그동안 관심 가져 주셔서 감사합니다. 새로운 사전신청은 받지 않습니다.",
+      "이미 신청하신 분께는 안내드린 30일 무료 이용 혜택을 그대로 적용해 드립니다.",
+    ],
+  },
   trust: {
     titleLines: ["다가구주택을 직접 관리하는", "건물주가 만들었습니다"],
     paragraphs: [
@@ -171,6 +217,7 @@ const cozyrent: LandingConfig = {
       ["두 경우 모두 카드 등록이 없고", "자동결제도 되지 않습니다."],
     ],
     notice: [
+      "신규 사전신청은 종료되었습니다. 30일 무료 이용은 이미 신청하신 분께만 적용됩니다.",
       "30일 무료 이용과 7일 무료체험은 서로 다른 혜택이며 기간을 합산하지 않습니다.",
       "적용 방법과 세부 조건은 정식 출시 안내와 함께 알려드립니다.",
     ],
@@ -200,7 +247,7 @@ const cozyrent: LandingConfig = {
   ],
   finalCta: {
     titleLines: ["기억에 의존하던 임대관리,", "코지임대로 정리해보세요."],
-    descLines: ["출시 전 사전신청하고", "30일 무료 이용 혜택을 받아보세요."],
+    descLines: ["사전신청은 종료되었습니다.", "기존 신청자의 30일 무료 이용 혜택은 그대로 유지됩니다."],
     button: "코지임대 사전신청",
   },
 };
