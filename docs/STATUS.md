@@ -147,14 +147,14 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   **웹 매뉴얼 「사용 설명서 보기」 보조 버튼 1개만** 둔다(Play 아래 카드 제거 · [PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
   **PDF 공개 다운로드 금지**: 모든 공개 CTA·다운로드 링크를 제거하고 `public/manual/cozyrent/*.pdf` 정적 파일도
   배포에서 제외한다(직접 PDF URL 404 확인). 기존 PDF 2종은 로컬 내부 보관. 모바일 전용 스크린샷 간편 안내서는 후속.
-  기존 신청자·30일 혜택·운영 DB 보존. **OPEN: 클로 코드/테스트/Preview 실제 접속/코비 독립검수**,
-  홈페이지 main·운영 DB 미변경. 최종 공개는 코지 별도 승인.
+  기존 신청자·30일 혜택·운영 DB 보존. 운영 DB 미변경.
   **구현(클로 2026-10-28 · 이 브랜치)**: `public/manual/cozyrent/*.pdf` 삭제·PDF 링크 0 · 웹 사본 표지 「검토용」 행 제거(cozyrent `48f9f99c`) ·
   랜딩 `closed` 설정(상단·히어로·마지막·모바일 CTA = 클릭 불가 「사전신청 종료」 · 폼 자리 종료 안내 · 최소 문구 정리) ·
   `POST /api/cozyrent/preregister` 본문 미열람 410 `closed` · 프로그램 상세 상단 뒤로가기 행 오른쪽 책 아이콘 + 「사용 설명서 보기」 버튼 · Play 버튼 → 기존 안내문 묶음 유지 · Play 아래 카드 0
   (`lib/program-manual.ts` — Play 패키지 `com.cozybuilder.cozyrent`·released 모바일만 · 「사용 설명서 보기」 1개 · 새 탭).
   테스트 66/66 · eslint 0 · `next build` · 로컬 `next start` 360/390/1366 종단(웹 매뉴얼 200 · PDF 404 · API 410 · 다른 프로그램 버튼 0).
-  **OPEN**: Vercel Preview 실제 화면(배포 보호 · 로그인 필요) · 코비 독립검수 · 코지 최종 공개 승인.
+  **최종 마감(코비 #74 최종 · 코지 Preview 실화면 확인·본서버 반영 승인 2026-10-28)**: 상단 버튼 대비 강조(강조색 옅은 배경 · ring-1 외곽선 ·
+  굵은 글자 · 강조색 아이콘 · hover/키보드 focus 링 — 크기·위치·문구·링크 그대로) 후 `main` 병합 → Vercel 프로덕션 배포.
 
 ### Platform Analytics v1
 - `analytics_events`

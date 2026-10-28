@@ -80,6 +80,16 @@ test("프로그램 상세: 사용 설명서는 뒤로가기 행 오른쪽 하나
   assert.match(btn, /rel="noopener"/);
   assert.match(btn, /<svg[\s\S]*aria-hidden[\s\S]*<\/svg>\s*\{manual\.label\}\s*<\/a>/);
   assert.doesNotMatch(btn, /download/);
+  // 대비 강조(#74 최종): 강조색 배경·테두리 · hover · 키보드 focus 링 · 크기(h-11·text-sm)는 그대로.
+  assert.match(btn, /bg-\[var\(--accent\)\]\/15 /);
+  // 테두리는 ring-1(전역 `* { border-color }`가 border 색 유틸리티를 덮는다).
+  assert.match(btn, /ring-1 ring-\[var\(--accent\)\]\/60/);
+  assert.match(btn, /hover:ring-\[var\(--accent\)\]/);
+  assert.doesNotMatch(btn, /className="[^"]* border /);
+  assert.match(btn, /hover:bg-\[var\(--accent\)\]\/25/);
+  assert.match(btn, /focus-visible:ring-2 focus-visible:ring-\[var\(--accent\)\]/);
+  assert.match(btn, /inline-flex h-11 [^"]*px-4 text-sm /);
+  assert.doesNotMatch(btn, /bg-white\/5/);
   // 히어로: Google Play 버튼 → 기존 안내문이 그대로 한 묶음이고, 그 뒤에 사용 설명서가 없다.
   const hero = page.slice(page.indexOf("── HERO"), page.indexOf("── 문제 공감"));
   const iBtn = hero.indexOf("<ProgramPrimaryAction ctx={ctx} variant=\"full\" />");

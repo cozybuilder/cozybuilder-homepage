@@ -263,7 +263,10 @@ function ProgramPrimaryAction({
 
 /**
  * 사용 설명서 보조 버튼 — 상단 「← 프로그램 목록」 뒤로가기와 같은 행의 오른쪽(코지임대만 · PROGRAM_OPERATING_MODEL.md §10).
- * 책 아이콘 + 「사용 설명서 보기」 하나(새 탭 웹 매뉴얼). 뒤로가기 버튼과 같은 높이·테두리의 작은 보조 버튼이다.
+ * 책 아이콘 + 「사용 설명서 보기」 하나(새 탭 웹 매뉴얼). 뒤로가기 버튼과 같은 높이의 작은 보조 버튼이다.
+ * 대비 강조(코비 #74 최종 · 코지 승인): 사이트 강조색(--accent)을 옅게 깐 배경·테두리·아이콘으로 첫눈에 보이게 하되
+ * 크기·위치·문구는 그대로 둔다(Google Play 주 버튼보다 앞서지 않는 보조 버튼 성격 유지). hover·키보드 focus도 분명하게.
+ * 테두리는 border가 아니라 ring-1로 그린다 — globals.css의 레이어 밖 `* { border-color }`가 Tailwind 테두리 색 유틸리티를 이긴다.
  * PDF 다운로드·인쇄 버튼은 두지 않는다. Google Play 버튼 아래에는 더 이상 아무것도 붙이지 않는다(중복 노출 0).
  */
 function ProgramManualButton({ manual }: { manual: ProgramManualLink }) {
@@ -274,9 +277,10 @@ function ProgramManualButton({ manual }: { manual: ProgramManualLink }) {
       rel="noopener"
       title={manual.title}
       data-program-manual=""
-      className="inline-flex h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/10 bg-white/5 px-4 text-sm font-medium text-foreground transition-colors hover:border-white/20 hover:bg-white/10"
+      className="inline-flex h-11 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-[var(--accent)]/15 px-4 text-sm font-semibold text-foreground ring-1 ring-[var(--accent)]/60 transition-all duration-200 hover:bg-[var(--accent)]/25 hover:shadow-[0_8px_28px_-10px_var(--accent-glow)] hover:ring-[var(--accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]"
     >
       <svg
+        className="text-[#aab4ff]"
         width="16"
         height="16"
         viewBox="0 0 24 24"
