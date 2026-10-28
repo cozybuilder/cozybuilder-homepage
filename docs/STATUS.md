@@ -151,7 +151,7 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   홈페이지 main·운영 DB 미변경. 최종 공개는 코지 별도 승인.
   **구현(클로 2026-10-28 · 이 브랜치)**: `public/manual/cozyrent/*.pdf` 삭제·PDF 링크 0 · 웹 사본 표지 「검토용」 행 제거(cozyrent `48f9f99c`) ·
   랜딩 `closed` 설정(상단·히어로·마지막·모바일 CTA = 클릭 불가 「사전신청 종료」 · 폼 자리 종료 안내 · 최소 문구 정리) ·
-  `POST /api/cozyrent/preregister` 본문 미열람 410 `closed` · 프로그램 상세 Play 버튼 아래 「코지임대 사용 설명서」 카드
+  `POST /api/cozyrent/preregister` 본문 미열람 410 `closed` · 프로그램 상세 「Play 버튼 → 기존 안내문 → 「코지임대 사용 설명서」 카드」 순서
   (`lib/program-manual.ts` — Play 패키지 `com.cozybuilder.cozyrent`·released 모바일만 · 「사용 설명서 보기」 1개 · 새 탭).
   테스트 66/66 · eslint 0 · `next build` · 로컬 `next start` 390/1366 종단(웹 매뉴얼 200 · PDF 404 · API 410 · 다른 프로그램 카드 0).
   **OPEN**: Vercel Preview 실제 화면(배포 보호 · 로그인 필요) · 코비 독립검수 · 코지 최종 공개 승인.

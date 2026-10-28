@@ -66,11 +66,15 @@ test("다른 프로그램·Play 버튼이 없는 상태에는 카드가 없다",
   assert.equal(androidPackageOf("not a url"), null);
 });
 
-test("프로그램 상세는 카드를 Google Play 버튼 바로 아래에 둔다", () => {
+test("프로그램 상세 순서: Google Play 버튼 → 기존 안내문 → 사용 설명서 카드", () => {
   const page = readFileSync(join(ROOT, "app/programs/[slug]/page.tsx"), "utf8");
-  assert.match(
-    page,
-    /<ProgramPrimaryAction ctx=\{ctx\} variant="full" \/>\s*<\/div>\s*\{manual && <ProgramManualCardView manual=\{manual\} \/>\}/,
-  );
+  const hero = page.slice(page.indexOf("── HERO"), page.indexOf("── 문제 공감"));
+  const iBtn = hero.indexOf("<ProgramPrimaryAction ctx={ctx} variant=\"full\" />");
+  const iSub = hero.indexOf("<WebSubscribeNote");
+  const iNote = hero.indexOf("{L.hero.note}");
+  const iCard = hero.indexOf("<ProgramManualCardView manual={manual} />");
+  assert.ok(iBtn > 0 && iSub > iBtn && iNote > iSub && iCard > iNote, JSON.stringify({ iBtn, iSub, iNote, iCard }));
+  // 카드 뒤에는 히어로가 바로 끝난다(카드가 안내문과 버튼 사이에 끼지 않음).
+  assert.match(hero.slice(iCard), /^<ProgramManualCardView manual=\{manual\} \/>\}\s*<\/section>/);
   assert.equal((page.match(/<ProgramManualCardView/g) ?? []).length, 1);
 });

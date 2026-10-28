@@ -262,7 +262,7 @@ function ProgramPrimaryAction({
 }
 
 /**
- * 사용 설명서 보조 카드 — Google Play 버튼 바로 아래(코지임대만 · PROGRAM_OPERATING_MODEL.md §10).
+ * 사용 설명서 보조 카드 — Google Play 버튼과 그 안내문 묶음 바로 다음(코지임대만 · PROGRAM_OPERATING_MODEL.md §10).
  * 공개 행동은 웹 매뉴얼 「사용 설명서 보기」 하나(새 탭). PDF 다운로드·인쇄 버튼은 두지 않는다.
  */
 function ProgramManualCardView({ manual }: { manual: ProgramManualCard }) {
@@ -430,13 +430,14 @@ export default async function ProgramDetailPage({
         <div className="mt-7 flex justify-center">
           <ProgramPrimaryAction ctx={ctx} variant="full" />
         </div>
-        {manual && <ProgramManualCardView manual={manual} />}
         {webApp && user && <WebSubscribeNote allowed={ctx.allowed} />}
         {L?.hero?.note && (
           <p className="mx-auto mt-3 max-w-md break-keep text-center text-sm text-[--muted-2]">
             {L.hero.note}
           </p>
         )}
+        {/* 설치 버튼과 기존 안내문을 한 묶음으로 두고, 그 다음에 사용 설명서 카드(코비 #74 검수 후속). */}
+        {manual && <ProgramManualCardView manual={manual} />}
       </section>
 
       {/* ── 문제 공감 ── */}
