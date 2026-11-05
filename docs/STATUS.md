@@ -148,6 +148,7 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   - **임시 안내(VC80 Play 배포 전까지)**: Play 운영 앱 VC79에서는 앱 안 회원탈퇴가 끝나지 않을 수 있다(cozyrent Issue #79 · VC80에서 교정).
     - 웹 매뉴얼 §18.5와 `/cozyrent/delete-account`가 같은 문구로, 「회원탈퇴를 처리하지 못했어요」가 나오면 이메일 삭제 요청을 쓰도록 안내한다.
     - VC80 배포 뒤 두 곳을 함께 정리한다. 제거 조건은 cozyrent `docs/manual/README.md` 「임시 안내」에 있다.
+    - **2026-11-05 정리 준비(미배포)**: VC80 프로덕션 100%(2026-11-02)·필수 업데이트 최소 80 → Preview `preview/cozyrent-manual-vc84-20261105`에서 계정 삭제 페이지 임시 문단을 빼고 VC84 매뉴얼(§18.5 임시 안내 없음)로 바꿨다. 2번 이메일 요청·본인 확인·구독 안내는 그대로. 운영 반영은 코지 공개 승인 뒤.
 
 ### Platform Analytics v1
 - `analytics_events`
