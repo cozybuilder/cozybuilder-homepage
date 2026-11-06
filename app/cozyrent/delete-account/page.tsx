@@ -11,12 +11,15 @@ import { siteConfig } from "@/lib/site";
 // 2026-10-28 개정(코비 #74 잔여 마감 · 임시): 현재 Play 버전 앱에서 회원탈퇴가 끝나지 않는 경우(cozyrent Issue #79 · VC80에서 교정 · 미배포)에도
 //  2번 이메일 요청을 쓸 수 있다고 안내한다. 삭제 범위·보존 정책·본인 확인 절차는 바꾸지 않는다. VC80이 Play에 배포되면 이 임시 문장을 정리한다
 //  (매뉴얼 §18.5 임시 안내와 함께 · cozyrent docs/manual/README.md 「임시 안내」).
+// 2026-11-05 정리(코비 「VC84 매뉴얼 최종 결함 교정·출시 전 마감」): VC80이 2026-11-02 Play 프로덕션 100%로 배포됐고 필수 업데이트 최소 80이
+//  적용 중이라(cozyrent docs/qa/VC80_MIN80_2026-11-02.md §1·§7) 1번 끝의 「현재 앱 버전 안내」 임시 문단을 뺐다. 매뉴얼 §18.5 임시 안내는
+//  VC82판에서 이미 빠졌다. 2번 이메일 요청(앱을 쓸 수 없거나 탈퇴가 끝나지 않을 때)·본인 확인·보안 안내·삭제 범위·구독 해지 안내는 그대로다.
 export const metadata: Metadata = {
   title: "코지임대 계정 삭제",
   description: "코지임대(CozyRent) 계정 삭제 방법과 처리되는 데이터 안내.",
 };
 
-const EFFECTIVE_DATE = "2026년 10월 28일";
+const EFFECTIVE_DATE = "2026년 11월 5일";
 const PLAY_SUBSCRIPTIONS_URL = "https://play.google.com/store/account/subscriptions";
 
 // 앱 없이 요청할 때 쓰는 메일 템플릿 — 민감정보(비밀번호·OTP·구매토큰·계약 데이터) 자동 첨부 없음.
@@ -49,10 +52,6 @@ export default function CozyrentDeleteAccountPage() {
           </p>
           <p className="mt-3">
             탈퇴가 정상으로 끝나면 앱이 다시 시작되어 로그인 화면이 나타나며, 따로 요청할 필요가 없습니다.
-          </p>
-          <p className="mt-3 rounded-lg border border-[--border] bg-[--surface]/40 px-4 py-3 text-sm" data-delete-temp-notice="">
-            <strong className="text-foreground">현재 앱 버전 안내:</strong> 지금 Google Play에 배포된 앱 버전에서는 회원탈퇴를 진행해도 「회원탈퇴를 처리하지 못했어요」 안내가 나오고 탈퇴가 끝나지 않을 수 있습니다.
-            이 안내가 나왔다면 계정은 아직 삭제되지 않은 상태입니다. 여러 번 다시 시도하지 말고 아래 <strong className="text-foreground">2번의 이메일 요청</strong>으로 삭제를 요청해 주세요.
           </p>
         </section>
 

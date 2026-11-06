@@ -1,4 +1,6 @@
-// 코지임대 계정 삭제 안내(Google Play 계정 삭제 정책 URL) — #74 잔여 마감 임시 안내(cozyrent Issue #79 · VC80 배포 전까지).
+// 코지임대 계정 삭제 안내(Google Play 계정 삭제 정책 URL).
+// 2026-11-05: #74 임시 안내(cozyrent Issue #79 · VC80 배포 전까지)를 정리한 뒤의 확정 동작을 본다 — VC80 프로덕션 100%·필수 업데이트 최소 80
+//  (cozyrent docs/qa/VC80_MIN80_2026-11-02.md) · 매뉴얼 §18.5 임시 안내는 VC82판부터 없음(cozyrent docs/manual/README.md).
 // 실행: npm test  (node 내장 테스트 러너 · 별도 의존성 없음)
 
 import { test } from "node:test";
@@ -16,9 +18,9 @@ const DELETE_URL = "https://cozybuilder.co.kr/cozyrent/delete-account";
 test("앱에서 탈퇴가 끝나지 않은 사용자도 이메일 요청(2번)을 쓰도록 안내한다", () => {
   assert.match(visible, /2\. 앱을 사용할 수 없거나 앱에서 탈퇴가 끝나지 않는 경우/);
   assert.match(visible, /「회원탈퇴를 처리하지 못했어요」 안내가 나오고 탈퇴가 끝나지 않았다면 아래 방법으로 삭제를 요청할 수 있습니다/);
-  // 1번 끝의 현재 버전 안내 — 계정은 아직 삭제되지 않았고, 반복 시도 대신 2번 이메일 요청.
-  assert.match(visible, /data-delete-temp-notice/);
-  assert.match(visible, /계정은 아직 삭제되지 않은 상태입니다\. 여러 번 다시 시도하지 말고 아래 <strong className="text-foreground">2번의 이메일 요청<\/strong>으로 삭제를 요청해 주세요/);
+  // VC80 배포 전 임시 문단(「지금 Google Play에 배포된 앱 버전에서는 …」)은 정리됐다 — 2번 안내만으로 같은 길을 연다.
+  assert.doesNotMatch(visible, /data-delete-temp-notice/);
+  assert.doesNotMatch(visible, /현재 앱 버전 안내|지금 Google Play에 배포된 앱 버전에서는/);
   // 정상 완료와 구별한다.
   assert.match(visible, /탈퇴가 정상으로 끝나면 앱이 다시 시작되어 로그인 화면이 나타나며, 따로 요청할 필요가 없습니다/);
 });
@@ -40,13 +42,13 @@ test("고객 문구에 내부 오류코드·기술 설명이 없다", () => {
   }
 });
 
-test("웹 매뉴얼 §18.5 임시 안내는 같은 계정 삭제 페이지로 연결되고 내부 표기가 없다", () => {
-  const links = MANUAL.match(/<a href="https:\/\/cozybuilder\.co\.kr\/cozyrent\/delete-account">코지임대 계정 삭제<\/a>/g) ?? [];
-  assert.equal(links.length, 2); // §18.5 임시 안내 + §18.5.1 「회원탈퇴를 처리하지 못했어요」
-  assert.ok(MANUAL.includes(DELETE_URL));
+test("웹 매뉴얼 §18.5는 임시 안내 없이 탈퇴 실패 안내·구독 해지 안내를 담고 내부 표기가 없다", () => {
   const text = MANUAL.replace(/<[^>]+>/g, " ");
-  assert.match(text, /현재 버전 임시 안내/);
-  assert.match(text, /이 창이 나왔다면 계정은 삭제되지 않았고 로그인도 그대로입니다/);
-  assert.match(text, /Google Play 구독은 탈퇴만으로 해지되지 않으므로 Google Play의 구독 관리 화면에서 따로 해지해 주세요/);
+  assert.doesNotMatch(text, /현재 버전 임시 안내/); // VC80 배포 전 임시 상자 — VC82판부터 없음
+  assert.match(text, /「회원탈퇴를 처리하지 못했어요\. 잠시 후 다시 시도해 주세요\.」가 표시됩니다/);
+  assert.match(text, /계정은 아직 삭제되지 않았습니다/);
+  assert.match(text, /스토어 구독은 탈퇴만으로 해지되지 않으므로 스토어의 구독 관리 화면에서 따로 해지해 주세요/);
+  // 매뉴얼이 계정 삭제 페이지로 연결한다면 그 주소는 이 공개 주소다.
+  for (const m of MANUAL.matchAll(/<a href="([^"]*delete-account[^"]*)"/g)) assert.equal(m[1], DELETE_URL);
   for (const banned of [/device_unidentified/, /installationId/, /Issue #79/, /VC80/]) assert.doesNotMatch(text, banned);
 });
