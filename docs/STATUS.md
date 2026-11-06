@@ -137,7 +137,7 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   **DB·API·폼 필드·migration·기존 신청 데이터 변경 0.**
 
 - **코지임대 웹 매뉴얼·사전신청 종료 (Issue #74 · 2026-10-28 운영 배포 완료)**: `main` `baecca8` → Vercel Production · https://cozybuilder.co.kr
-  - **웹 매뉴얼만 공개**: `/manual/cozyrent/index.html` + `img/*.webp`. 원본은 cozyrent `docs/manual`(브랜치 `docs/manual-vc79-20261028`)이며, 생성기 `--web`으로 만든 사본만 둔다.
+  - **웹 매뉴얼만 공개**: `/manual/cozyrent/index.html` + `img/*.webp`. 원본은 cozyrent `docs/manual`(현재 브랜치 `docs/manual-vc84-20261105` · 2026-11-06 반영, 이전 `docs/manual-vc79-20261028`)이며, 생성기 `--web`으로 만든 사본만 둔다.
     **공개 PDF 없음**: `public/manual/cozyrent/*.pdf` 0 · 직접 URL 404 · PDF/다운로드 링크 0. 내부 PDF 2종은 cozyrent 쪽에 보관한다.
   - **프로그램 상세** `/programs/program-mr95apa5`: 상단 「← 프로그램 목록」 행 오른쪽에 책 아이콘 + 「사용 설명서 보기」 보조 버튼 1개(강조색 · 새 탭).
     Google Play 버튼과 7일 안내문은 그대로이고, Play 아래 카드는 없으며, 다른 프로그램에는 0개다([PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
@@ -145,11 +145,13 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
     - 상단·히어로·마지막·모바일 CTA = 클릭 불가 「사전신청 종료」 · 폼 대신 종료 안내 · `POST /api/cozyrent/preregister` 410 `closed`(본문 미열람).
     - 기존 신청자·30일 혜택·운영 DB는 보존한다. 매뉴얼은 웹 보기 1개다([COZYRENT_PRELAUNCH.md §16](landing/COZYRENT_PRELAUNCH.md)).
   - 결정 경과(PDF 공개안 → 웹 전용 · 카드 → 상단 버튼 → 강조)는 위 두 문서가 소유한다. 검증 기록은 cozyrent `docs/qa/MANUAL_VC79_HOMEPAGE_2026-10-28.md`가 소유한다.
-  - **임시 안내(VC80 Play 배포 전까지)**: Play 운영 앱 VC79에서는 앱 안 회원탈퇴가 끝나지 않을 수 있다(cozyrent Issue #79 · VC80에서 교정).
+  - **임시 안내(VC80 Play 배포 전까지 · 2026-11-06 운영에서 제거)**: Play 운영 앱 VC79에서는 앱 안 회원탈퇴가 끝나지 않을 수 있다(cozyrent Issue #79 · VC80에서 교정).
     - 웹 매뉴얼 §18.5와 `/cozyrent/delete-account`가 같은 문구로, 「회원탈퇴를 처리하지 못했어요」가 나오면 이메일 삭제 요청을 쓰도록 안내한다.
     - VC80 배포 뒤 두 곳을 함께 정리한다. 제거 조건은 cozyrent `docs/manual/README.md` 「임시 안내」에 있다.
     - **2026-11-05 정리 준비(미배포)**: VC80 프로덕션 100%(2026-11-02)·필수 업데이트 최소 80 → Preview `preview/cozyrent-manual-vc84-20261105`에서 계정 삭제 페이지 임시 문단을 빼고 VC84 매뉴얼(§18.5 임시 안내 없음)로 바꿨다. 2번 이메일 요청·본인 확인·구독 안내는 그대로. 운영 반영은 코지 공개 승인 뒤.
-  - **VC84 매뉴얼 운영 반영 — 배포 검증 대기(2026-11-06 · 코지 공개 승인)**: `main`에 VC84 웹 매뉴얼(cozyrent `docs/manual-vc84-20261105` `78db7d73`의 `--web` 사본 · 스크린샷 433장 전체 보존 · 미사용 보조 그림 포함)과 위 계정 삭제 임시 문단 정리·관련 시험을 반영했다(Preview `0785afc`와 같은 내용). Vercel Production 결과·공개 URL·VC84 앱 「사용 설명서 보기」 확인 뒤 완료로 바꾼다.
+  - **VC84 매뉴얼 운영 반영 — 배포 완료(2026-11-06 · 코지 공개 승인)**: `main` `9e52409`(23:30 KST push) → Vercel Production success(23:31:36 KST). VC84 웹 매뉴얼(cozyrent `docs/manual-vc84-20261105` `78db7d73`의 `--web` 사본 · 스크린샷 433장 전체 보존 · 미사용 보조 그림 포함)과 위 계정 삭제 임시 문단 정리·관련 시험이다(Preview `0785afc`와 같은 내용).
+    - 공개 URL 확인: index.html이 커밋본과 바이트 동일 · 「코지임대 v1.0 (84)」·갱신일 2026-11-05 · 10.3.4·10.4.6·14.14.1·16.11 있음 · 그림 433/433 바이트 동일 · 내부 링크 227 깨짐 0 · PC 1280·휴대폰 390 가로 넘침 0. `/cozyrent/delete-account`는 임시 문단 0, 이메일 삭제 요청·구독 안내 유지.
+    - 앱 확인: S23 운영 Play 앱 84 「설정 → 사용 설명서 보기」가 VC84판(갱신일 2026-11-05 · 16.11 본문·그림)을 연다(조회만). 기록 = cozyrent `docs/qa/VC84_MANUAL_PUBLISH_2026-11-06.md`.
 
 ### Platform Analytics v1
 - `analytics_events`
