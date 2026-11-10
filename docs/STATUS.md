@@ -137,7 +137,7 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   **DB·API·폼 필드·migration·기존 신청 데이터 변경 0.**
 
 - **코지임대 웹 매뉴얼·사전신청 종료 (Issue #74 · 2026-10-28 운영 배포 완료)**: `main` `baecca8` → Vercel Production · https://cozybuilder.co.kr
-  - **웹 매뉴얼만 공개**: `/manual/cozyrent/index.html` + `img/*.webp`. 원본은 cozyrent `docs/manual`(현재 브랜치 `docs/manual-vc84-20261105` · 2026-11-06 반영, 이전 `docs/manual-vc79-20261028`)이며, 생성기 `--web`으로 만든 사본만 둔다.
+  - **웹 매뉴얼만 공개**: `/manual/cozyrent/index.html` + `img/*.webp`. 원본은 cozyrent `docs/manual`(현재 브랜치 `docs/manual-full-restructure-20261109` · 2026-11-10 반영, 이전 `docs/manual-vc84-20261105`)이며, 생성기 `--web`으로 만든 사본만 둔다.
     **공개 PDF 없음**: `public/manual/cozyrent/*.pdf` 0 · 직접 URL 404 · PDF/다운로드 링크 0. 내부 PDF 2종은 cozyrent 쪽에 보관한다.
   - **프로그램 상세** `/programs/program-mr95apa5`: 상단 「← 프로그램 목록」 행 오른쪽에 책 아이콘 + 「사용 설명서 보기」 보조 버튼 1개(강조색 · 새 탭).
     Google Play 버튼과 7일 안내문은 그대로이고, Play 아래 카드는 없으며, 다른 프로그램에는 0개다([PROGRAM_OPERATING_MODEL.md §10](platform/PROGRAM_OPERATING_MODEL.md)).
@@ -152,6 +152,7 @@ CozyBuilder 홈페이지는 단순 소개 사이트가 아니라 다음을 담�
   - **VC84 매뉴얼 운영 반영 — 배포 완료(2026-11-06 · 코지 공개 승인)**: `main` `9e52409`(23:30 KST push) → Vercel Production success(23:31:36 KST). VC84 웹 매뉴얼(cozyrent `docs/manual-vc84-20261105` `78db7d73`의 `--web` 사본 · 스크린샷 433장 전체 보존 · 미사용 보조 그림 포함)과 위 계정 삭제 임시 문단 정리·관련 시험이다(Preview `0785afc`와 같은 내용).
     - 공개 URL 확인: index.html이 커밋본과 바이트 동일 · 「코지임대 v1.0 (84)」·갱신일 2026-11-05 · 10.3.4·10.4.6·14.14.1·16.11 있음 · 그림 433/433 바이트 동일 · 내부 링크 227 깨짐 0 · PC 1280·휴대폰 390 가로 넘침 0. `/cozyrent/delete-account`는 임시 문단 0, 이메일 삭제 요청·구독 안내 유지.
     - 앱 확인: S23 운영 Play 앱 84 「설정 → 사용 설명서 보기」가 VC84판(갱신일 2026-11-05 · 16.11 본문·그림)을 연다(조회만). 기록 = cozyrent `docs/qa/VC84_MANUAL_PUBLISH_2026-11-06.md`.
+  - **개편 매뉴얼 운영 반영 — 배포 검증 대기(2026-11-10 · 코지 공개 승인)**: 처음 시작할 때 · 기본편 14장 · 고급편 11장 · 부록으로 다시 짠 전체 개편·설명 간소화판(cozyrent `docs/manual-full-restructure-20261109` `452fe8f3` · 원고 blob `ce2bce2b`의 `--web` 사본 · 갱신일 2026-11-10 · index sha256 `54af024a…`). 반영 = index.html 교체 + 그림 236장 추가(같은 이름 그림 163장은 바이트 동일 · 기존 433장 보존 · 삭제 0). 직전 공개본 복구 기준 = `3212312`의 index.html(sha256 `695e48db…`). 기록 = cozyrent `docs/manual/RESTRUCTURE_FULL_2026-11-09.md` §11.
 
 ### Platform Analytics v1
 - `analytics_events`
